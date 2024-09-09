@@ -1,14 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "InsectSweepGameMode.h"
-#include "InsectSweepPlayerController.h"
-#include "InsectSweepCharacter.h"
+#include "PestControlGameMode.h"
+#include "PestControlPlayerController.h"
+#include "PestControlCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
-AInsectSweepGameMode::AInsectSweepGameMode()
+APestControlGameMode::APestControlGameMode()
 {
 	// use our custom PlayerController class
-	PlayerControllerClass = AInsectSweepPlayerController::StaticClass();
+	PlayerControllerClass = APestControlPlayerController::StaticClass();
 
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/TopDown/Blueprints/BP_TopDownCharacter"));

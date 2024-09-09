@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "InsectSweepCharacter.h"
+#include "PestControlCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
@@ -11,7 +11,7 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
-AInsectSweepCharacter::AInsectSweepCharacter()
+APestControlCharacter::APestControlCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -45,7 +45,7 @@ AInsectSweepCharacter::AInsectSweepCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
-void AInsectSweepCharacter::Tick(float DeltaSeconds)
+void APestControlCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 }
