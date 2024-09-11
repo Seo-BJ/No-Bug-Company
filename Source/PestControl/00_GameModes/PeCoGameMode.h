@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnhancedInputComponent.h"
-#include "PeCoInputComponent.generated.h"
+#include "GameFramework/GameMode.h"
+#include "PeCoGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API UPeCoInputComponent : public UEnhancedInputComponent
+class PESTCONTROL_API APeCoGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
