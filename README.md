@@ -11,7 +11,7 @@
 2. develop
 	- 설명 : 개발이 현재 진행되는 브랜치, feature에서 작업이 완료되어 Merge된 작업물들을 포함한다.
 	- 보호 정책 : 기본적으로 Lock 상태, Featire에서 작업물들을 Pull Request와 코드 리뷰(미정)을 받아서 Approve되면, 이를 Merge 한다.
-
+(아래 작성 중)
 3. feature
 	- 설명 : 이슈로부터 생성되어, develop 브랜치를 Base로 하여 각 개발자의 Local에서 작업을 수행하는 Branch이다. 코드 리뷰(미정) 후 develop 브랜치로 Pull Requeset가 승인되면, develop에 merge된다. (그 후 이슈와 branch는 삭제)
 	- 이름 형식 : <이슈종류>-<이슈이름><이슈번호> feature-CharacterLocomotion#5, fix-CharacterLocomotion#5
@@ -19,7 +19,7 @@
 	- 보호 정책 : 각 개발자가 소유하는 Local 브랜치 개념으로, 서로의 브랜치는 최대한 침범하지 않는다. 
 	- 순서
   		1. 회의를 통해 결정된 Task 할당, 그에 대한 Issue 발행
-		2. GitHub Project에서 해당 이슈를 On-Progress 열로 옮긴다.
+		2. GitHub Project에서 해당 이슈를 In-Progress 열로 옮긴다.
 		3. Assignee 설정 - 작업하는 본인으로 변경
 		3. Create Branch 
 		4. Base 브랜치를 Develop으로 설정 
