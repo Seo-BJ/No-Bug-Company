@@ -21,7 +21,7 @@
 	- 보호 정책 : 각 개발자가 소유하는 Local 브랜치 개념으로, 서로의 브랜치는 최대한 침범하지 않는다. 
 	- 매커니즘
 		
-  		1. Issue 발행 // Owner가 발행, 회의를 통해 결정, 신경 안써도됨
+  		1. Issue 발행 // 회의를 통해 결정된 Task에 대해 각자 Issue를 생성함.
 		2. GitHub Project에서 해당 이슈를 On-Progress 칼럼으로 옮긴다.
 		3. Assignee 설정 - 작업하는 본인으로 변경
 		3. Create Branch 
