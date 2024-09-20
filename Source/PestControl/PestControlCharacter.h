@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "InsectSweepCharacter.generated.h"
+#include "PestControlCharacter.generated.h"
 
 UCLASS(Blueprintable)
-class AInsectSweepCharacter : public ACharacter
+class APestControlCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	AInsectSweepCharacter();
+	APestControlCharacter();
 
 	// Called every frame.
 	virtual void Tick(float DeltaSeconds) override;

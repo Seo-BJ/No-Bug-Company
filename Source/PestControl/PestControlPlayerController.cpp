@@ -1,11 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "InsectSweepPlayerController.h"
+#include "PestControlPlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-#include "InsectSweepCharacter.h"
+#include "PestControlCharacter.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
@@ -14,7 +14,7 @@
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
-AInsectSweepPlayerController::AInsectSweepPlayerController()
+APestControlPlayerController::APestControlPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
@@ -22,7 +22,7 @@ AInsectSweepPlayerController::AInsectSweepPlayerController()
 	FollowTime = 0.f;
 }
 
-void AInsectSweepPlayerController::BeginPlay()
+void APestControlPlayerController::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
@@ -34,7 +34,7 @@ void AInsectSweepPlayerController::BeginPlay()
 	}
 }
 
-void AInsectSweepPlayerController::SetupInputComponent()
+void APestControlPlayerController::SetupInputComponent()
 {
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
@@ -43,16 +43,16 @@ void AInsectSweepPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		// Setup mouse input events
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &AInsectSweepPlayerController::OnInputStarted);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &AInsectSweepPlayerController::OnSetDestinationTriggered);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &AInsectSweepPlayerController::OnSetDestinationReleased);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &AInsectSweepPlayerController::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &APestControlPlayerController::OnInputStarted);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &APestControlPlayerController::OnSetDestinationTriggered);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &APestControlPlayerController::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &APestControlPlayerController::OnSetDestinationReleased);
 
 		// Setup touch input events
-		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Started, this, &AInsectSweepPlayerController::OnInputStarted);
-		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AInsectSweepPlayerController::OnTouchTriggered);
-		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AInsectSweepPlayerController::OnTouchReleased);
-		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AInsectSweepPlayerController::OnTouchReleased);
+		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Started, this, &APestControlPlayerController::OnInputStarted);
+		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &APestControlPlayerController::OnTouchTriggered);
+		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &APestControlPlayerController::OnTouchReleased);
+		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &APestControlPlayerController::OnTouchReleased);
 	}
 	else
 	{
@@ -60,13 +60,13 @@ void AInsectSweepPlayerController::SetupInputComponent()
 	}
 }
 
-void AInsectSweepPlayerController::OnInputStarted()
+void APestControlPlayerController::OnInputStarted()
 {
 	StopMovement();
 }
 
 // Triggered every frame when the input is held down
-void AInsectSweepPlayerController::OnSetDestinationTriggered()
+void APestControlPlayerController::OnSetDestinationTriggered()
 {
 	// We flag that the input is being pressed
 	FollowTime += GetWorld()->GetDeltaSeconds();
@@ -98,7 +98,7 @@ void AInsectSweepPlayerController::OnSetDestinationTriggered()
 	}
 }
 
-void AInsectSweepPlayerController::OnSetDestinationReleased()
+void APestControlPlayerController::OnSetDestinationReleased()
 {
 	// If it was a short press
 	if (FollowTime <= ShortPressThreshold)
@@ -112,13 +112,13 @@ void AInsectSweepPlayerController::OnSetDestinationReleased()
 }
 
 // Triggered every frame when the input is held down
-void AInsectSweepPlayerController::OnTouchTriggered()
+void APestControlPlayerController::OnTouchTriggered()
 {
 	bIsTouch = true;
 	OnSetDestinationTriggered();
 }
 
-void AInsectSweepPlayerController::OnTouchReleased()
+void APestControlPlayerController::OnTouchReleased()
 {
 	bIsTouch = false;
 	OnSetDestinationReleased();

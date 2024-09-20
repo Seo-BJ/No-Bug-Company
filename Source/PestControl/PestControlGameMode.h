@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "InsectSweepGameMode.generated.h"
+#include "PestControlGameMode.generated.h"
 
 UCLASS(minimalapi)
-class AInsectSweepGameMode : public AGameModeBase
+class APestControlGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
-	AInsectSweepGameMode();
+	APestControlGameMode();
 };
 
 

@@ -4,4 +4,4 @@
 
 #include "CoreMinimal.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogInsectSweep, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPestControl, Log, All);
