@@ -9,7 +9,7 @@
 /**
 * UPeCoInputComponent
 * 
-* Enhanced Input Component¸¦ Base·Î ÇÏ´Â PeCoInputComponent. 
+* Enhanced Input Componentï¿½ï¿½ Baseï¿½ï¿½ ï¿½Ï´ï¿½ PeCoInputComponent. 
 */
 UCLASS()
 class PESTCONTROL_API UPeCoInputComponent : public UEnhancedInputComponent
