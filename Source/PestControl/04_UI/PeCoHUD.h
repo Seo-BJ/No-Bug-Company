@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "PeCoHUD.generated.h"
 
+class UPlayerOverlay;
 /**
  * 
  */
@@ -14,4 +15,23 @@ class PESTCONTROL_API APeCoHUD : public AHUD
 {
 	GENERATED_BODY()
 	
+public :
+
+	virtual void DrawHUD() override;
+
+	void InitOverlay(APlayerController* PC, APlayerState* PS);
+
+
+
+protected:
+
+
+private:
+
+
+	UPROPERTY()
+	TObjectPtr<UPlayerOverlay>  PlayerOverlayWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPlayerOverlay> PlayerOverlayWidgetClass;
+
 };

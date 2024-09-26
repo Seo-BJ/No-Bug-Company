@@ -3,22 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameMode.h"
-#include "PeCoGameMode.generated.h"
+#include "Blueprint/UserWidget.h"
+#include "PeCoUserWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API APeCoGameMode : public AGameMode
+class PESTCONTROL_API UPeCoUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-public:
-
-	APeCoGameMode();
-
 	
-
-
 };

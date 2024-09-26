@@ -3,13 +3,22 @@
 
 #include "PeCoPlayerController.h"
 
+
+
+#include "03_Input/InPutActionDataAsset.h"
+
+
 #include "Components/InputComponent.h"
-#include "GameFramework/Pawn.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "03_Input/InPutActionDataAsset.h"
+
+
+#include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "Blueprint/UserWidget.h"
+
 
 
 void APeCoPlayerController::BeginPlay()
@@ -44,6 +53,58 @@ void APeCoPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(InputComponent);
 
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
+}
+
+
+void APeCoPlayerController::ShowLevelUpUI()
+{
+	
+	/*
+	if (LevelUpWidgetClass && !LevelUpWidget)
+	{
+
+		
+		// 레벨업 UI 위젯을 생성하고 화면에 표시
+		LevelUpWidget = CreateWidget<UUserWidget>(this, LevelUpWidgetClass);
+		if (LevelUpWidget)
+		{
+			LevelUpWidget->AddToViewport();
+			// 마우스 커서 표시 (UI 상호작용을 위해)
+			bShowMouseCursor = true;
+			SetInputMode(FInputModeUIOnly());
+		}
+		
+		
+	
+	}
+	
+	*/
+
+
+}
+
+void APeCoPlayerController::CloseLevelUpUI()
+{
+	/*
+	if (LevelUpWidget)
+	{
+		
+		LevelUpWidget->RemoveFromViewport();
+		LevelUpWidget = nullptr;
+
+		// 마우스 커서 숨기고 게임으로 돌아감
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+
+		// 게임 재개
+		SetPause(false);
+		
+		
+		
+		
+	}
+	
+	*/
 }
 
 void APeCoPlayerController::Move(const FInputActionValue& Value)
