@@ -12,18 +12,25 @@ class PESTCONTROL_API APeCoCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+
 	APeCoCharacter();
 
+
+
 protected:
-	// Called when the game starts or when spawned
+
+	// ~ Player Character Interface
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PossessedBy(AController* NewController) override;
+	// ~ End of Player Character Interface
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+
+	void InitPlayerCharacter();
 
 };

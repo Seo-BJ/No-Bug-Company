@@ -3,6 +3,11 @@
 
 #include "PeCoCharacter.h"
 
+#include "02_Player/PeCoPlayerController.h"
+#include "02_Player/PeCoPlayerState.h"
+
+#include "04_UI/PeCoHUD.h"
+
 // Sets default values
 APeCoCharacter::APeCoCharacter()
 {
@@ -30,5 +35,25 @@ void APeCoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void APeCoCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	InitPlayerCharacter();
+}
+
+void APeCoCharacter::InitPlayerCharacter()
+{
+	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
+	check(PeCoPS);
+
+	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
+	check(PeCOPC);
+
+	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
+	check(PeCoHUD);
+	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
+	
 }
 
