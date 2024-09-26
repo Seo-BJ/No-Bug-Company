@@ -22,15 +22,7 @@ protected:
 	// ~ Player Character Interface
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void PossessedBy(AController* NewController) override;
-	// ~ End of Player Character Interface
-
-public:	
 
 
-private:
-
-	void InitPlayerCharacter();
 
 };

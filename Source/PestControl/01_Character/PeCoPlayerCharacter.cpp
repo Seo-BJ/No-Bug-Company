@@ -12,6 +12,11 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
+#include "02_Player/PeCoPlayerController.h"
+#include "02_Player/PeCoPlayerState.h"
+
+#include "04_UI/PeCoHUD.h"
+
 APeCoPlayerCharacter::APeCoPlayerCharacter()
 {
 	// Set size for player capsule
@@ -51,3 +56,33 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
+
+
+// Called to bind functionality to input
+void APeCoPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+
+void APeCoPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	InitPlayerCharacter();
+}
+
+void APeCoPlayerCharacter::InitPlayerCharacter()
+{
+	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
+	check(PeCoPS);
+
+	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
+	check(PeCOPC);
+
+	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
+	check(PeCoHUD);
+	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
+
+}
+
