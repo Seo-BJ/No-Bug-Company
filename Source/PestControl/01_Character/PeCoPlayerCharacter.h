@@ -35,7 +35,11 @@ public:
 
 private:
 
+	virtual void BeginPlay() override;
+
 	void InitPlayerCharacter();
+	
+	void SetNewFireRate(float NewFireRate);
 
 private:
 	/** Top down camera */
@@ -45,5 +49,13 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float FireRate;
+
+	FTimerHandle TimerHandle;
+	float TimerInterval;
+
+	APlayerController* PeCoPlayerController;
 
 };
