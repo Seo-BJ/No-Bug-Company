@@ -49,12 +49,24 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	FireRate = 2.0f;
 }
+
+
+void APeCoPlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
+}
+
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+
 }
 
 
@@ -72,6 +84,7 @@ void APeCoPlayerCharacter::PossessedBy(AController* NewController)
 	InitPlayerCharacter();
 }
 
+
 void APeCoPlayerCharacter::InitPlayerCharacter()
 {
 	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
@@ -84,5 +97,12 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 	check(PeCoHUD);
 	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
 
+}
+
+void APeCoPlayerCharacter::SetNewFireRate(float NewFireRate)
+{
+	FireRate = NewFireRate;
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
 }
 
