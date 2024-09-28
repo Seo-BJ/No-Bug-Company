@@ -41,21 +41,21 @@ private:
 	// ~Player Level Up
 public:
 
-	// ·¹º§¾÷ UI¸¦ Ç¥½ÃÇÏ´Â ÇÔ¼ö
+	// ë ˆë²¨ì—… UIë¥¼ í‘œì‹œí•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable)
 	void ShowLevelUpUI();
 
-	// UI¸¦ ¼û±â°í ÀÏ½ÃÁ¤Áö¸¦ ÇØÁ¦ÇÏ´Â ÇÔ¼ö
+	// UIë¥¼ ìˆ¨ê¸°ê³  ì¼ì‹œì •ì§€ë¥¼ í•´ì œí•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable)
 	void CloseLevelUpUI();
 
 private:
 
-	// ·¹º§¾÷ º¸»ó UI À§Á¬ Å¬·¡½º
+	// ë ˆë²¨ì—… ë³´ìƒ UI ìœ„ì ¯ í´ë˜ìŠ¤
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 //	TSubclassOf<UUserWidget> LevelUpWidgetClass;
 
-	// ÇöÀç Ç¥½Ã ÁßÀÎ ·¹º§¾÷ UI À§Á¬ ÀÎ½ºÅÏ½º
+	// í˜„ì¬ í‘œì‹œ ì¤‘ì¸ ë ˆë²¨ì—… UI ìœ„ì ¯ ì¸ìŠ¤í„´ìŠ¤
 	// UPROPERTY()
 	// UUserWidget* LevelUpWidget;
 

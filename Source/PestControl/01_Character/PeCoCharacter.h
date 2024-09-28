@@ -17,12 +17,13 @@ public:
 
 	void Fire();
 
-
 protected:
 
 	// ~ Player Character Interface
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+	void RotateAim(FVector LookAtTarget);
 
 private:
 
