@@ -8,8 +8,8 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	MovementSpeed = 300.0f; //move speed
-	
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;//Set max move speed
+		
 	// Configure character movement
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction
