@@ -10,7 +10,9 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
@@ -58,6 +60,7 @@ void APeCoPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
+	PeCoPlayerController = Cast<APlayerController>(GetController());
 }
 
 
@@ -66,7 +69,16 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
+	if (PeCoPlayerController)
+	{
+		FHitResult HitResult;
+		PeCoPlayerController->GetHitResultUnderCursor(
+			ECollisionChannel::ECC_Visibility,
+			false,
+			HitResult);
 
+		RotateAim(HitResult.ImpactPoint);
+	}
 }
 
 
@@ -105,4 +117,5 @@ void APeCoPlayerCharacter::SetNewFireRate(float NewFireRate)
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
 }
+
 

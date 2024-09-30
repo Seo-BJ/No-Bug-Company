@@ -64,12 +64,12 @@ void APeCoPlayerController::ShowLevelUpUI()
 	{
 
 		
-		// ·¹º§¾÷ UI À§Á¬À» »ı¼ºÇÏ°í È­¸é¿¡ Ç¥½Ã
+		// ë ˆë²¨ì—… UI ìœ„ì ¯ì„ ìƒì„±í•˜ê³  í™”ë©´ì— í‘œì‹œ
 		LevelUpWidget = CreateWidget<UUserWidget>(this, LevelUpWidgetClass);
 		if (LevelUpWidget)
 		{
 			LevelUpWidget->AddToViewport();
-			// ¸¶¿ì½º Ä¿¼­ Ç¥½Ã (UI »óÈ£ÀÛ¿ëÀ» À§ÇØ)
+			// ë§ˆìš°ìŠ¤ ì»¤ì„œ í‘œì‹œ (UI ìƒí˜¸ì‘ìš©ì„ ìœ„í•´)
 			bShowMouseCursor = true;
 			SetInputMode(FInputModeUIOnly());
 		}
@@ -92,11 +92,11 @@ void APeCoPlayerController::CloseLevelUpUI()
 		LevelUpWidget->RemoveFromViewport();
 		LevelUpWidget = nullptr;
 
-		// ¸¶¿ì½º Ä¿¼­ ¼û±â°í °ÔÀÓÀ¸·Î µ¹¾Æ°¨
+		// ë§ˆìš°ìŠ¤ ì»¤ì„œ ìˆ¨ê¸°ê³  ê²Œì„ìœ¼ë¡œ ëŒì•„ê°
 		bShowMouseCursor = false;
 		SetInputMode(FInputModeGameOnly());
 
-		// °ÔÀÓ Àç°³
+		// ê²Œì„ ì¬ê°œ
 		SetPause(false);
 		
 		

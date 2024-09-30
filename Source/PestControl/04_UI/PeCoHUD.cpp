@@ -15,10 +15,10 @@ void APeCoHUD::DrawHUD()
 
 void APeCoHUD::InitOverlay(APlayerController* PC, APlayerState* PS)
 {
-	checkf(PlayerOverlayWidgetClass, TEXT("Overlay Widget Class°¡ ÃÊ±âÈ­ µÇÁö ¾ÊÀ½. BP_PeCOHUD ¿¡¼­ Overlay Widget Class¸¦ ¼³Á¤ÇØ¾ß ÇÕ´Ï´Ù."));
+	checkf(PlayerOverlayWidgetClass, TEXT("Overlay Widget Classê°€ ì´ˆê¸°í™” ë˜ì§€ ì•ŠìŒ. BP_PeCOHUD ì—ì„œ Overlay Widget Classë¥¼ ì„¤ì •í•´ì•¼ í•©ë‹ˆë‹¤."));
 
 	APeCoPlayerController* PeCoPC = Cast< APeCoPlayerController>(GetOwningPlayerController());
-	checkf(PeCoPC, TEXT("PeCo Player Controller °¡Á®¿À´Â °ÍÀ» ½ÇÆĞÇß½À´Ï´Ù."));
+	checkf(PeCoPC, TEXT("PeCo Player Controller ê°€ì ¸ì˜¤ëŠ” ê²ƒì„ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤."));
 
 	PlayerOverlayWidget = CreateWidget<UPlayerOverlay>(PeCoPC, PlayerOverlayWidgetClass);
 	PlayerOverlayWidget->AddToViewport();

@@ -14,7 +14,7 @@ APeCoPlayerState::APeCoPlayerState()
 
 void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
 {
-	// To do : KillCountAmount°¡ À½¼öÀÎ °æ¿ì 0À¸·Î ¼³Á¤ ?
+	// To do : KillCountAmountê°€ ìŒìˆ˜ì¸ ê²½ìš° 0ìœ¼ë¡œ ì„¤ì • ?
 	SetKillCount(GetKillCount() + KillCountAmount);
 	CheckLevelUp();
 }
@@ -34,18 +34,18 @@ void APeCoPlayerState::CheckLevelUp()
 {
     if (!LevelUpDataTable)
     {
-        UE_LOG(LogTemp, Warning, TEXT("·¹º§ ¾÷ µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½"));
+        UE_LOG(LogTemp, Warning, TEXT("ë ˆë²¨ ì—… ë°ì´í„° í…Œì´ë¸” ì—†ìŒ"));
         return;
     }
 
     static const FString ContextString(TEXT("Level Up Context"));
 
-    // ·¹º§¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ Å×ÀÌºíÀÇ ÇàÀ» Ã£±â
+    // ë ˆë²¨ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„° í…Œì´ë¸”ì˜ í–‰ì„ ì°¾ê¸°
     FLevelUpData* NextLevelData = LevelUpDataTable->FindRow<FLevelUpData>(FName(*FString::FromInt(CurrentLevel + 1)), ContextString, true);
 
     if (NextLevelData && KillCount >= NextLevelData->RequiredKillCount)
     {
-        // ·¹º§¾÷ Ã³¸®
+        // ë ˆë²¨ì—… ì²˜ë¦¬
         HandleLevelUp(CurrentLevel + 1);
     }
 }

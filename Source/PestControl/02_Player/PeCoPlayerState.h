@@ -43,12 +43,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LevelUp", meta = (AllowPrivateAccess = "true"))
 	UDataTable* LevelUpDataTable; 
-	// ·¹º§¾÷À» Ã³¸®ÇÏ´Â ÇÔ¼ö
+	// ë ˆë²¨ì—…ì„ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable)
 	void CheckLevelUp();
 
 
-	// ·¹º§¾÷ ½Ã ½ÇÇàµÇ´Â ÇÔ¼ö
+	// ë ˆë²¨ì—… ì‹œ ì‹¤í–‰ë˜ëŠ” í•¨ìˆ˜
 	void HandleLevelUp(int32 NewLevel);
 
 
