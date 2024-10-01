@@ -2,11 +2,14 @@
 
 
 #include "PeCoPlayerState.h"
+#include "00_GameModes/PeCoGameMode.h"
 
 #include "02_Player/PeCoPlayerController.h"
+
 #include "06_Data/PeCoDataRow.h"
 
 #include "Engine/DataTable.h"
+
 
 APeCoPlayerState::APeCoPlayerState()
 {
@@ -66,4 +69,49 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 
     }
 
+}
+
+void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
+	check(PeCoGameMode);
+	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetPawn()->GetController(), Damage);
+	float DamageToHealth = Damage;
+	/*
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+			Shield = 0.f;
+		}
+	}
+	*/
+
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+
+	// UpdateHUDHealth();
+	// UpdateHUDShield();
+	// PlayHitReactMontage();
+
+	if (Health <= 0.f)
+	{
+		PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
+		if (PeCoGameMode)
+		{
+			CharacterDie();
+		}
+	}
+
+}
+
+void APeCoPlayerState::CharacterDie()
+{
+	Destroy();
+	// To Do : 그 외 플레이어 사망 이벤트 처리
 }

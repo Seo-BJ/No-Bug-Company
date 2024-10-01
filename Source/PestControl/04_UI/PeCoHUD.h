@@ -28,6 +28,7 @@ protected:
 
 private:
 
+public : 
 
 	UPROPERTY()
 	TObjectPtr<UPlayerOverlay>  PlayerOverlayWidget;

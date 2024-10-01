@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "01_Character/PeCoCharacter.h"
+#include "01_Character/CombatInterface.h"
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
@@ -11,17 +12,16 @@
  * 
  */
 UCLASS()
-class PESTCONTROL_API APeCoEnemyCharacter : public APeCoCharacter
+class PESTCONTROL_API APeCoEnemyCharacter : public APeCoCharacter, public ICombatInterface
 {
 	GENERATED_BODY()
 
 public: 
+
 	APeCoEnemyCharacter();
 
-protected:
+	virtual ETeam GetTeam() override;
 	virtual void BeginPlay() override;
-
-public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Enemy")
@@ -29,5 +29,26 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	class UBehaviorTree* BehaviorTree;
+
+	//~ICombatInterface
+	virtual void ReceiveDamage(AActor* DamagedActor,
+		float Damage,
+		const UDamageType* DamageType,
+		AController* InstigatorController,
+		AActor* DamageCauser) override;
+
+	virtual void CharacterDie() override;
+	//~End of ICombatInterface
+
+	//~Enemy Stats
+	UPROPERTY(EditAnywhere, Category = "EnemyStats")
+	float Health;
+
+	UPROPERTY(EditAnywhere, Category = "EnemyStats")
+	float MaxHealth = 100;
+
+
+	//~End of Enemy Stats
+
 	
 };

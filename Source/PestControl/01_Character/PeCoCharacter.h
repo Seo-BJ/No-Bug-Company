@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "PeCoDataTypes.h"
 #include "PeCoCharacter.generated.h"
 
 UCLASS()
@@ -15,13 +16,21 @@ public:
 
 	APeCoCharacter();
 
+	//~ AActor Interface
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
+	//~End of AActor Interface
+
+
+	virtual ETeam GetTeam();
+
 	void Fire();
 
 protected:
 
-	// ~ Player Character Interface
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+
 
 	void RotateAim(FVector LookAtTarget);
 

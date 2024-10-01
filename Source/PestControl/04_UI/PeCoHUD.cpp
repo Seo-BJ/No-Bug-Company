@@ -23,4 +23,6 @@ void APeCoHUD::InitOverlay(APlayerController* PC, APlayerState* PS)
 	PlayerOverlayWidget = CreateWidget<UPlayerOverlay>(PeCoPC, PlayerOverlayWidgetClass);
 	PlayerOverlayWidget->AddToViewport();
 
+	// PlayerOverlayWidget->GetWidgetFromName
+
 }

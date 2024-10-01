@@ -18,6 +18,7 @@ public:
 	APeCoPlayerCharacter();
 
 	// Called every frame.
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Returns TopDownCameraComponent subobject **/
@@ -28,20 +29,18 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	// ~ End of Player Character Interface
 
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual ETeam GetTeam() override;
 
-public:
-
+protected:
 
 private:
-
-	virtual void BeginPlay() override;
 
 	void InitPlayerCharacter();
 	
 	void SetNewFireRate(float NewFireRate);
 
-private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;

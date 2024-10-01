@@ -5,11 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+
+
 #include "PeCoPlayerController.generated.h"
+
 
 class UUserWidget;
 class UInputMappingContext;
 class UInPutActionDataAsset;
+
+class APeCoHUD;
+class APeCoGameMode;
 
 UCLASS()
 class PESTCONTROL_API APeCoPlayerController : public APlayerController
@@ -18,15 +24,22 @@ class PESTCONTROL_API APeCoPlayerController : public APlayerController
 	
 	// ~Player Movement
 public:
-	void Move(const FInputActionValue& Value);
+	APeCoPlayerController();
 
+	//~AActor interface
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void SetupInputComponent() override;
+	//~End of AActor interface
 
 protected:
 
-	virtual void BeginPlay() override;
+
+	void Move(const FInputActionValue& Value);
+
 	
-	virtual void SetupInputComponent() override;
+	
 
 private:
 
@@ -53,7 +66,7 @@ private:
 
 	// 레벨업 보상 UI 위젯 클래스
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
-//	TSubclassOf<UUserWidget> LevelUpWidgetClass;
+	//	TSubclassOf<UUserWidget> LevelUpWidgetClass;
 
 	// 현재 표시 중인 레벨업 UI 위젯 인스턴스
 	// UPROPERTY()
@@ -61,4 +74,49 @@ private:
 
 
 	// ~End of Player Level Up 
+
+#pragma region Health, Exp Widget
+
+public:
+
+	void SetHUDHealthBar(float Health, float MaxHealth);
+	void SetHUDExpBar(float Exp, float MaxExp);
+
+protected:
+
+
+private:
+
+#pragma endregion
+#pragma region GameTime & TimerWidget
+
+public:
+
+protected:
+
+	// ~ Region Timer Widget
+	float TotalGameTime = 0.f;
+	float LevelStartingTime = 0.f;
+
+	// To do : 라운드 별 시간 추가?
+
+	void GetGameTimeData();
+	void SetHUDTime(float DeltaTime);
+	void SetHUDGameTimer(float CountdownTime);
+	// ~ End Region Timer Widget
+
+private:
+
+	uint32 CountdownInt = 0;
+
+#pragma endregion
+
+#pragma region Refrence Pointer
+private:
+	// HUD Class Reference
+	TObjectPtr<APeCoHUD> PeCoHUD = nullptr;
+
+	TObjectPtr<APeCoGameMode> PeCoGameMode = nullptr;
+
+#pragma endregion
 };
