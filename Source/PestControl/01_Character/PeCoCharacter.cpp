@@ -2,6 +2,9 @@
 
 
 #include "PeCoCharacter.h"
+#include "02_Player/PeCoPlayerState.h"
+
+
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "07_Weapon/Projectile.h"
@@ -23,7 +26,7 @@ APeCoCharacter::APeCoCharacter()
 void APeCoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -45,6 +48,11 @@ void APeCoCharacter::RotateAim(FVector LookAtTarget)
 			10.f)
 	);
 
+}
+
+ETeam APeCoCharacter::GetTeam()
+{
+	return ETeam::ET_Neutral;
 }
 
 void APeCoCharacter::Fire()

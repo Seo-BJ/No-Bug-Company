@@ -2,14 +2,80 @@
 
 
 #include "PeCoPlayerState.h"
+#include "00_GameModes/PeCoGameMode.h"
 
 #include "02_Player/PeCoPlayerController.h"
+
+#include "04_UI/PeCoHUD.h"
+
 #include "06_Data/PeCoDataRow.h"
 
 #include "Engine/DataTable.h"
 
+
 APeCoPlayerState::APeCoPlayerState()
 {
+}
+
+void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
+	check(PeCoGameMode);
+	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetPawn()->GetController(), Damage);
+	float DamageToHealth = Damage;
+	/*
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+			Shield = 0.f;
+		}
+	}
+	*/
+
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
+	PeCoPlayerController->SetHUDHealthBar(Health, MaxHealth);
+	// UpdateHUDShield();
+	// PlayHitReactMontage();
+
+	if (Health <= 0.f)
+	{
+		PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
+		if (PeCoGameMode)
+		{
+			CharacterDie();
+		}
+	}
+
+}
+void APeCoPlayerState::UpdateHUDHealth()
+{
+	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController; //Allow us to not cast multiple time
+	if (PeCoPlayerController)
+	{
+		PeCoPlayerController->SetHUDHealthBar(Health, MaxHealth);
+	}
+}
+void APeCoPlayerState::CharacterDie()
+{
+	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
+	if (PeCoPlayerController)
+	{
+		APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCoPlayerController->GetHUD());
+		if (PeCoHUD)
+		{
+			PeCoHUD->AddGameOverWidget();
+		}
+	}
+
+	// To Do : 그 외 플레이어 사망 이벤트 처리
 }
 
 void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
@@ -18,12 +84,10 @@ void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
 	SetKillCount(GetKillCount() + KillCountAmount);
 	CheckLevelUp();
 }
-
 int32 APeCoPlayerState::GetKillCount()
 {
 	return KillCount;
 }
-
 void APeCoPlayerState::SetKillCount(int32 KillCountAmount)
 {
 	KillCount = KillCountAmount;
@@ -49,7 +113,6 @@ void APeCoPlayerState::CheckLevelUp()
         HandleLevelUp(CurrentLevel + 1);
     }
 }
-
 void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 {
     CurrentLevel = NewLevel;
@@ -57,13 +120,21 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
    
     if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
     {
-        APeCoPlayerController* PeCoPlayerController = Cast<APeCoPlayerController>(PC);
+		PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController; //Allow us to not cast multiple time
         if (PeCoPlayerController)
         {
             PeCoPlayerController->SetPause(true);
-            // PC->ShowLevelUpUI();
+			PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
+		
+			APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCoPlayerController->GetHUD());
+			if (PeCoHUD)
+			{
+				PeCoHUD->AddLevelUpWidget();
+			}
+			
         }
 
     }
 
 }
+

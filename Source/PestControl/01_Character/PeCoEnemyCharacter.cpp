@@ -2,6 +2,8 @@
 
 
 #include "01_Character/PeCoEnemyCharacter.h"
+#include "00_GameModes/PeCoGameMode.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
@@ -21,9 +23,62 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 void APeCoEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	OnTakeAnyDamage.AddDynamic(this, &APeCoEnemyCharacter::ReceiveDamage);
+}
+
+ETeam APeCoEnemyCharacter::GetTeam()
+{
+	return Team;
 }
 
 void APeCoEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
+	check(PeCoGameMode);
+	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), Damage);
+	float DamageToHealth = Damage;
+	/*
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+			Shield = 0.f;
+		}
+	}
+	*/
+
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+
+	// To Do
+	// UpdateHUDHealth();
+	// UpdateHUDShield();
+	// PlayHitReactMontage();
+
+	if (Health <= 0.f)
+	{
+		PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
+		if (PeCoGameMode)
+		{
+			CharacterDie();
+		}
+	}
+
+}
+
+void APeCoEnemyCharacter::CharacterDie()
+{
+	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
+	// To Do : PeCoGameMode -> EnemyEliminated Ãß°¡
+	Destroy();
 }

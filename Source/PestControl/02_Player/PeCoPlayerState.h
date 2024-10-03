@@ -4,30 +4,49 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "01_Character/CombatInterface.h"
+
 #include "PeCoPlayerState.generated.h"
 
 class UDataTable;
+class APeCoGameMode;
+class APeCoPlayerController;
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API APeCoPlayerState : public APlayerState
+class PESTCONTROL_API APeCoPlayerState : public APlayerState, public ICombatInterface
 {
 	GENERATED_BODY()
-
-
 
 public:
 
 	APeCoPlayerState();
 
-	// ~ Player Stats
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	//~ICombatInterface
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+		AController* InstigatorController, AActor* DamageCauser) override;
+
+	virtual void CharacterDie() override;
+	//~End of ICombatInterface
+
+
+	//~Player Stats
+	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float Health;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float MaxHealth = 100;
+
+	void UpdateHUDHealth();
 		
+	/*
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float Shield;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float Maxshield = 100;
+	*/
 
 	UFUNCTION(BlueprintCallable)
 	void AddToKillCount(int32 KillCountAmount);
@@ -50,13 +69,13 @@ public:
 
 	// 레벨업 시 실행되는 함수
 	void HandleLevelUp(int32 NewLevel);
-
-
-
-protected:
+	//~End of Player Stats
 
 private:
+
 	UPROPERTY()
 	int32 KillCount = 0;
-	
+
+	TObjectPtr<APeCoGameMode> PeCoGameMode = nullptr;
+	TObjectPtr<APeCoPlayerController> PeCoPlayerController = nullptr;
 };

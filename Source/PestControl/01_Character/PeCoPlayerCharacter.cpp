@@ -2,22 +2,24 @@
 
 
 #include "01_Character/PeCoPlayerCharacter.h"
-#include "UObject/ConstructorHelpers.h"
-#include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/PlayerController.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Materials/Material.h"
-#include "Kismet/GameplayStatics.h"
-#include "Engine/World.h"
-
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
 
 #include "04_UI/PeCoHUD.h"
+
+#include "Components/DecalComponent.h"
+#include "Components/CapsuleComponent.h"
+
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
+
+#include "Materials/Material.h"
+#include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Camera/CameraComponent.h"
+#include "Engine/World.h"
 
 APeCoPlayerCharacter::APeCoPlayerCharacter()
 {
@@ -59,6 +61,10 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 void APeCoPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
+	OnTakeAnyDamage.AddDynamic(PeCoPlayerState, &APeCoPlayerState::ReceiveDamage);
+
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
 	PeCoPlayerController = Cast<APlayerController>(GetController());
 }
@@ -87,6 +93,13 @@ void APeCoPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+ETeam APeCoPlayerCharacter::GetTeam()
+{
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
+	check(PeCoPlayerState);
+	return PeCoPlayerState->Team;
 }
 
 
