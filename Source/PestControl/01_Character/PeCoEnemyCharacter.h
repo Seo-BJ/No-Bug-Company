@@ -21,6 +21,7 @@ public:
 	APeCoEnemyCharacter();
 
 	virtual ETeam GetTeam() override;
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -29,6 +30,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	class UBehaviorTree* BehaviorTree;
+
 
 	//~ICombatInterface
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
@@ -47,6 +49,5 @@ private:
 
 
 	//~End of Enemy Stats
-
 	
 };
