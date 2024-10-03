@@ -21,8 +21,6 @@
 
 #include "07_Weapon/Projectile.h"
 
-class PestShotgun;
-
 APeCoPlayerCharacter::APeCoPlayerCharacter()
 {
 	// Set size for player capsule

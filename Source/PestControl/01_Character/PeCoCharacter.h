@@ -13,7 +13,6 @@ class PESTCONTROL_API APeCoCharacter : public ACharacter
 
 public:
 
-
 	APeCoCharacter();
 
 	void Fire();
