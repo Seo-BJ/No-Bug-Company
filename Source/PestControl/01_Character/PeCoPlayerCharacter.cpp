@@ -19,6 +19,10 @@
 
 #include "04_UI/PeCoHUD.h"
 
+#include "07_Weapon/Projectile.h"
+
+class PestShotgun;
+
 APeCoPlayerCharacter::APeCoPlayerCharacter()
 {
 	// Set size for player capsule
@@ -59,10 +63,9 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 void APeCoPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoPlayerCharacter::FireWeapon, FireRate, true);
 	PeCoPlayerController = Cast<APlayerController>(GetController());
 }
-
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
@@ -118,4 +121,30 @@ void APeCoPlayerCharacter::SetNewFireRate(float NewFireRate)
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
 }
 
+void APeCoPlayerCharacter::FireWeapon()
+{
 
+	float SpreadAngle = 15.f;
+	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
+
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, Rotation);
+
+	float NumberOfProjectiles = 5;
+
+	for (int32 i = 0; i < NumberOfProjectiles - 1; ++i)
+	{
+		FRotator SpreadRotation = Rotation;
+		float SpreadOffset = (i - NumberOfProjectiles / 2) * SpreadAngle;
+		SpreadRotation.Yaw += SpreadOffset;
+
+		if (PestShotgunProjectileClass)
+		{
+			AProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, SpreadRotation);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Projectile class is null"));
+		}
+	}
+}
