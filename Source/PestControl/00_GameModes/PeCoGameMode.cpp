@@ -23,6 +23,10 @@ void APeCoGameMode::Tick(float DeltaTime)
 
 float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
 {
+	if (Attacker == nullptr || Victim == nullptr)
+	{
+		return BaseDamage;
+	}
 	APawn* AttackerPawn = Attacker->GetPawn();
 	APawn* VictimPawn = Victim->GetPawn();
 	if (AttackerPawn && VictimPawn)

@@ -60,6 +60,7 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 
+	// To Do
 	// UpdateHUDHealth();
 	// UpdateHUDShield();
 	// PlayHitReactMontage();

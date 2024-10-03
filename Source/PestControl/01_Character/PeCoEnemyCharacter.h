@@ -31,15 +31,13 @@ public:
 	class UBehaviorTree* BehaviorTree;
 
 	//~ICombatInterface
-	virtual void ReceiveDamage(AActor* DamagedActor,
-		float Damage,
-		const UDamageType* DamageType,
-		AController* InstigatorController,
-		AActor* DamageCauser) override;
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+		AController* InstigatorController, AActor* DamageCauser) override;
 
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
 
+private:
 	//~Enemy Stats
 	UPROPERTY(EditAnywhere, Category = "EnemyStats")
 	float Health;

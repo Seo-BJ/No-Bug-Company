@@ -23,14 +23,11 @@ public:
 
 	//~End of AActor Interface
 
-
 	virtual ETeam GetTeam();
 
 	void Fire();
 
 protected:
-
-
 
 	void RotateAim(FVector LookAtTarget);
 

@@ -10,6 +10,7 @@
 
 class UDataTable;
 class APeCoGameMode;
+class APeCoPlayerController;
 /**
  * 
  */
@@ -22,12 +23,22 @@ public:
 
 	APeCoPlayerState();
 
+	//~ICombatInterface
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+		AController* InstigatorController, AActor* DamageCauser) override;
+
+	virtual void CharacterDie() override;
+	//~End of ICombatInterface
+
+
 	//~Player Stats
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float Health;
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float MaxHealth = 100;
+
+	void UpdateHUDHealth();
 		
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -37,9 +48,6 @@ public:
 	float Maxshield = 100;
 	*/
 
-
-	//~End of Player Stats
-	
 	UFUNCTION(BlueprintCallable)
 	void AddToKillCount(int32 KillCountAmount);
 
@@ -61,21 +69,7 @@ public:
 
 	// 레벨업 시 실행되는 함수
 	void HandleLevelUp(int32 NewLevel);
-
-	//~ICombatInterface
-	virtual void ReceiveDamage(AActor* DamagedActor,
-		float Damage,
-		const UDamageType* DamageType,
-		AController* InstigatorController,
-		AActor* DamageCauser) override;
-
-	virtual void CharacterDie() override;
-	//~End of ICombatInterface
-
-
-
-protected:
-
+	//~End of Player Stats
 
 private:
 
@@ -83,5 +77,5 @@ private:
 	int32 KillCount = 0;
 
 	TObjectPtr<APeCoGameMode> PeCoGameMode = nullptr;
-	
+	TObjectPtr<APeCoPlayerController> PeCoPlayerController = nullptr;
 };

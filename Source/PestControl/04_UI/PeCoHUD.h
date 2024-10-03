@@ -7,6 +7,8 @@
 #include "PeCoHUD.generated.h"
 
 class UPlayerOverlay;
+class UPeCoUserWidget;
+class APlayerController;
 /**
  * 
  */
@@ -18,21 +20,42 @@ class PESTCONTROL_API APeCoHUD : public AHUD
 public :
 
 	virtual void DrawHUD() override;
-
 	void InitOverlay(APlayerController* PC, APlayerState* PS);
 
+	void AddLevelUpWidget();
+	void AddGameOverWidget();
+	UFUNCTION(BlueprintCallable)
+	void AddGameResultWidget();
 
+	
 
-protected:
 
 
 private:
 
-public : 
+	TObjectPtr<UPeCoUserWidget>  LevelUpWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPeCoUserWidget> LevelUpWidgetClass;
 
-	UPROPERTY()
+	TObjectPtr<UPeCoUserWidget>  GameOverWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPeCoUserWidget>  GameOverWidgetClass;
+
+
+	TObjectPtr<UPeCoUserWidget>  GameResultWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPeCoUserWidget>  GameResultWidgetClass;
+
+
 	TObjectPtr<UPlayerOverlay>  PlayerOverlayWidget;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPlayerOverlay> PlayerOverlayWidgetClass;
 
+	TObjectPtr<APlayerController> OwningPlayerController;
+
+public:
+	
+	FORCEINLINE UPlayerOverlay* GetPlayerOverlayWidget() { return PlayerOverlayWidget; }
+
 };
+ 

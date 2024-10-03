@@ -69,97 +69,60 @@ void APeCoPlayerController::SetupInputComponent()
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	Subsystem->ClearAllMappings();
 	Subsystem->AddMappingContext(InputMappingContextMove, 0);
-
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(InputComponent);
-
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
 }
 
 
-void APeCoPlayerController::ShowLevelUpUI()
+void APeCoPlayerController::Move(const FInputActionValue& Value)
 {
-	
-	/*
-	if (LevelUpWidgetClass && !LevelUpWidget)
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	const FRotator	Rotation = GetControlRotation();
+	const FRotator	YawRotation(0, Rotation.Yaw, 0);
+
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	if (GetPawn())
 	{
-
-		
-		// 레벨업 UI 위젯을 생성하고 화면에 표시
-		LevelUpWidget = CreateWidget<UUserWidget>(this, LevelUpWidgetClass);
-		if (LevelUpWidget)
-		{
-			LevelUpWidget->AddToViewport();
-			// 마우스 커서 표시 (UI 상호작용을 위해)
-			bShowMouseCursor = true;
-			SetInputMode(FInputModeUIOnly());
-		}
-		
-		
-	
+		GetPawn()->AddMovementInput(ForwardDirection, MovementVector.Y);
+		GetPawn()->AddMovementInput(RightDirection, MovementVector.X);
 	}
-	
-	*/
 
-
-}
-
-void APeCoPlayerController::CloseLevelUpUI()
-{
-	/*
-	if (LevelUpWidget)
-	{
-		
-		LevelUpWidget->RemoveFromViewport();
-		LevelUpWidget = nullptr;
-
-		// 마우스 커서 숨기고 게임으로 돌아감
-		bShowMouseCursor = false;
-		SetInputMode(FInputModeGameOnly());
-
-		// 게임 재개
-		SetPause(false);
-		
-		
-		
-		
-	}
-	
-	*/
 }
 
 void APeCoPlayerController::SetHUDHealthBar(float Health, float MaxHealth)
 {
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	bool bHUDValid = PeCoHUD
-		&& PeCoHUD->PlayerOverlayWidget
-		&& PeCoHUD->PlayerOverlayWidget->HealthBar
-		&& PeCoHUD->PlayerOverlayWidget->HealthBar->ProgressBar;
+		&& PeCoHUD->GetPlayerOverlayWidget()
+		&& PeCoHUD->GetPlayerOverlayWidget()->HealthBar
+		&& PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar;
 	if (bHUDValid)
 	{
 		const float HealthPercent = Health / MaxHealth;
-		PeCoHUD->PlayerOverlayWidget->HealthBar->ProgressBar->SetPercent(HealthPercent);
+		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
-		PeCoHUD->PlayerOverlayWidget->HealthBar->Text->SetText(FText::FromString(HealthText));
+		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
 	}
 }
-
 void APeCoPlayerController::SetHUDExpBar(float Exp, float MaxExp)
 {
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	bool bHUDValid = PeCoHUD
-		&& PeCoHUD->PlayerOverlayWidget
-		&& PeCoHUD->PlayerOverlayWidget->ExpBar
-		&& PeCoHUD->PlayerOverlayWidget->ExpBar->ProgressBar;
+		&& PeCoHUD->GetPlayerOverlayWidget()
+		&& PeCoHUD->GetPlayerOverlayWidget()->ExpBar
+		&& PeCoHUD->GetPlayerOverlayWidget()->ExpBar->ProgressBar;
 	if (bHUDValid)
 	{
 		const float HealthPercent = Exp / MaxExp;
-		PeCoHUD->PlayerOverlayWidget->HealthBar->ProgressBar->SetPercent(HealthPercent);
+		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Exp), FMath::CeilToInt(MaxExp));
-		PeCoHUD->PlayerOverlayWidget->HealthBar->Text->SetText(FText::FromString(HealthText));
+		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
 	}
 }
-
-
 
 void APeCoPlayerController::GetGameTimeData()
 {
@@ -193,34 +156,21 @@ void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 {
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	bool bHUDValid = PeCoHUD 
-		&& PeCoHUD->PlayerOverlayWidget 
-		&& PeCoHUD->PlayerOverlayWidget->GameTimer
-		&& PeCoHUD->PlayerOverlayWidget->GameTimer->GameTimer;
+		&& PeCoHUD->GetPlayerOverlayWidget()
+		&& PeCoHUD->GetPlayerOverlayWidget()->GameTimer
+		&& PeCoHUD->GetPlayerOverlayWidget()->GameTimer->GameTimer;
 	if (bHUDValid)
 	{
 		if (CountdownTime < 0.f) // While Transition, it set as negative value
 		{
-			PeCoHUD->PlayerOverlayWidget->GameTimer->GameTimer->SetText((FText()));
+			PeCoHUD->GetPlayerOverlayWidget()->GameTimer->GameTimer->SetText((FText()));
 			return;
 		}
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60;
 		FString CountdownText = FString::Printf(TEXT("%02d : %02d"), Minutes, Seconds);
-		PeCoHUD->PlayerOverlayWidget->GameTimer->GameTimer->SetText(FText::FromString(CountdownText));
+		PeCoHUD->GetPlayerOverlayWidget()->GameTimer->GameTimer->SetText(FText::FromString(CountdownText));
 	}
 }
 
-void APeCoPlayerController::Move(const FInputActionValue& Value)
-{
-	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	const FRotator	Rotation = GetControlRotation();
-	const FRotator	YawRotation(0, Rotation.Yaw, 0);
-
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-	GetPawn()->AddMovementInput(ForwardDirection, MovementVector.Y);
-	GetPawn()->AddMovementInput(RightDirection, MovementVector.X);	
-}

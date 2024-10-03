@@ -26,3 +26,31 @@ void APeCoHUD::InitOverlay(APlayerController* PC, APlayerState* PS)
 	// PlayerOverlayWidget->GetWidgetFromName
 
 }
+
+void APeCoHUD::AddLevelUpWidget()
+{
+	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+	if (OwningPlayerController && LevelUpWidgetClass)
+	{
+		LevelUpWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, LevelUpWidgetClass);
+		LevelUpWidget->AddToViewport();
+	}
+}
+void APeCoHUD::AddGameOverWidget()
+{
+	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+	if (OwningPlayerController && GameOverWidgetClass)
+	{
+		GameOverWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, GameOverWidgetClass);
+		GameOverWidget->AddToViewport();
+	}
+}
+void APeCoHUD::AddGameResultWidget()
+{
+	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+	if (OwningPlayerController && GameResultWidgetClass)
+	{
+		GameResultWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, GameResultWidgetClass);
+		GameResultWidget->AddToViewport();
+	}
+}
