@@ -3,6 +3,7 @@
 
 #include "07_Weapon/Projectile.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,7 +28,6 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-	
 }
 
 
@@ -49,6 +49,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	}
 
 	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
-
 	Destroy();
 }
+

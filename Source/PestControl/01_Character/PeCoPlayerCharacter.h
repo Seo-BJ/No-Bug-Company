@@ -33,8 +33,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
-protected:
-
 private:
 
 	void InitPlayerCharacter();
@@ -52,9 +50,14 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float FireRate;
 
+	void FireWeapon();
+
 	FTimerHandle TimerHandle;
 	float TimerInterval;
 
 	APlayerController* PeCoPlayerController;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
+	TSubclassOf<class AProjectile> PestShotgunProjectileClass;
 
 };
