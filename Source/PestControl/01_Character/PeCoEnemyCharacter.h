@@ -19,6 +19,22 @@ public:
 	APeCoEnemyCharacter();
 
 protected:
+
+	// health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float Health;
+
+	// Max health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHealth;
+
+	//UFUNCTION(BlueprintCallable, Category = "Health")
+	//void TakeDamage(float DamageAmount);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Die();
+	
+	//called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
@@ -29,5 +45,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	class UBehaviorTree* BehaviorTree;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 };

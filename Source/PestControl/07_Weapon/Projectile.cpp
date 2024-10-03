@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
+#include "01_Character/PeCoEnemyCharacter.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -50,5 +51,18 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 
 	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
 
-	Destroy();
+	// Damage to EnemyCharacter
+	if (OtherActor && OtherActor != this && OtherActor != MyOwner)
+	{
+		
+		APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
+		if (HitEnemy)
+		{
+			UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
+		}
+
+	
+		Destroy();
+	}
+
 }
