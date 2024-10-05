@@ -18,6 +18,9 @@ public:
 	UInputAction* InputActionMove;
 
 	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InputActionDash;
+
+	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* InputActionItem;
 
 	UPROPERTY(EditAnywhere, Category = Input)

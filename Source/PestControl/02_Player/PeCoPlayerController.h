@@ -41,6 +41,11 @@ public:
 protected:
 
 	void Move(const FInputActionValue& Value);
+	void Dash(const FInputActionValue& Value);
+	void ResetDash();
+
+	FVector2D CurrentMoveDirection;
+
 
 	// ~ Region Timer Widget
 	float TotalGameTime = 0.f;
@@ -65,6 +70,15 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInPutActionDataAsset* InputActions;
 
+	UPROPERTY(EditAnywhere, Category = "Dash")
+	float DashDistance = 600.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Dash")
+	float DashCooldown = 2.0f;
+
+	FTimerHandle DashTimer;
+
+	bool bCanDash = true;
 	// ~End of Player Movement
 
 		// HUD Class Reference
