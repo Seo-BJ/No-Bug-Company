@@ -23,6 +23,7 @@
 
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Components/TextBlock.h"
@@ -102,20 +103,30 @@ void APeCoPlayerController::Dash(const FInputActionValue& Value)
 
 	if (bCanDash && !CurrentMoveDirection.IsNearlyZero())
 	{
-		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal() * DashDistance;
+		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal();
 		ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
-
 		if (ControlledCharacter)
 		{
-			ControlledCharacter->LaunchCharacter(DashDirection, true, true);
-		}
-
-		bCanDash = false;
-		GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashCooldown, false);
+			DashDistance = DashDirection * (DashVelocity * DashDuration);
+			ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = DashDistance.Size();
+			bCanDash = false;
+			GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashDuration, false);
+		}	
 	}
 }
 
 void APeCoPlayerController::ResetDash()
+{
+	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
+
+	if (ControlledCharacter)
+	{
+		ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.f; 
+	}
+	GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::CoolDownDash, DashCooldown, false);
+}
+
+void APeCoPlayerController::CoolDownDash()
 {
 	bCanDash = true;
 }
