@@ -2,6 +2,7 @@
 
 
 #include "01_Character/PeCoPlayerCharacter.h"
+#include "01_Character/PeCoEnemyCharacter.h"
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
@@ -60,6 +61,10 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	FireRate = 2.0f;
+
+	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
+
+	 bIsInvincible = false;
 }
 
 
@@ -72,6 +77,8 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoPlayerCharacter::FireWeapon, FireRate, true);
 	PeCoPlayerController = Cast<APlayerController>(GetController());
+
+	UE_LOG(LogTemp, Warning, TEXT("health: %f"), PeCoPlayerState->Health);
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -161,4 +168,28 @@ void APeCoPlayerCharacter::FireWeapon()
 			UE_LOG(LogTemp, Warning, TEXT("Projectile class is null"));
 		}
 	}
+}
+
+void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!bIsInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
+	{
+		UGameplayStatics::ApplyDamage(this, CrashDamage, nullptr, nullptr, nullptr);
+		
+		BecomeInvincible(CrashInvincibleDuration); 
+	}
+}
+
+void APeCoPlayerCharacter::BecomeInvincible(float InvincibleDuration)
+{
+	bIsInvincible = true;
+	UE_LOG(LogTemp, Warning, TEXT("Player is now invincible!"));
+
+	GetWorld()->GetTimerManager().SetTimer(InvincibilityTimerHandle, this, &APeCoPlayerCharacter::EndInvincible, InvincibleDuration, false);
+}
+
+void APeCoPlayerCharacter::EndInvincible()
+{
+	bIsInvincible = false;
+	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }

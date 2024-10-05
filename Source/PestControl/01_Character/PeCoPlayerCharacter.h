@@ -60,4 +60,26 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
 	TSubclassOf<class AProjectile> PestShotgunProjectileClass;
 
+public:
+	//~Player Crash damage
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	//~ Become InvicibleState
+	UPROPERTY(EditAnywhere, Category = "Crash Invincible")
+	float CrashDamage = 10.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Crash Invincible")
+	float CrashInvincibleDuration = 3.0f;
+	//~End of Player Crash damage
+
+	void BecomeInvincible(float InvincibleDuration);
+
+	void EndInvincible();
+
+protected:
+	bool bIsInvincible;
+
+	FTimerHandle InvincibilityTimerHandle;
+	//~End of InvincibleSta
 };
