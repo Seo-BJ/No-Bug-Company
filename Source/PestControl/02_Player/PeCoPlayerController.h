@@ -43,6 +43,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Dash(const FInputActionValue& Value);
 	void ResetDash();
+	void CoolDownDash();
 
 	FVector2D CurrentMoveDirection;
 
@@ -71,14 +72,18 @@ private:
 	UInPutActionDataAsset* InputActions;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
-	float DashDistance = 600.0f;
+	float DashVelocity = 4000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
 	float DashCooldown = 2.0f;
 
-	FTimerHandle DashTimer;
+	UPROPERTY(EditAnywhere, Category = "Dash")
+	float DashDuration = 0.4f;
 
 	bool bCanDash = true;
+	FTimerHandle DashTimer;
+	FVector DashDistance;
+
 	// ~End of Player Movement
 
 		// HUD Class Reference
