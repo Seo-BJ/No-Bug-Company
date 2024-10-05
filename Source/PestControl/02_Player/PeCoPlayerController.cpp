@@ -22,6 +22,7 @@
 
 
 #include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Components/TextBlock.h"
@@ -71,12 +72,15 @@ void APeCoPlayerController::SetupInputComponent()
 	Subsystem->AddMappingContext(InputMappingContextMove, 0);
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(InputComponent);
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
+	PEI->BindAction(InputActions->InputActionDash, ETriggerEvent::Triggered, this, &APeCoPlayerController::Dash);
 }
 
 
 void APeCoPlayerController::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	CurrentMoveDirection = MovementVector;
 
 	const FRotator	Rotation = GetControlRotation();
 	const FRotator	YawRotation(0, Rotation.Yaw, 0);
@@ -87,10 +91,33 @@ void APeCoPlayerController::Move(const FInputActionValue& Value)
 
 	if (GetPawn())
 	{
-		GetPawn()->AddMovementInput(ForwardDirection, MovementVector.Y);
-		GetPawn()->AddMovementInput(RightDirection, MovementVector.X);
+		GetPawn()->AddMovementInput(ForwardDirection, MovementVector.X);
+		GetPawn()->AddMovementInput(RightDirection, MovementVector.Y);
 	}
 
+}
+
+void APeCoPlayerController::Dash(const FInputActionValue& Value)
+{
+
+	if (bCanDash && !CurrentMoveDirection.IsNearlyZero())
+	{
+		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal() * DashDistance;
+		ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
+
+		if (ControlledCharacter)
+		{
+			ControlledCharacter->LaunchCharacter(DashDirection, true, true);
+		}
+
+		bCanDash = false;
+		GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashCooldown, false);
+	}
+}
+
+void APeCoPlayerController::ResetDash()
+{
+	bCanDash = true;
 }
 
 void APeCoPlayerController::SetHUDHealthBar(float Health, float MaxHealth)
