@@ -6,6 +6,7 @@
 #include "01_Character/PeCoCharacter.h"
 #include "PeCoPlayerCharacter.generated.h"
 
+class UInventoryComponent;
 /**
  * 
  */
@@ -29,7 +30,8 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	// ~ End of Player Character Interface
 
-	
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
