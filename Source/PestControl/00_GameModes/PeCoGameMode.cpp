@@ -33,12 +33,14 @@ float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 	{
 		APeCoCharacter* AttackerCharacter = Cast<APeCoCharacter>(AttackerPawn);
 		APeCoCharacter* VictimCharacter = Cast<APeCoCharacter>(VictimPawn);
+		
 		if (AttackerCharacter == VictimCharacter)
 		{
 			return BaseDamage;
 		}
 		if (AttackerCharacter->GetTeam() == VictimCharacter->GetTeam())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Same team, setting damage to 0"));
 			return 0.f;
 		}
 		

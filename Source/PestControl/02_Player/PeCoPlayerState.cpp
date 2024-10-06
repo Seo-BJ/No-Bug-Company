@@ -78,6 +78,12 @@ void APeCoPlayerState::CharacterDie()
 	// To Do : 그 외 플레이어 사망 이벤트 처리
 }
 
+void APeCoPlayerState::SetTeam(ETeam NewTeam)
+{
+	Team = NewTeam;
+	//UE_LOG(LogTemp, Warning, TEXT("Team set to: %d"), static_cast<int32>(Team));
+}
+
 void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
 {
 	// To do : KillCountAmount가 음수인 경우 0으로 설정 ?
