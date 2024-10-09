@@ -118,6 +118,16 @@ void APeCoPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	InitPlayerCharacter();
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
+	if (PeCoPlayerState)
+	{
+		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerState is nullptr in APeCoPlayerCharacter PossessedBy!"));
+	}
+
 }
 
 
@@ -149,7 +159,14 @@ void APeCoPlayerCharacter::FireWeapon()
 	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
 	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
 
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, Rotation);
+	if (PestShotgunProjectileClass)
+	{
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, Rotation);
+		if (Projectile)
+		{
+			Projectile->SetOwner(this);  // Set Owner of Projectile -> PeCoPlayerCharacter
+		}
+	}
 
 	float NumberOfProjectiles = 5;
 
@@ -162,6 +179,10 @@ void APeCoPlayerCharacter::FireWeapon()
 		if (PestShotgunProjectileClass)
 		{
 			AProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, SpreadRotation);
+			if (SpawnedProjectile)
+			{
+				SpawnedProjectile->SetOwner(this);  // Set Owner of Projectile -> PeCoPlayerCharacter
+			}
 		}
 		else
 		{

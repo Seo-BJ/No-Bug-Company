@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "01_Character/CombatInterface.h"
-
+#include "PeCoDataTypes.h"
 #include "PeCoPlayerState.generated.h"
 
 class UDataTable;
@@ -39,7 +39,15 @@ public:
 	float MaxHealth = 100;
 
 	void UpdateHUDHealth();
-		
+
+	//  Property to store team information
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
+	ETeam Team;  // Using ETeam defined in PeCoDataTypes.h
+
+	// Function to set the team
+	UFUNCTION(BlueprintCallable)
+	void SetTeam(ETeam NewTeam);
+
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float Shield;
