@@ -11,13 +11,13 @@
 
 #include "21_Data/PeCoDataRow.h"
 
-#include "Engine/DataTable.h"
+#include "Engine/CurveTable.h"
 
 
 APeCoPlayerState::APeCoPlayerState()
 {
-
 	Health = MaxHealth;
+	SetTeam(ETeam::ET_Player);
 }
 
 void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -93,16 +93,13 @@ void APeCoPlayerState::CharacterDie()
 	// To Do: 추가 Death Event 처리
 }
 
-void APeCoPlayerState::SetTeam(ETeam NewTeam)
-{
-	Team = NewTeam;
-	//UE_LOG(LogTemp, Warning, TEXT("Team set to: %d"), static_cast<int32>(Team));
-}
+
 
 void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
 {
 	// To do : KillCountAmount가 음수인 경우 0으로 설정 ?
 	SetKillCount(GetKillCount() + KillCountAmount);
+	OnExpChanged.Broadcast(GetCurrentLevelKillCount(Level, KillCount));
 	CheckLevelUp();
 }
 int32 APeCoPlayerState::GetKillCount()
@@ -117,28 +114,34 @@ void APeCoPlayerState::SetKillCount(int32 KillCountAmount)
 
 void APeCoPlayerState::CheckLevelUp()
 {
-    if (!LevelUpDataTable)
+    if (!LevelUpCurveTable)
     {
-        UE_LOG(LogTemp, Warning, TEXT("레벨 업 데이터 테이블 없음"));
+        UE_LOG(LogTemp, Warning, TEXT("레벨 업 커브 테이블 없음"));
         return;
     }
+	FName RowName = FName("PlayerLevelUpCurve");
+	FRealCurve* LevelCurve = LevelUpCurveTable->FindCurve(RowName, TEXT(""));
+	if (!LevelCurve)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("커브 테이블에서 PlayerLevelUpCurve를 찾지 못함!"));
+		return;
+	}
 
-    static const FString ContextString(TEXT("Level Up Context"));
+	uint32 CurrentLevel = Level;
+	uint32 CurrentKillCount = KillCount;
 
-    // 레벨에 해당하는 데이터 테이블의 행을 찾기
-    FLevelUpData* NextLevelData = LevelUpDataTable->FindRow<FLevelUpData>(FName(*FString::FromInt(CurrentLevel + 1)), ContextString, true);
+	float RequiredExperience = LevelCurve->Eval(Level);
 
-    if (NextLevelData && KillCount >= NextLevelData->RequiredKillCount)
-    {
-        // 레벨업 처리
-        HandleLevelUp(CurrentLevel + 1);
-    }
+	if (GetCurrentLevelKillCount(CurrentLevel, CurrentKillCount) >= RequiredExperience)
+	{
+		HandleLevelUp(CurrentLevel + 1);
+	}
+    
+    
 }
 void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 {
-    CurrentLevel = NewLevel;
-    UE_LOG(LogTemp, Log, TEXT("Level Up! New Level: %d"), CurrentLevel);
-   
+    Level = NewLevel;
     if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
     {
 		PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController; //Allow us to not cast multiple time
@@ -151,11 +154,52 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 			if (PeCoHUD)
 			{
 				PeCoHUD->AddLevelUpWidget();
+				OnLevelChanged.Broadcast(Level);
 			}
-			
         }
-
     }
+}
 
+uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount)
+{
+	if (!LevelUpCurveTable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("레벨 업 커브 테이블 없음"));
+		return 0;
+	}
+	float AccumulatedKillCount = 0.0f; 
+	for (uint32 LevelIndex = 1; LevelIndex < CurrentLevel; ++LevelIndex)
+	{
+		FName RowName = FName("PlayerLevelUpCurve"); 
+		FRealCurve* LevelCurve = LevelUpCurveTable->FindCurve(RowName, TEXT(""));
+		if (!LevelCurve)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("커브 테이블에서 PlayerLevelUpCurve를 찾지 못함!"));
+			return 0.0f;
+		}
+		float RequiredKillCountPerLevel = LevelCurve->Eval(LevelIndex);
+		AccumulatedKillCount += RequiredKillCountPerLevel;
+	}
+	float CurrentLevelExperience = CurrentKillCount - AccumulatedKillCount;
+	return FMath::CeilToInt(CurrentLevelExperience);
+}
+
+int32 APeCoPlayerState::GetCurrentLevelRequiredKillCount()
+{
+	if (!LevelUpCurveTable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("레벨 업 커브 테이블 없음"));
+		return 0;
+	}
+	FName RowName = FName("PlayerLevelUpCurve");
+	FRealCurve* LevelCurve = LevelUpCurveTable->FindCurve(RowName, TEXT(""));
+	if (!LevelCurve)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("커브 테이블에서 PlayerLevelUpCurve를 찾지 못함!"));
+		return 0.0f;
+	}
+
+	float CurrentLevelExperience = LevelCurve->Eval(Level);
+	return FMath::CeilToInt(CurrentLevelExperience);
 }
 

@@ -28,13 +28,10 @@ void APeCoEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	OnTakeAnyDamage.AddDynamic(this, &APeCoEnemyCharacter::ReceiveDamage);
+	SetTeam(ETeam::ET_Enemy);
 	
 }
 
-ETeam APeCoEnemyCharacter::GetTeam()
-{
-	return ETeam::ET_Enemy; // Enemy characters are always assigned to the default team ET_Enemy	
-}
 
 void APeCoEnemyCharacter::Tick(float DeltaTime)
 {

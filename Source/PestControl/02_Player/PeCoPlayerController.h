@@ -10,6 +10,8 @@
 
 #include "PeCoPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDash);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartDashCooldown, float, DashCooldown);
 
 class UUserWidget;
 class UInputMappingContext;
@@ -34,11 +36,13 @@ public:
 	virtual void SetupInputComponent() override;
 	//~End of AActor interface
 
-	void SetHUDHealthBar(float Health, float MaxHealth);
-	void SetHUDExpBar(float Exp, float MaxExp);
 	void SetHUDItemSlotCount(EItemType ItemType, uint32 Amount);
 
 
+	UPROPERTY(BlueprintAssignable)
+	FStartDash OnStartDash;
+	UPROPERTY(BlueprintAssignable)
+	FStartDashCooldown OnStartDashCooldown;
 
 protected:
 

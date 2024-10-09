@@ -5,14 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "01_Character/CombatInterface.h"
-#include "PeCoDataTypes.h"
+#include "21_Data/PeCoDataTypes.h"
 #include "PeCoPlayerState.generated.h"
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FPlayerExpChanged, APeCoPlayerState*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPlayerHealthChanged, float, OldValue, float, NewValue, AActor*, Instigator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPlayerExpChanged, float, OldValue, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerExpChanged, float, Exp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerLevelChanged, float, Level);
 
-class UDataTable;
+class UCurveTable;
 class APeCoGameMode;
 class APeCoPlayerController;
 /**
@@ -33,8 +34,6 @@ public:
 
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
-
-
 	//~Player Stats
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float Health;
@@ -44,13 +43,6 @@ public:
 
 	void UpdateHUDHealth();
 
-	//  Property to store team information
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
-	ETeam Team;  // Using ETeam defined in PeCoDataTypes.h
-
-	// Function to set the team
-	UFUNCTION(BlueprintCallable)
-	void SetTeam(ETeam NewTeam);
 
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -66,6 +58,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FPlayerHealthChanged OnMaxHealthChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FPlayerExpChanged OnExpChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FPlayerLevelChanged OnLevelChanged;
 
 	UFUNCTION(BlueprintCallable)
 	void AddToKillCount(int32 KillCountAmount);
@@ -77,10 +74,12 @@ public:
 	void SetKillCount(int32 KillCountAmount);
 
 	UPROPERTY()
-	int32 CurrentLevel = 1;
+	uint32 Level = 1;
+
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LevelUp", meta = (AllowPrivateAccess = "true"))
-	UDataTable* LevelUpDataTable; 
+	UCurveTable* LevelUpCurveTable; 
 	// 레벨업을 처리하는 함수
 	UFUNCTION(BlueprintCallable)
 	void CheckLevelUp();
@@ -89,6 +88,8 @@ public:
 	// 레벨업 시 실행되는 함수
 	void HandleLevelUp(int32 NewLevel);
 	//~End of Player Stats
+
+	uint32 GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount);
 
 private:
 
@@ -102,7 +103,9 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	float GetMaxHealth() { return MaxHealth; }
+	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
 	UFUNCTION(BlueprintCallable)
-	float GetHealth() { return Health; }
+	FORCEINLINE float GetHealth() { return Health; }
+	UFUNCTION(BlueprintCallable)
+	int32 GetCurrentLevelRequiredKillCount();
 };
