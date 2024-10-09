@@ -3,6 +3,7 @@
 
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "00_GameModes/PeCoGameMode.h"
+#include "02_Player/PeCoPlayerState.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -27,11 +28,12 @@ void APeCoEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	OnTakeAnyDamage.AddDynamic(this, &APeCoEnemyCharacter::ReceiveDamage);
+	
 }
 
 ETeam APeCoEnemyCharacter::GetTeam()
 {
-	return Team;
+	return ETeam::ET_Enemy; // Enemy characters are always assigned to the default team ET_Enemy	
 }
 
 void APeCoEnemyCharacter::Tick(float DeltaTime)
@@ -44,6 +46,7 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	check(PeCoGameMode);
 	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), Damage);
+	
 	float DamageToHealth = Damage;
 	/*
 	if (Shield > 0.f)
@@ -81,6 +84,8 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 
 void APeCoEnemyCharacter::CharacterDie()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Enemy character has died."));
+	
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated Ãß°¡
 	Destroy();
