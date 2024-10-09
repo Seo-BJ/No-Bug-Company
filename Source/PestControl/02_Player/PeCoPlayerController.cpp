@@ -61,7 +61,8 @@ void APeCoPlayerController::Tick(float DeltaTime)
 void APeCoPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
+	EnableInput(this);
+	SetInputMode(FInputModeGameOnly());
 }
 
 void APeCoPlayerController::SetupInputComponent()
@@ -133,6 +134,8 @@ void APeCoPlayerController::CoolDownDash()
 
 void APeCoPlayerController::SetHUDHealthBar(float Health, float MaxHealth)
 {
+	
+	/*
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	bool bHUDValid = PeCoHUD
 		&& PeCoHUD->GetPlayerOverlayWidget()
@@ -143,12 +146,20 @@ void APeCoPlayerController::SetHUDHealthBar(float Health, float MaxHealth)
 		const float HealthPercent = Health / MaxHealth;
 		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
+		// PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
 	}
+	
+	
+	
+	*/
+	
+	
+
 }
 void APeCoPlayerController::SetHUDExpBar(float Exp, float MaxExp)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	/*
+		PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	bool bHUDValid = PeCoHUD
 		&& PeCoHUD->GetPlayerOverlayWidget()
 		&& PeCoHUD->GetPlayerOverlayWidget()->ExpBar
@@ -158,7 +169,22 @@ void APeCoPlayerController::SetHUDExpBar(float Exp, float MaxExp)
 		const float HealthPercent = Exp / MaxExp;
 		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Exp), FMath::CeilToInt(MaxExp));
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
+		// PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
+	}
+	*/
+
+}
+
+
+void APeCoPlayerController::SetHUDItemSlotCount(EItemType ItemType, uint32 Amount)
+{
+	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
+	if (bHUDValid)
+	{
+
+
+
+
 	}
 }
 

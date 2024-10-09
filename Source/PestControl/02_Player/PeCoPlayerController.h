@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "21_Data/PeCoDataTypes.h"
 
 
 #include "PeCoPlayerController.generated.h"
@@ -35,6 +36,7 @@ public:
 
 	void SetHUDHealthBar(float Health, float MaxHealth);
 	void SetHUDExpBar(float Exp, float MaxExp);
+	void SetHUDItemSlotCount(EItemType ItemType, uint32 Amount);
 
 
 
@@ -48,7 +50,7 @@ protected:
 	FVector2D CurrentMoveDirection;
 
 
-	// ~ Region Timer Widget
+	//~Timer Widget
 	float TotalGameTime = 0.f;
 	float LevelStartingTime = 0.f;
 
@@ -58,7 +60,7 @@ protected:
 	void SetHUDTime(float DeltaTime);
 	void SetHUDGameTimer(float CountdownTime);
 
-	// ~ End Region Timer Widget
+	//~End of Timer Widget
 
 	uint32 CountdownInt = 0;
 

@@ -3,7 +3,11 @@
 
 #include "01_Character/Components/InventoryComponent.h"
 
+#include "02_Player/PeCoPlayerController.h"
+#include "01_Character/PeCoPlayerCharacter.h"
 
+#include "09_Items/PeCoItem.h"
+#include "09_Items/Potion.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -33,4 +37,48 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	// ...
 }
+
+void UInventoryComponent::AddItemToInveotry(APeCoItem* Item, uint32 Amount)
+{
+	if (Item)
+	{
+		EItemType ItemType = Item->GetItemType();
+		{
+			if (CarriedItemMap.Contains(ItemType))
+			{
+				CarriedItemMap[ItemType] = CarriedItemMap[ItemType] + Amount;
+				if (ItemType == CurrentItemTypeInSlot)
+				{
+					UpdateItemSlot(ItemType);
+				}
+			}
+		}
+	}
+}
+
+void UInventoryComponent::UpdateItemSlot(EItemType ItemType)
+{
+	if (CarriedItemMap.Contains(ItemType))
+	{
+		uint32 ItemAmount = CarriedItemMap[ItemType];
+		APeCoPlayerCharacter* Character = Cast<APeCoPlayerCharacter>(GetOwner());
+		if (Character)
+		{
+			PlayerController = PlayerController == nullptr ? Cast<APeCoPlayerController>(Character->GetController()) : PlayerController;
+			if (PlayerController)
+			{
+				PlayerController->SetHUDItemSlotCount(ItemType, ItemAmount);
+			}
+		}
+	}
+}
+
+void UInventoryComponent::ChangeItemInSlot(APeCoItem* NewItem)
+{
+
+
+
+
+}
+
 

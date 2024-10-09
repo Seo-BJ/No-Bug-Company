@@ -41,7 +41,6 @@ float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 		{
 			return 0.f;
 		}
-		
 	}
 	return BaseDamage;
 }

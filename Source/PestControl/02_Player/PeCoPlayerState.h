@@ -8,6 +8,10 @@
 
 #include "PeCoPlayerState.generated.h"
 
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FPlayerExpChanged, APeCoPlayerState*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPlayerHealthChanged, float, OldValue, float, NewValue, AActor*, Instigator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPlayerExpChanged, float, OldValue, float, NewValue);
+
 class UDataTable;
 class APeCoGameMode;
 class APeCoPlayerController;
@@ -38,7 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float MaxHealth = 100;
 
-	void UpdateHUDHealth();
+
 		
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -47,6 +51,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float Maxshield = 100;
 	*/
+
+	UPROPERTY(BlueprintAssignable)
+	FPlayerHealthChanged OnHealthChagned;
+
+	UPROPERTY(BlueprintAssignable)
+	FPlayerHealthChanged OnMaxHealthChanged;
+
 
 	UFUNCTION(BlueprintCallable)
 	void AddToKillCount(int32 KillCountAmount);
@@ -78,4 +89,12 @@ private:
 
 	TObjectPtr<APeCoGameMode> PeCoGameMode = nullptr;
 	TObjectPtr<APeCoPlayerController> PeCoPlayerController = nullptr;
+
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth() { return MaxHealth; }
+	UFUNCTION(BlueprintCallable)
+	float GetHealth() { return Health; }
 };

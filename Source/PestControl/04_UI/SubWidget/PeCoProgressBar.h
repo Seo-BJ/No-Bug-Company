@@ -6,6 +6,7 @@
 #include "04_UI/PeCoUserWidget.h"
 #include "PeCoProgressBar.generated.h"
 
+class UProgressBar;
 /**
  * 
  */
@@ -16,11 +17,10 @@ class PESTCONTROL_API UPeCoProgressBar : public UPeCoUserWidget
 
 public:
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UProgressBar* ProgressBar;
 
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* Text;
+
 
 	
 };

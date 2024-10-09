@@ -17,7 +17,7 @@ class PESTCONTROL_API UGameTimerWidget : public UPeCoUserWidget
 
 public:
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* GameTimer;
 	
 };

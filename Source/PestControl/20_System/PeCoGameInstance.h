@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "09_Items/PeCoItem.h"
-#include "Potion.generated.h"
+#include "Engine/GameInstance.h"
+#include "PeCoGameInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API APotion : public APeCoItem
+class PESTCONTROL_API UPeCoGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	

@@ -4,11 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "21_Data/PeCoDataTypes.h"
+
 #include "InventoryComponent.generated.h"
 
 
+class APeCoPlayerController;
+
 class APotion;
-class AItem;
+class APeCoItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PESTCONTROL_API UInventoryComponent : public UActorComponent
@@ -27,20 +31,31 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Selected Weapon (single item)
+	//~Weapon
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TObjectPtr<AActor> SelectedWeapon;
 
-	// Potions (multiple items, so we use an array)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TObjectPtr<APotion> Potions;
+	//~End of Weapon
 
-	// Other Items (multiple items, so we use an array)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	uint8 PotionCounts;
+	//~Item Inventory
 
-	// A map to store the item count for each type of item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TMap<TObjectPtr<AItem>, int32> ItemCounts;
+	TMap<EItemType, uint32> CarriedItemMap;
+
+	void AddItemToInveotry(APeCoItem* Item, uint32 Counts);
+
+	void UpdateItemSlot(EItemType ItemType);
+
+	void ChangeItemInSlot(APeCoItem* NewItem);
+
+	EItemType CurrentItemTypeInSlot;
+
+	//~End of Item Inventory
+
+private:
+
+	TObjectPtr<APeCoPlayerController> PlayerController;
+
+
 		
 };

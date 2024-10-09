@@ -4,34 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "04_UI/PeCoUserWidget.h"
-#include "PlayerOverlay.generated.h"
+#include "WeaponItemSlot.generated.h"
 
-
-class PlayerOverlay;
-class UGameTimerWidget;
-class UPeCoProgressBar;
-class UWeaponItemSlot;
 class UPeCoUserWidget;
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API UPlayerOverlay : public UPeCoUserWidget
+class PESTCONTROL_API UWeaponItemSlot : public UPeCoUserWidget
 {
 	GENERATED_BODY()
 
+
 public:
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UPeCoUserWidget* WeaponSlot;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UGameTimerWidget* GameTimer;
+	UPeCoUserWidget* MainItemSlot;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UPeCoUserWidget* HealthBar;
+	UPeCoUserWidget* SubItemSlot;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UPeCoUserWidget* ExpBar;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UWeaponItemSlot* WeaponItemSlot;
-
+	
 };
