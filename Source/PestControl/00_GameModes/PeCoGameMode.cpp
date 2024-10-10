@@ -44,7 +44,6 @@ float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 			UE_LOG(LogTemp, Warning, TEXT("Same team, setting damage to 0"));
 			return 0.f;
 		}
-		
 	}
 	return BaseDamage;
 }

@@ -3,9 +3,11 @@
 
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "01_Character/PeCoEnemyCharacter.h"
+#include "01_Character/Components/InventoryComponent.h"
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
+
 
 #include "04_UI/PeCoHUD.h"
 
@@ -68,6 +70,8 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
 
 	 bIsInvincible = false;
+
+	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 

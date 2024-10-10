@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "PeCoDataTypes.h"
+#include "21_Data/PeCoDataTypes.h"
 #include "PeCoCharacter.generated.h"
 
 UCLASS()

@@ -9,3 +9,16 @@ enum class ETeam : uint8
 	ET_Enemy UMETA(DisplayName = "Enemy"),
 	ET_Neutral UMETA(DisplayName = "Neutral"),
 };
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	EItemType_Potion UMETA(DisplayName = "Potion"),
+	EItemType_Drink UMETA(DisplayName = "Drink"),
+	EItemType_Trap UMETA(DisplayName = "Trap"),
+
+
+
+	EItemType_Default UMETA(DisplayName = "Default", Hidden),
+
+};

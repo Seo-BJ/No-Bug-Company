@@ -61,7 +61,8 @@ void APeCoPlayerController::Tick(float DeltaTime)
 void APeCoPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
+	EnableInput(this);
+	SetInputMode(FInputModeGameOnly());
 }
 
 void APeCoPlayerController::SetupInputComponent()
@@ -111,6 +112,7 @@ void APeCoPlayerController::Dash(const FInputActionValue& Value)
 			ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = DashDistance.Size();
 			bCanDash = false;
 			GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashDuration, false);
+			OnStartDash.Broadcast();
 		}	
 	}
 }
@@ -124,6 +126,7 @@ void APeCoPlayerController::ResetDash()
 		ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.f; 
 	}
 	GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::CoolDownDash, DashCooldown, false);
+	OnStartDashCooldown.Broadcast(DashCooldown);
 }
 
 void APeCoPlayerController::CoolDownDash()
@@ -131,34 +134,17 @@ void APeCoPlayerController::CoolDownDash()
 	bCanDash = true;
 }
 
-void APeCoPlayerController::SetHUDHealthBar(float Health, float MaxHealth)
+
+
+void APeCoPlayerController::SetHUDItemSlotCount(EItemType ItemType, uint32 Amount)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
-	bool bHUDValid = PeCoHUD
-		&& PeCoHUD->GetPlayerOverlayWidget()
-		&& PeCoHUD->GetPlayerOverlayWidget()->HealthBar
-		&& PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar;
+	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
 	if (bHUDValid)
 	{
-		const float HealthPercent = Health / MaxHealth;
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
-	}
-}
-void APeCoPlayerController::SetHUDExpBar(float Exp, float MaxExp)
-{
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
-	bool bHUDValid = PeCoHUD
-		&& PeCoHUD->GetPlayerOverlayWidget()
-		&& PeCoHUD->GetPlayerOverlayWidget()->ExpBar
-		&& PeCoHUD->GetPlayerOverlayWidget()->ExpBar->ProgressBar;
-	if (bHUDValid)
-	{
-		const float HealthPercent = Exp / MaxExp;
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->ProgressBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Exp), FMath::CeilToInt(MaxExp));
-		PeCoHUD->GetPlayerOverlayWidget()->HealthBar->Text->SetText(FText::FromString(HealthText));
+
+
+
+
 	}
 }
 
