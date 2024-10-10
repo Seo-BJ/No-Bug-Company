@@ -28,6 +28,8 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	StartLocation = GetActorLocation();
+
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 }
 
@@ -37,6 +39,23 @@ void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	float DistanceTravelled = FVector::Dist(GetActorLocation(), StartLocation);
+
+	if (DistanceTravelled >= MaxDistance)
+	{
+		Destroy();
+	}
+
+}
+
+void AProjectile::SetDamage(float InDamage)
+{
+	Damage = InDamage;
+}
+
+UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() const
+{
+	return ProjectileMovementComponent;
 }
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -61,7 +80,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 			UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());			
 		}
 
-	
 		Destroy();
 	}
 }

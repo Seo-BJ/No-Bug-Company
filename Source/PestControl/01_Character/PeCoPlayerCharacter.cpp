@@ -10,6 +10,7 @@
 #include "04_UI/PeCoHUD.h"
 
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/LarvaLauncher.h"
 
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -56,11 +57,13 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	WeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Spawn Point"));
+	WeaponSpawnPoint->SetupAttachment(RootComponent);
+
+
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-
-	FireRate = 2.0f;
 
 	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
 
@@ -75,10 +78,12 @@ void APeCoPlayerCharacter::BeginPlay()
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
 	OnTakeAnyDamage.AddDynamic(PeCoPlayerState, &APeCoPlayerState::ReceiveDamage);
 
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoPlayerCharacter::FireWeapon, FireRate, true);
 	PeCoPlayerController = Cast<APlayerController>(GetController());
 
 	UE_LOG(LogTemp, Warning, TEXT("health: %f"), PeCoPlayerState->Health);
+	
+	SpawnLarvaLauncher();
+	SpawnPestShotgun();
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -96,6 +101,7 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 
 		RotateAim(HitResult.ImpactPoint);
 	}
+
 }
 
 
@@ -145,51 +151,38 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 
 }
 
-void APeCoPlayerCharacter::SetNewFireRate(float NewFireRate)
+void APeCoPlayerCharacter::SpawnLarvaLauncher()
 {
-	FireRate = NewFireRate;
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APeCoCharacter::Fire, FireRate, true);
-}
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
 
-void APeCoPlayerCharacter::FireWeapon()
-{
-
-	float SpreadAngle = 15.f;
-	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
-
-	if (PestShotgunProjectileClass)
+	if (LarvaLauncherClass)
 	{
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, Rotation);
-		if (Projectile)
-		{
-			Projectile->SetOwner(this);  // Set Owner of Projectile -> PeCoPlayerCharacter
-		}
-	}
+		LarvaLauncherInstance = GetWorld()->SpawnActor<ALarvaLauncher>(LarvaLauncherClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
 
-	float NumberOfProjectiles = 5;
-
-	for (int32 i = 0; i < NumberOfProjectiles - 1; ++i)
-	{
-		FRotator SpreadRotation = Rotation;
-		float SpreadOffset = (i - NumberOfProjectiles / 2) * SpreadAngle;
-		SpreadRotation.Yaw += SpreadOffset;
-
-		if (PestShotgunProjectileClass)
+		if (LarvaLauncherInstance)
 		{
-			AProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(PestShotgunProjectileClass, Location, SpreadRotation);
-			if (SpawnedProjectile)
-			{
-				SpawnedProjectile->SetOwner(this);  // Set Owner of Projectile -> PeCoPlayerCharacter
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Projectile class is null"));
+			LarvaLauncherInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 		}
 	}
 }
+
+void APeCoPlayerCharacter::SpawnPestShotgun()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (PestShotgunClass)
+	{
+		PestShotgunInstance = GetWorld()->SpawnActor<APestShotgun>(PestShotgunClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (PestShotgunInstance)
+		{
+			PestShotgunInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		}
+	}
+}
+
 
 void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit)
 {

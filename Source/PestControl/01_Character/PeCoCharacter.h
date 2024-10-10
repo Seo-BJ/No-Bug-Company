@@ -25,17 +25,7 @@ public:
 
 	virtual ETeam GetTeam();
 
-	void Fire();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	USceneComponent* ProjectileSpawnPoint;
-
 protected:
 
 	void RotateAim(FVector LookAtTarget);
-
-private:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<class AProjectile> ProjectileClass;
 };

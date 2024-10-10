@@ -29,11 +29,20 @@ private:
 	UPROPERTY(EditAnywhere)
 	float Damage = 50.f;
 
+	FVector StartLocation;
+
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 public:	
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void SetDamage(float InDamage);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile")
+	float MaxDistance = 1000.f;
+
+	UProjectileMovementComponent* GetProjectileMovementComponent() const;
 };

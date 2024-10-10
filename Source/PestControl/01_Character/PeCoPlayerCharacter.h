@@ -3,7 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "01_Character/PeCoCharacter.h"
+
+#include "07_Weapon/LarvaLauncher.h"
+#include "07_Weapon/PestShotgun.h"
+
 #include "PeCoPlayerCharacter.generated.h"
 
 /**
@@ -29,15 +34,12 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	// ~ End of Player Character Interface
 
-	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
 private:
 
 	void InitPlayerCharacter();
-	
-	void SetNewFireRate(float NewFireRate);
 
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -47,18 +49,28 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	float FireRate;
 
-	void FireWeapon();
+	//Spawn Weapon
+	//todo Ui클릭시 SpawnWeapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* WeaponSpawnPoint;
 
-	FTimerHandle TimerHandle;
-	float TimerInterval;
+	void SpawnLarvaLauncher();
+
+	ALarvaLauncher* LarvaLauncherInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> LarvaLauncherClass;
+
+	void SpawnPestShotgun();
+
+	APestShotgun* PestShotgunInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> PestShotgunClass;
+	//End of Spawn Weapon
 
 	APlayerController* PeCoPlayerController;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Shotgun")
-	TSubclassOf<class AProjectile> PestShotgunProjectileClass;
 
 public:
 	//~Player Crash damage
