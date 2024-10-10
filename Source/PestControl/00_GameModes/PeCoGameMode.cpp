@@ -14,6 +14,7 @@ void APeCoGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
+	StartNextRound();
 }
 
 void APeCoGameMode::Tick(float DeltaTime)
@@ -48,3 +49,34 @@ float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 	return BaseDamage;
 }
 
+void APeCoGameMode::StartNextRound()
+{
+	if (EnemySpawnerClass)
+	{
+		FVector SpawnLocation = FVector(2110.f, 1640.f, 100.f); 
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		APeCoEnemySpawner* Spawner = GetWorld()->SpawnActor<APeCoEnemySpawner>(EnemySpawnerClass, SpawnLocation, SpawnRotation);
+		if (Spawner)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Enemy spawner created for new round"));
+		}
+	}
+}
+
+void APeCoGameMode::EnemyEliminated(AActor* EliminatedEnemy)
+{
+	// when enemy eliminated
+	if (EliminatedEnemy)
+	{
+		CurrentSpawnCount--;
+
+		UE_LOG(LogTemp, Warning, TEXT("Enemy eliminated. Remaining: %d"), CurrentSpawnCount);
+
+		// 필요 시 스폰 로직을 추가하거나 다음 라운드를 시작
+		if (CurrentSpawnCount <= 0)
+		{
+			StartNextRound();
+		}
+	}
+}
