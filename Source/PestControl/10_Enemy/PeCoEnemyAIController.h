@@ -18,8 +18,13 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 protected:
 	virtual void BeginPlay() override;
-private:
-	UPROPERTY(EditAnywhere)
-	class UBehaviorTree* AIBehavior;
-	
+
+	// Behavior Tree asset
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	UBehaviorTree* AIBehavior;
+
+	// Blackboard Component 
+	UPROPERTY(BlueprintReadWrite, Category = "AI")
+	UBlackboardComponent* BlackboardComponent;
+
 };
