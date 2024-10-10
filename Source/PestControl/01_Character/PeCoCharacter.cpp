@@ -16,10 +16,6 @@ APeCoCharacter::APeCoCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Spawn Point"));
-	ProjectileSpawnPoint->SetupAttachment(RootComponent);
-
 }
 
 // Called when the game starts or when spawned
@@ -47,19 +43,9 @@ void APeCoCharacter::RotateAim(FVector LookAtTarget)
 			UGameplayStatics::GetWorldDeltaSeconds(this),
 			10.f)
 	);
-
 }
 
 ETeam APeCoCharacter::GetTeam()
 {
 	return ETeam::ET_Neutral;
-}
-
-void APeCoCharacter::Fire()
-{
-	FVector Location = ProjectileSpawnPoint->GetComponentLocation();
-	FRotator Rotation = ProjectileSpawnPoint->GetComponentRotation();
-
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation);
-	Projectile->SetOwner(this);
 }
