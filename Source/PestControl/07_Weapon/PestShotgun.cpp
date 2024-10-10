@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
+#include "07_Weapon/PestShotgun.h"
+
 #include "GameFramework/ProjectileMovementComponent.h"
 
 #include "07_Weapon/Projectile.h"
@@ -82,3 +85,4 @@ void APestShotgun::SpawnProjectiles()
 		AWeapon::ProjectileFire();
 	}
 }
+
