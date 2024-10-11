@@ -4,15 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "07_Weapon/Weapon.h"
-#include "PestShotgun.generated.h"
+#include "AirGun.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API APestShotgun : public AWeapon
+class PESTCONTROL_API AAirGun : public AWeapon
 {
 	GENERATED_BODY()
+	
+public:
+	AAirGun();
 
 protected:
 	// Called when the game starts or when spawned
@@ -20,15 +23,17 @@ protected:
 
 	FTimerHandle CooldownHandle;
 
+private:
+	FTimerHandle FireTimerHandle;
+
 public:
 
-	APestShotgun();
+	void AirGunFire();
 
-public:
-	void PestShotgunFire();
+	void StartCooldown();
+
+	void SpawnProjectiles();
 
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsPestshogunValid = false;
-
-	FRotator SpreadRotation;
+	bool bIsAirGunValid = false;
 };

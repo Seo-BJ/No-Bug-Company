@@ -4,36 +4,41 @@
 
 #include "CoreMinimal.h"
 #include "07_Weapon/Weapon.h"
-#include "LarvaLauncher.generated.h"
+#include "WebRevolver.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API ALarvaLauncher : public AWeapon
+class PESTCONTROL_API AWebRevolver : public AWeapon
 {
 	GENERATED_BODY()
 
 public:
-	ALarvaLauncher();
+	AWebRevolver();
+
+private:
+	FTimerHandle FireTimerHandle;
+
+	int32 BaseAmmo = 6;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	FTimerHandle CooldownHandle;
+	
+	FTimerHandle StartCooldDown;
 
-private:
-	FTimerHandle FireTimerHandle;
-		
 public:
 
-	void LarvaLauncherFire();
+	void WebRevolverFire();
 
 	void StartCooldown();
 
 	void SpawnProjectiles();
 
+	
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsLarvaLauncherValid = false;
+	bool bIsWebRevolverValid = false;
 };

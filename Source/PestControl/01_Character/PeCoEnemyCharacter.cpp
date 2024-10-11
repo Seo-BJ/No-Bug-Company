@@ -84,7 +84,7 @@ void APeCoEnemyCharacter::CharacterDie()
 	UE_LOG(LogTemp, Warning, TEXT("Enemy character has died."));
 	
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
-	// To Do : PeCoGameMode -> EnemyEliminated Ãß°¡
+	// To Do : PeCoGameMode -> EnemyEliminated ï¿½ß°ï¿½
 	Destroy();
 }
 

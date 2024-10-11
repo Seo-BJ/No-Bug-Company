@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponStats.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -19,20 +20,39 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void InitInfo();
+
+	void ApplyDamageToEnemiesInRange();
+
+	FVector InitialLocation;
+	FRotator InitialRotation;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+	UDataTable* WeaponDataTable;
+
+	FName WeaponID;
+
+	int32 CurrentLevel;
+
+	void LoadWeaponStats(int32 Level);
+
+	UFUNCTION(BlueprintCallable,Category = "Weapon")
+	void LevelUp();
+
 	//~Weapon Properties
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float CriticalChance;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float CriticalDamageMultiplier;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float DamageMultiplier;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float BaseDamage;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float Cooldown;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Root;
@@ -40,6 +60,8 @@ public:
 	UStaticMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* BulletSpawnPoint;
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	TSubclassOf<class AProjectile> BulletClass;
 
 	//~End of Weapon propoerties
 
@@ -57,7 +79,5 @@ public:
 	float DurationTime;
 	// ~End of conshaped weapon properties
 	void ProjectileFire();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
-	TSubclassOf<class AProjectile> BulletClass;
+	void ShotgunFire();
 };

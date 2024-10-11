@@ -88,6 +88,11 @@ void APeCoPlayerCharacter::BeginPlay()
 	
 	SpawnLarvaLauncher();
 	SpawnPestShotgun();
+	SpawnWebRevolver();
+	SpawnRoachShooter();
+	SpawnAirGun();
+	SpawnPesticide();
+	SpawnFlamethrower();
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -167,6 +172,24 @@ void APeCoPlayerCharacter::SpawnLarvaLauncher()
 		if (LarvaLauncherInstance)
 		{
 			LarvaLauncherInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedLaL = LarvaLauncherInstance;
+		}
+	}
+}
+
+void APeCoPlayerCharacter::SpawnWebRevolver()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (WebRevolverClass)
+	{
+		WebRevolverInstance = GetWorld()->SpawnActor<AWebRevolver>(WebRevolverClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (WebRevolverInstance)
+		{
+			WebRevolverInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedWR = WebRevolverInstance;
 		}
 	}
 }
@@ -183,10 +206,78 @@ void APeCoPlayerCharacter::SpawnPestShotgun()
 		if (PestShotgunInstance)
 		{
 			PestShotgunInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedPS = PestShotgunInstance;
 		}
 	}
 }
 
+void APeCoPlayerCharacter::SpawnRoachShooter()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (RoachShooterClass)
+	{
+		RoachShooterInstance = GetWorld()->SpawnActor<ARoachShooter>(RoachShooterClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (RoachShooterInstance)
+		{
+			RoachShooterInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedRS = RoachShooterInstance;
+		}
+	}
+}
+
+void APeCoPlayerCharacter::SpawnAirGun()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (AirGunClass)
+	{
+		AirGunInstance = GetWorld()->SpawnActor<AAirGun>(AirGunClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (AirGunInstance)
+		{
+			AirGunInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedAG = AirGunInstance;
+		}
+	}
+}
+
+void APeCoPlayerCharacter::SpawnPesticide()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (PesticideClass)
+	{
+		PesticideInstance = GetWorld()->SpawnActor<APesticide>(PesticideClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (PesticideInstance)
+		{
+			PesticideInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedPesticide = PesticideInstance;
+		}
+	}
+}
+
+void APeCoPlayerCharacter::SpawnFlamethrower()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (FlamethrowerClass)
+	{
+		FlamethrowerInstance = GetWorld()->SpawnActor<AFlamethrower>(FlamethrowerClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+
+		if (FlamethrowerInstance)
+		{
+			FlamethrowerInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+			EquippedFT = FlamethrowerInstance;
+		}
+	}
+}
 
 void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -211,3 +302,4 @@ void APeCoPlayerCharacter::EndInvincible()
 	bIsInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }
+
