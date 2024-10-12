@@ -85,6 +85,8 @@ public:
 
 	void ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter);
 
+	void ApplyDamageToEnemy(APeCoEnemyCharacter* Enemy, float Damage);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
 	float BurnDamage = 5.0f;
 

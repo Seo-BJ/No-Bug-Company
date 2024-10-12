@@ -11,6 +11,8 @@
 
 #include "21_Data/PeCoDataRow.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerState.h"
 #include "Engine/CurveTable.h"
 
 
@@ -43,6 +45,25 @@ void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 		}
 	}
 	*/
+
+	APlayerController* MyController = Cast<APlayerController>(GetOwner());
+	if (MyController)
+	{
+		APawn* MyPawn = MyController->GetPawn();
+		if (MyPawn)
+		{
+			APeCoHUD* MyHUD = Cast<APeCoHUD>(MyController->GetHUD());
+			if (MyHUD)
+			{
+				FVector2D ScreenPosition;
+
+				if (UGameplayStatics::ProjectWorldToScreen(MyController, MyPawn->GetActorLocation(), ScreenPosition))
+				{
+					MyHUD->AddDamageTextToPlayer(Damage, ScreenPosition);
+				}
+			}
+		}
+	}
 	
 	float NewHealth = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	OnHealthChagned.Broadcast(Health, NewHealth, nullptr);

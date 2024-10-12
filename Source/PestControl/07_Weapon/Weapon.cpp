@@ -5,7 +5,9 @@
 #include "07_Weapon/Weapon.h"
 #include "07_Weapon/Projectile.h"
 
-#include"01_Character/PeCoEnemyCharacter.h" 
+#include "01_Character/PeCoEnemyCharacter.h" 
+
+#include "04_UI/PeCoHUD.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
