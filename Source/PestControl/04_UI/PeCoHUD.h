@@ -30,6 +30,8 @@ public :
 
 	void AddDamageTextToPlayer(float Damage, FVector2D ScreenPosition);
 
+	void TriggerSpecialEventNotification();
+
 
 
 private:

@@ -12,6 +12,7 @@ class UGameTimerWidget;
 class UPeCoProgressBar;
 class UWeaponItemSlot;
 class UPeCoUserWidget;
+class USpecialEventWidget;
 /**
  * 
  */
@@ -33,5 +34,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UWeaponItemSlot* WeaponItemSlot;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	USpecialEventWidget* SpecialEvent;
 
 };

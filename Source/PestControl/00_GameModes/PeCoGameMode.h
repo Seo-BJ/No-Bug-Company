@@ -38,7 +38,7 @@ public:
 
 #pragma region Game Time & Timer
 
-	// 1200.f = 1200ÃÊ = 20ºĞ
+	// 1200.f = 1200ì´ˆ = 20ë¶„
 	UPROPERTY(EditDefaultsOnly)
 	float TotalGameTime = 1200.f; 
 
@@ -48,14 +48,14 @@ public:
 
 
 private:
-	// Àû ½ºÆùÀ» À§ÇÑ ½ºÆù Å¬·¡½º
+	// ì  ìŠ¤í°ì„ ìœ„í•œ ìŠ¤í° í´ë˜ìŠ¤
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TSubclassOf<APeCoEnemySpawner> EnemySpawnerClass;
 
-	// ÇöÀç ½ºÆùµÈ ÀûÀÇ ¼ö¸¦ ÃßÀû
+	// í˜„ì¬ ìŠ¤í°ëœ ì ì˜ ìˆ˜ë¥¼ ì¶”ì 
 	int32 CurrentSpawnCount = 0;
 
-	// ÃÖ´ë ½ºÆù °¡´ÉÇÑ ÀûÀÇ ¼ö
+	// ìµœëŒ€ ìŠ¤í° ê°€ëŠ¥í•œ ì ì˜ ìˆ˜
 	int32 MaxSpawnCount = 10;
 
 };

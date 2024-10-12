@@ -8,6 +8,7 @@
 #include "04_UI/PeCoUserWidget.h"
 #include "04_UI/PlayerOverlay.h"
 #include "04_UI/DamageTextWidget.h"
+#include "04_UI/SubWidget/SpecialEventWidget.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -79,4 +80,14 @@ void APeCoHUD::AddDamageTextToPlayer(float Damage, FVector2D ScreenPosition)
             }
         }
     }
+}
+
+void APeCoHUD::TriggerSpecialEventNotification()
+{
+	if (PlayerOverlayWidget && PlayerOverlayWidget->SpecialEvent)
+	{
+		// 이벤트 이름과 설명 설정
+		PlayerOverlayWidget->SpecialEvent->SetEventName(TEXT("Flood"));
+		PlayerOverlayWidget->SpecialEvent->SetEventDescription(TEXT("A flood has occurred in the area!"));
+	}
 }

@@ -72,7 +72,7 @@ void APeCoGameMode::EnemyEliminated(AActor* EliminatedEnemy)
 
 		UE_LOG(LogTemp, Warning, TEXT("Enemy eliminated. Remaining: %d"), CurrentSpawnCount);
 
-		// ÇÊ¿ä ½Ã ½ºÆù ·ÎÁ÷À» Ãß°¡ÇÏ°Å³ª ´ÙÀ½ ¶ó¿îµå¸¦ ½ÃÀÛ
+		// í•„ìš” ì‹œ ìŠ¤í° ë¡œì§ì„ ì¶”ê°€í•˜ê±°ë‚˜ ë‹¤ìŒ ë¼ìš´ë“œë¥¼ ì‹œì‘
 		if (CurrentSpawnCount <= 0)
 		{
 			StartNextRound();
