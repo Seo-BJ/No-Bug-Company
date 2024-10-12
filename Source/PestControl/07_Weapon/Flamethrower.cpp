@@ -10,6 +10,9 @@
 AFlamethrower::AFlamethrower()
 {
     WeaponID = FName(TEXT("Flamethrower"));
+
+    WeaponType = EWeaponType::Burn;
+
     BaseDamage = 115.f;
     DamageMultiplier = 1.0f;
     CriticalChance = 0.05f;
@@ -19,12 +22,15 @@ AFlamethrower::AFlamethrower()
     RangeRadius = 350.f;
 
     DurationTime = 1.f;
+
+    BurnDamage = 5.0f;
+    BurnDuration = 3.0f;
+    BurnTickTime = 0.5f;
 }
 
 void AFlamethrower::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("Flamethrower Weapon Spawned"));
     if (bIsFlamethrowerValid)
     {
         GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AFlamethrower::FlamethrowerFire, Cooldown, true);
@@ -45,21 +51,8 @@ void AFlamethrower::FlamethrowerFire()
         if (ParticleComp)
         {
             FTimerHandle ParticleTimerHandle;
-            GetWorld()->GetTimerManager().SetTimer(
-                ParticleTimerHandle,
-                [ParticleComp]()
-                {
-                    ParticleComp->Deactivate();
-                },
-                DurationTime,
-                false
-            );
+            GetWorld()->GetTimerManager().SetTimer(ParticleTimerHandle, [ParticleComp]() { ParticleComp->DestroyComponent(); }, DurationTime + 0.5, false);
         }
-    }
-
-    if (SprayEffect)
-    {
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SprayEffect, GetActorLocation(), GetActorRotation(), true);
     }
 
     InitInfo();
@@ -76,29 +69,27 @@ void AFlamethrower::FlamethrowerFire()
 
 void AFlamethrower::DealDamage()
 {
-    ApplyDamageToEnemiesInRange();
+	ApplyDamageToEnemiesInRange();
 
-    FVector WeaponLocation = InitialLocation;
-    FVector ForwardVector = InitialRotation.Vector();
+	FVector WeaponLocation = InitialLocation;
+	FVector ForwardVector = InitialRotation.Vector();
+	float ConeRadius = RangeRadius + 50;
+	float HalfAngleRadians = FMath::DegreesToRadians(FireAngle / 2.0f);
 
-    float ConeRadius = RangeRadius + 50;
-    float HalfAngleRadians = FMath::DegreesToRadians(FireAngle / 2.0f);
+	DrawDebugCone(
+		GetWorld(),
+		WeaponLocation,
+		ForwardVector,
+		ConeRadius,
+		HalfAngleRadians,
+		HalfAngleRadians,
+		12,
+		FColor::Red,
+		false,
+		0.2f
+	);
 
-    DrawDebugCone(
-        GetWorld(),
-        WeaponLocation,       
-        ForwardVector,           
-        ConeRadius,       
-        HalfAngleRadians,    
-        HalfAngleRadians,
-        12,
-        FColor::Red,           
-        false,                   
-        0.2f
-    );
-}
-
-void AFlamethrower::StartCooldown()
+}void AFlamethrower::StartCooldown()
 {
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AFlamethrower::FlamethrowerFire, Cooldown, false);
 }

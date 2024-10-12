@@ -38,7 +38,17 @@ public:
 
 	void SpawnProjectiles();
 
+	void ApplySlowEffect(class APeCoEnemyCharacter* EnemyCharacter);
 	
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
 	bool bIsWebRevolverValid = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Slow Effect", meta = (AllowPrivateAccess = "true"))
+	float SlowMultiplier = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Slow Effect", meta = (AllowPrivateAccess = "true"))
+	float SlowDuration = 3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Slow Effect", meta = (AllowPrivateAccess = "true"))
+	bool bApplySlowEffect = true;
 };

@@ -3,6 +3,11 @@
 
 #include "07_Weapon/WebRevolver.h"
 
+#include "01_Character/PeCoEnemyCharacter.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 AWebRevolver::AWebRevolver()
 {
     WeaponID = FName(TEXT("WebRevolver"));
@@ -49,5 +54,28 @@ void AWebRevolver::SpawnProjectiles()
     if (this)
     {
         AWeapon::ProjectileFire();
+    }
+}
+
+void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter)
+{
+    if (bApplySlowEffect && EnemyCharacter && !EnemyCharacter->bIsSlowed)  // 슬로우가 이미 적용 중인지 확인
+    {
+        UCharacterMovementComponent* MovementComponent = EnemyCharacter->GetCharacterMovement();
+        if (MovementComponent)
+        {
+            float OriginalSpeed = MovementComponent->MaxWalkSpeed;
+            MovementComponent->MaxWalkSpeed *= SlowMultiplier;
+            EnemyCharacter->bIsSlowed = true;
+
+            FTimerHandle ResetSpeedHandle;
+            GetWorld()->GetTimerManager().SetTimer(ResetSpeedHandle, FTimerDelegate::CreateLambda([=]() {
+                MovementComponent->MaxWalkSpeed = OriginalSpeed;
+                EnemyCharacter->ResetSlowStatus();
+                }), SlowDuration, false);
+
+            UE_LOG(LogTemp, Log, TEXT("Applied slow effect to %s: Speed reduced to %f for %f seconds"),
+                *EnemyCharacter->GetName(), MovementComponent->MaxWalkSpeed, SlowDuration);
+        }
     }
 }

@@ -24,7 +24,7 @@ APesticide::APesticide()
 void APesticide::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("Pesticide Weapon Spawned"));
+
     if (bIsPesticideValid)
     {
         GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &APesticide::PesticideFire, Cooldown, true);
@@ -45,21 +45,8 @@ void APesticide::PesticideFire()
         if (ParticleComp)
         {
             FTimerHandle ParticleTimerHandle;
-            GetWorld()->GetTimerManager().SetTimer(
-                ParticleTimerHandle,
-                [ParticleComp]()
-                {
-                    ParticleComp->Deactivate();  
-                },
-                DurationTime, 
-                false
-            );
+            GetWorld()->GetTimerManager().SetTimer(ParticleTimerHandle, [ParticleComp]() { ParticleComp->DestroyComponent();}, DurationTime + 0.5, false);
         }
-    }
-
-    if (SprayEffect)
-    {
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SprayEffect, GetActorLocation(), GetActorRotation(), true);
     }
 
     InitInfo();

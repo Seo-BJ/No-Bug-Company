@@ -36,4 +36,14 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
 	bool bIsAirGunValid = false;
+	
+	//~Stun effect
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Stun Effect", meta = (AllowPrivateAccess = "true"))
+	float StunDuration = 2.0f; 
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Stun Effect", meta = (AllowPrivateAccess = "true"))
+	bool bApplyStunEffect = true;
+
+	void ApplyStunEffect(class APeCoEnemyCharacter* EnemyCharacter);
+	//~End of Stun effect
 };

@@ -62,7 +62,6 @@ void AWeapon::ProjectileFire()
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation);
     if (!Projectile)
     {
-        UE_LOG(LogTemp, Error, TEXT("Failed to spawn projectile."));
         return;
     }
  
@@ -89,7 +88,6 @@ void AWeapon::ShotgunFire()
     for (int32 i = 0; i < NumberOfProjectiles + 2; i++)
     {
         float RandomYaw = FMath::RandRange(-FireAngle, FireAngle);
-        UE_LOG(LogTemp, Warning, TEXT("Angle: %f"),FireAngle);
         FRotator NewRotation = BaseRotation;
         NewRotation.Yaw += RandomYaw;
 
@@ -185,12 +183,11 @@ void AWeapon::ApplyDamageToEnemiesInRange()
     TArray<FOverlapResult> OverlapResults;
     FCollisionShape CollisionSphere = FCollisionShape::MakeSphere(SphereRadius);
 
-
     bool bHasOverlaps = GetWorld()->OverlapMultiByChannel(
         OverlapResults,
         WeaponLocation,
         FQuat::Identity,
-        ECC_Pawn, 
+        ECC_Pawn,
         CollisionSphere
     );
 
@@ -201,7 +198,6 @@ void AWeapon::ApplyDamageToEnemiesInRange()
             AActor* OverlappedActor = OverlapResult.GetActor();
             if (OverlappedActor && OverlappedActor->IsA(APeCoEnemyCharacter::StaticClass()))
             {
-
                 FVector EnemyLocation = OverlappedActor->GetActorLocation();
                 FVector DirectionToEnemy = EnemyLocation - WeaponLocation;
                 float DistanceToEnemy = DirectionToEnemy.Size();
@@ -210,12 +206,12 @@ void AWeapon::ApplyDamageToEnemiesInRange()
                 FVector ForwardVector = WeaponRotation.Vector();
                 float DotProduct = FVector::DotProduct(DirectionToEnemy, ForwardVector);
 
-           
                 if (DistanceToEnemy < 100.f || (FMath::Acos(DotProduct) * (180.f / PI)) <= FireAngle / 2.0f)
                 {
                     APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OverlappedActor);
                     if (EnemyCharacter)
                     {
+                        // 일반 대미지 적용
                         float ActualDamage = BaseDamage * DamageMultiplier;
                         if (FMath::RandRange(0.f, 1.f) < CriticalChance)
                         {
@@ -225,9 +221,69 @@ void AWeapon::ApplyDamageToEnemiesInRange()
                         UGameplayStatics::ApplyDamage(EnemyCharacter, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 
                         UE_LOG(LogTemp, Log, TEXT("Enemy %s hit by fan fire! Damage: %f"), *EnemyCharacter->GetName(), ActualDamage);
+
+                        if (WeaponType == EWeaponType::Burn)
+                        {
+                            ApplyBurnDamage(EnemyCharacter);
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+void AWeapon::ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter)
+{
+    if (IsValid(EnemyCharacter))
+    {
+        if (!EnemyCharacter->bIsBurning)
+        {
+            EnemyCharacter->bIsBurning = true;
+
+            int32 NumTicks = FMath::FloorToInt(BurnDuration / BurnTickTime);
+            for (int32 i = 0; i < NumTicks; i++)
+            {
+                if (IsValid(EnemyCharacter))  
+                {
+                    FTimerHandle BurnDamageHandle;
+                    GetWorld()->GetTimerManager().SetTimer(BurnDamageHandle, FTimerDelegate::CreateLambda([=]()
+                        {
+                            if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill())
+                            {
+                                UGameplayStatics::ApplyDamage(EnemyCharacter, BurnDamage, nullptr, this, nullptr);
+                                UE_LOG(LogTemp, Warning, TEXT("Applying %f burn damage to %s"), BurnDamage, *EnemyCharacter->GetName());
+                            }
+                            else
+                            {
+                                return;
+                            }
+                        }), BurnTickTime * (i + 1), false);
+                }
+            }
+            FTimerHandle ResetBurnHandle;
+            GetWorld()->GetTimerManager().SetTimer(ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
+                {
+                    if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill())  
+                    {
+                        EnemyCharacter->ResetBurnStatus();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }), BurnDuration, false);
+        }
+        else
+        {
+            GetWorld()->GetTimerManager().ClearTimer(EnemyCharacter->ResetBurnHandle);
+            GetWorld()->GetTimerManager().SetTimer(EnemyCharacter->ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
+                {
+                    if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill()) 
+                    {
+                        EnemyCharacter->ResetBurnStatus();
+                    }
+                }), BurnDuration, false);
         }
     }
 }

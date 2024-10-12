@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include"01_Character/PeCoEnemyCharacter.h"
+#include"07_Weapon/WeaponType.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponStats.h"
@@ -11,8 +13,8 @@ UCLASS()
 class PESTCONTROL_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeapon();
 
@@ -27,7 +29,7 @@ protected:
 	FVector InitialLocation;
 	FRotator InitialRotation;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -40,7 +42,7 @@ public:
 
 	void LoadWeaponStats(int32 Level);
 
-	UFUNCTION(BlueprintCallable,Category = "Weapon")
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void LevelUp();
 
 	//~Weapon Properties
@@ -79,5 +81,19 @@ public:
 	float DurationTime;
 	// ~End of conshaped weapon properties
 	void ProjectileFire();
-	void ShotgunFire();
+	void ShotgunFire();	
+
+	void ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnDamage = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnDuration = 3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnTickTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Type")
+	EWeaponType WeaponType = EWeaponType::None;
 };

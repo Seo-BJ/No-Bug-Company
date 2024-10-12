@@ -2,12 +2,19 @@
 
 
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/WebRevolver.h"
+#include "07_Weapon/AirGun.h"
+
+#include "01_Character/PeCoEnemyCharacter.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "Components/PrimitiveComponent.h"
+
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
+
 #include "Kismet/GameplayStatics.h"
-#include "01_Character/PeCoEnemyCharacter.h"
+
 
 // Sets default values
 AProjectile::AProjectile()
@@ -77,9 +84,19 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
 		if (HitEnemy)
 		{
-			UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());			
-		}
+			UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
+			AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);
+			if (WebRevolverWeapon)
+			{
+				WebRevolverWeapon->ApplySlowEffect(HitEnemy);
+			}
 
+			AAirGun* AirGunWeapon = Cast<AAirGun>(MyOwner);
+			if (AirGunWeapon)
+			{
+				AirGunWeapon->ApplyStunEffect(HitEnemy);
+			}
+		}
 		Destroy();
 	}
 }

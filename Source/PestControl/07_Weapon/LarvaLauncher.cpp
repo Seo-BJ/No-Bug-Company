@@ -18,7 +18,6 @@ ALarvaLauncher::ALarvaLauncher()
 void ALarvaLauncher::BeginPlay()
 {
     Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("Larva Launcher Spawned"));
     if (bIsLarvaLauncherValid)
     {
         GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &ALarvaLauncher::LarvaLauncherFire, Cooldown, true);

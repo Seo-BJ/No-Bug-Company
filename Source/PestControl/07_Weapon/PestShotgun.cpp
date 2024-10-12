@@ -22,7 +22,6 @@ APestShotgun::APestShotgun()
 void APestShotgun::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("PestShotgun Spawned"));
 
 	SpreadRotation = BulletSpawnPoint->GetComponentRotation();
 
