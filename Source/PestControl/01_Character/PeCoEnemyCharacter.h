@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
+
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
@@ -28,6 +30,22 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	class UBehaviorTree* BehaviorTree;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	// Flag to prevent collision from being processed again for a certain time after the initial collision
+	bool bRecentlyKnockedBack;
+
+	// Function to reset the knockback flag after a certain amount of time
+	void ResetKnockbackFlag();
+
+	// Timer handle to reset the flag after a certain time has passed
+	FTimerHandle KnockbackTimerHandle;
+	
+	
+	UPROPERTY(EditAnywhere, Category = "Knockback")
+	float KnockbackForce;
 
 
 	//~ICombatInterface
