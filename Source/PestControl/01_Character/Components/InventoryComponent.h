@@ -13,6 +13,8 @@ class APeCoPlayerController;
 
 class APotion;
 class APeCoItem;
+class ACombatItem;
+class AConsumableItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PESTCONTROL_API UInventoryComponent : public UActorComponent

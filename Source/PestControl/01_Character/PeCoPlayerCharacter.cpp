@@ -283,7 +283,7 @@ void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor
 {
 	if (!bIsInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
 	{
-		UGameplayStatics::ApplyDamage(this, CrashDamage, nullptr, nullptr, nullptr);
+		UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
 		
 		BecomeInvincible(CrashInvincibleDuration); 
 	}

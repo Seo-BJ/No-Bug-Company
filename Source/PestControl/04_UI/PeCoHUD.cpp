@@ -57,26 +57,3 @@ void APeCoHUD::AddGameResultWidget()
 		GameResultWidget->AddToViewport();
 	}
 }
-void APeCoHUD::AddDamageTextToPlayer(float Damage, FVector2D ScreenPosition)
-{
-    if (DamageTextWidgetClass)
-    {
-		OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
-        if (OwningPlayerController)
-        {
-            UDamageTextWidget* DamageWidget = CreateWidget<UDamageTextWidget>(OwningPlayerController, DamageTextWidgetClass);
-            if (DamageWidget)
-            {
-                DamageWidget->SetDamageText(Damage);
-                DamageWidget->AddToViewport();
-				DamageWidget->SetPositionInViewport(ScreenPosition, false);
-
-                FTimerHandle TimerHandle;
-                GetWorld()->GetTimerManager().SetTimer(TimerHandle, [DamageWidget]()
-                    {
-                        DamageWidget->RemoveFromParent();
-                    }, 2.0f, false); 
-            }
-        }
-    }
-}
