@@ -13,16 +13,7 @@
 APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;//Set max move speed
 		
-	// Configure character movement
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 720.f, 0.f);
-	GetCharacterMovement()->bConstrainToPlane = true;
-	GetCharacterMovement()->bSnapToPlaneAtStart = true;
-
 	// Set KnockbackForce
 	KnockbackForce = 1000.0f;
 

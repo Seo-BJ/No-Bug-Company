@@ -2,7 +2,8 @@
 
 
 #include "10_Enemy/PeCoEnemySpawner.h"
-#include "01_Character/PeCoEnemyCharacter.h"
+#include "10_Enemy/PeCoGroundEnemyCharacter.h"
+#include "10_Enemy/PeCoFlyingEnemyCharacter.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -47,7 +48,7 @@ void APeCoEnemySpawner::SpawnEnemies()
         UE_LOG(LogTemp, Error, TEXT("EnemyClass is not set in %s"), *GetName());
         return;
     }
-
+        
     // Calculate the spawn location based on the spawner's location
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
@@ -57,8 +58,8 @@ void APeCoEnemySpawner::SpawnEnemies()
         // Add a slight offset to prevent enemies from spawning on top of each other
         FVector Offset = FVector(FMath::RandRange(-100, 100), FMath::RandRange(-100, 100), 0);
         FVector FinalSpawnLocation = SpawnLocation + Offset;
-
-        APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation);
+                
+        APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation); 
         if (SpawnedEnemy)
         {
             UE_LOG(LogTemp, Warning, TEXT("Spawned an enemy: %s"), *SpawnedEnemy->GetName());

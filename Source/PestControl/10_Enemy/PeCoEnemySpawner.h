@@ -18,7 +18,7 @@ public:
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;
-
+     
     // 스폰할 적의 클래스 (BP로 설정 가능)
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<APeCoEnemyCharacter> EnemyClass;
@@ -39,5 +39,5 @@ private:
     void SpawnEnemies();
 
     FTimerHandle SpawnTimerHandle;
-
+        
 };
