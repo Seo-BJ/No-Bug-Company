@@ -4,15 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "07_Weapon/Weapon.h"
-#include "PestShotgun.generated.h"
+#include "RoachShooter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API APestShotgun : public AWeapon
+class PESTCONTROL_API ARoachShooter : public AWeapon
 {
 	GENERATED_BODY()
+
+public:
+	ARoachShooter();
+
+private:
+	FTimerHandle FireTimerHandle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,13 +28,12 @@ protected:
 
 public:
 
-	APestShotgun();
+	void RoachShooterFire();
 
-public:
-	void PestShotgunFire();
+	void SpawnProjectiles();
+
 
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsPestshogunValid = false;
-
-	FRotator SpreadRotation;
+	bool bIsRoachShooterValid = false;
+	
 };

@@ -7,7 +7,12 @@
 #include "01_Character/PeCoCharacter.h"
 
 #include "07_Weapon/LarvaLauncher.h"
+#include "07_Weapon/WebRevolver.h"
 #include "07_Weapon/PestShotgun.h"
+#include "07_Weapon/RoachShooter.h"
+#include "07_Weapon/AirGun.h"
+#include "07_Weapon/Pesticide.h"
+#include "07_Weapon/Flamethrower.h"
 
 #include "PeCoPlayerCharacter.generated.h"
 
@@ -66,12 +71,48 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> LarvaLauncherClass;
 
+	void SpawnWebRevolver();
+
+	AWebRevolver* WebRevolverInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> WebRevolverClass;
+
 	void SpawnPestShotgun();
 
 	APestShotgun* PestShotgunInstance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> PestShotgunClass;
+
+	void SpawnRoachShooter();
+
+	ARoachShooter* RoachShooterInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> RoachShooterClass;
+
+	void SpawnAirGun();
+
+	AAirGun* AirGunInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> AirGunClass;
+
+	void SpawnPesticide();
+
+	APesticide* PesticideInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> PesticideClass;
+
+	void SpawnFlamethrower();
+
+
+	AFlamethrower* FlamethrowerInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> FlamethrowerClass;
 	//End of Spawn Weapon
 
 	APlayerController* PeCoPlayerController;
@@ -93,9 +134,32 @@ public:
 
 	void EndInvincible();
 
+	//for LevelUp Test... ToDo Delete after test
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedPesticide;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedLaL;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedWR;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedPS;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedRS;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedAG;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
+	AWeapon* EquippedFT;
+	// ~ End of for levelup test
+
 protected:
 	bool bIsInvincible;
 
 	FTimerHandle InvincibilityTimerHandle;
-	//~End of InvincibleSta
+	//~End of InvincibleState
 };

@@ -2,16 +2,19 @@
 
 #pragma once
 
+#include"01_Character/PeCoEnemyCharacter.h"
+#include"07_Weapon/WeaponType.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponStats.h"
 #include "Weapon.generated.h"
 
 UCLASS()
 class PESTCONTROL_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeapon();
 
@@ -19,20 +22,39 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+	void InitInfo();
+
+	void ApplyDamageToEnemiesInRange();
+
+	FVector InitialLocation;
+	FRotator InitialRotation;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
+	UDataTable* WeaponDataTable;
+
+	FName WeaponID;
+
+	int32 CurrentLevel;
+
+	void LoadWeaponStats(int32 Level);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void LevelUp();
+
 	//~Weapon Properties
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float CriticalChance;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float CriticalDamageMultiplier;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float DamageMultiplier;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float BaseDamage;
-	UPROPERTY(EditAnywhere, Category = "WeaponStats")
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float Cooldown;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Root;
@@ -40,6 +62,8 @@ public:
 	UStaticMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* BulletSpawnPoint;
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	TSubclassOf<class AProjectile> BulletClass;
 
 	//~End of Weapon propoerties
 
@@ -57,7 +81,21 @@ public:
 	float DurationTime;
 	// ~End of conshaped weapon properties
 	void ProjectileFire();
+	void ShotgunFire();	
 
-	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
-	TSubclassOf<class AProjectile> BulletClass;
+	void ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter);
+
+	void ApplyDamageToEnemy(APeCoEnemyCharacter* Enemy, float Damage);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnDamage = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnDuration = 3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
+	float BurnTickTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Type")
+	EWeaponType WeaponType = EWeaponType::None;
 };

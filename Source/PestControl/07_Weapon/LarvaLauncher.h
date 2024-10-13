@@ -14,23 +14,26 @@ class PESTCONTROL_API ALarvaLauncher : public AWeapon
 {
 	GENERATED_BODY()
 
+public:
+	ALarvaLauncher();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	FTimerHandle CooldownHandle;
 
-	TArray<FTimerHandle> ProjectileTimerHandles;
-
-public:
-	ALarvaLauncher();
-	
+private:
+	FTimerHandle FireTimerHandle;
+		
 public:
 
 	void LarvaLauncherFire();
 
+	void StartCooldown();
+
 	void SpawnProjectiles();
 
 	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsLarvaLauncherValid = true;
+	bool bIsLarvaLauncherValid = false;
 };
