@@ -2,10 +2,13 @@
 
 
 #include "01_Character/PeCoEnemyCharacter.h"
+
 #include "00_GameModes/PeCoGameMode.h"
+#include "01_Character/PeCoPlayerCharacter.h"
 #include "02_Player/PeCoPlayerState.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
@@ -19,6 +22,13 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 720.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
+
+	// Set KnockbackForce
+	KnockbackForce = 1000.0f;
+
+	// Set up Hit event
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoEnemyCharacter::OnHit);
+
 
 	MaxHealth = 100.f; // set max health
 	Health = MaxHealth; // when the game start, set health = max health
@@ -91,6 +101,7 @@ void APeCoEnemyCharacter::CharacterDie()
 	Destroy();
 }
 
+
 void APeCoEnemyCharacter::ResetSlowStatus()
 {
 	bIsSlowed = false;
@@ -98,10 +109,32 @@ void APeCoEnemyCharacter::ResetSlowStatus()
 
 void APeCoEnemyCharacter::ResetStunStatus()
 {
-	bIsStunned = false; 
 }
 
 void APeCoEnemyCharacter::ResetBurnStatus()
 {
-	bIsBurning = false;
+}
+
+void APeCoEnemyCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor && OtherActor != this && OtherActor->IsA(APeCoPlayerCharacter::StaticClass()))
+	{
+		// Apply physical force when colliding with the player
+		FVector KnockbackDirection = GetActorLocation() - OtherActor->GetActorLocation();
+		KnockbackDirection.Normalize();
+
+		//Use LaunchCharacter to smoothly knock back
+		LaunchCharacter(KnockbackDirection * KnockbackForce, true, true);  // Keep Z-axis velocity
+
+		bRecentlyKnockedBack = true;
+				
+		GetWorld()->GetTimerManager().SetTimer(KnockbackTimerHandle, this, &APeCoEnemyCharacter::ResetKnockbackFlag, 2.0f, false);  // Prevent re-collision for 2 seconds
+			
+	}
+}
+
+void APeCoEnemyCharacter::ResetKnockbackFlag()
+{
+	bRecentlyKnockedBack = false;
+	 
 }
