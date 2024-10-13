@@ -11,9 +11,9 @@ void USpecialEventWidget::NativeConstruct()
 
 void USpecialEventWidget::SetEventName(const FString& EventName)
 {
-    if (EventTitleText)
+    if (EventNameText)
     {
-        EventTitleText->SetText(FText::FromString(EventName));
+        EventNameText->SetText(FText::FromString(EventName));
     }
 }
 

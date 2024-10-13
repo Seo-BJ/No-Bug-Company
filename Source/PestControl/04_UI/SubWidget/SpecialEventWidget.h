@@ -26,12 +26,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Event")
     void SetEventDescription(const FString& EventDescription);
 
-private:
     // TextBlock for the event title (Flood)
-    UPROPERTY(meta = (BindWidget))
-    class UTextBlock* EventTitleText;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (BindWidget))
+    class UTextBlock* EventNameText;
 
     // TextBlock for the event description
-    UPROPERTY(meta = (BindWidget))
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (BindWidget))
     class UTextBlock* EventDescriptionText;
+
 };
