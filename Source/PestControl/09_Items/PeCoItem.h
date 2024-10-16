@@ -26,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties")
-	EItemType ItemType = EItemType::EItemType_Default;
+	EConsumableItemType ItemType = EConsumableItemType::EItemType_Default;
 
 	// Icon image for the item
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties")
@@ -45,7 +45,7 @@ public:
 
 
 
-	FORCEINLINE EItemType GetItemType() { return ItemType; }
+	FORCEINLINE EConsumableItemType GetItemType() { return ItemType; }
 	
 
 };

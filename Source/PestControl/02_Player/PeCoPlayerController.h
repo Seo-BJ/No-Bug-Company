@@ -37,7 +37,7 @@ public:
 	virtual void SetupInputComponent() override;
 	//~End of AActor interface
 
-	void SetHUDItemSlotCount(EItemType ItemType, uint32 Amount);
+	void SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount);
 
 
 	UPROPERTY(BlueprintAssignable)

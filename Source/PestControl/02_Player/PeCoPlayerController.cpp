@@ -137,7 +137,7 @@ void APeCoPlayerController::CoolDownDash()
 
 
 
-void APeCoPlayerController::SetHUDItemSlotCount(EItemType ItemType, uint32 Amount)
+void APeCoPlayerController::SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount)
 {
 	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
 	if (bHUDValid)
