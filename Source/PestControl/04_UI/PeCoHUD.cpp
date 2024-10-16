@@ -8,6 +8,7 @@
 #include "04_UI/PeCoUserWidget.h"
 #include "04_UI/PlayerOverlay.h"
 #include "04_UI/DamageTextWidget.h"
+#include "04_UI/SubWidget/SpecialEventWidget.h"
 
 #include "Kismet/GameplayStatics.h"
 

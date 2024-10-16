@@ -25,12 +25,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Enemy")
-	float MovementSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
-	class UBehaviorTree* BehaviorTree;
-
+	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
