@@ -42,11 +42,11 @@ void UInventoryComponent::AddItemToInveotry(APeCoItem* Item, uint32 Amount)
 {
 	if (Item)
 	{
-		EItemType ItemType = Item->GetItemType();
+		EConsumableItemType ItemType = Item->GetItemType();
 		{
-			if (CarriedItemMap.Contains(ItemType))
+			if (PossessedConsumableItem.Contains(ItemType))
 			{
-				CarriedItemMap[ItemType] = CarriedItemMap[ItemType] + Amount;
+				PossessedConsumableItem[ItemType] = PossessedConsumableItem[ItemType] + Amount;
 				if (ItemType == CurrentItemTypeInSlot)
 				{
 					UpdateItemSlot(ItemType);
@@ -56,11 +56,11 @@ void UInventoryComponent::AddItemToInveotry(APeCoItem* Item, uint32 Amount)
 	}
 }
 
-void UInventoryComponent::UpdateItemSlot(EItemType ItemType)
+void UInventoryComponent::UpdateItemSlot(EConsumableItemType ItemType)
 {
-	if (CarriedItemMap.Contains(ItemType))
+	if (PossessedConsumableItem.Contains(ItemType))
 	{
-		uint32 ItemAmount = CarriedItemMap[ItemType];
+		uint32 ItemAmount = PossessedConsumableItem[ItemType];
 		APeCoPlayerCharacter* Character = Cast<APeCoPlayerCharacter>(GetOwner());
 		if (Character)
 		{

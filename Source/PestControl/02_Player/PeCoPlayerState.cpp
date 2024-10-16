@@ -24,7 +24,7 @@ APeCoPlayerState::APeCoPlayerState()
 
 void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	
+	ICombatInterface::ReceiveDamage(DamagedActor, Damage, DamageType, InstigatorController, DamageCauser);
 	PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
 	check(PeCoGameMode);
 	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetPawn()->GetController(), Damage);
@@ -45,29 +45,11 @@ void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 		}
 	}
 	*/
-
-	APlayerController* MyController = Cast<APlayerController>(GetOwner());
-	if (MyController)
-	{
-		APawn* MyPawn = MyController->GetPawn();
-		if (MyPawn)
-		{
-			APeCoHUD* MyHUD = Cast<APeCoHUD>(MyController->GetHUD());
-			if (MyHUD)
-			{
-				FVector2D ScreenPosition;
-
-				if (UGameplayStatics::ProjectWorldToScreen(MyController, MyPawn->GetActorLocation(), ScreenPosition))
-				{
-					MyHUD->AddDamageTextToPlayer(Damage, ScreenPosition);
-				}
-			}
-		}
-	}
-	
 	float NewHealth = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	OnHealthChagned.Broadcast(Health, NewHealth, nullptr);
 	Health = NewHealth;
+
+	ShowFloatingText(DamagedActor, InstigatorController, Damage);
 
 	if (Health <= 0.f)
 	{

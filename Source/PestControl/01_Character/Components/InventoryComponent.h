@@ -13,6 +13,8 @@ class APeCoPlayerController;
 
 class APotion;
 class APeCoItem;
+class ACombatItem;
+class AConsumableItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PESTCONTROL_API UInventoryComponent : public UActorComponent
@@ -40,15 +42,17 @@ public:
 
 	//~Item Inventory
 
-	TMap<EItemType, uint32> CarriedItemMap;
+	TMap<EConsumableItemType, uint32> PossessedConsumableItem;
+	TMap<EConsumableItemType, uint32> PossessedCombatItem;
+
 
 	void AddItemToInveotry(APeCoItem* Item, uint32 Counts);
 
-	void UpdateItemSlot(EItemType ItemType);
+	void UpdateItemSlot(EConsumableItemType ItemType);
 
 	void ChangeItemInSlot(APeCoItem* NewItem);
 
-	EItemType CurrentItemTypeInSlot;
+	EConsumableItemType CurrentItemTypeInSlot;
 
 	//~End of Item Inventory
 

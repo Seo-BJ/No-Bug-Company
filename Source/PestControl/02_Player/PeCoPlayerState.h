@@ -29,8 +29,7 @@ public:
 	APeCoPlayerState();
 
 	//~ICombatInterface
-	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-		AController* InstigatorController, AActor* DamageCauser) override;
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
 
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
@@ -40,9 +39,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float MaxHealth = 100;
-
-	void UpdateHUDHealth();
-
 
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -90,6 +86,10 @@ public:
 	//~End of Player Stats
 
 	uint32 GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount);
+
+
+protected:
+	
 
 private:
 

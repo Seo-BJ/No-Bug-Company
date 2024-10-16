@@ -10,6 +10,8 @@ class UPlayerOverlay;
 class UPeCoUserWidget;
 class UDamageTextWidget;
 class APlayerController;
+class UDamageTextComponent;
+
 /**
  * 
  */
@@ -27,8 +29,6 @@ public :
 	void AddGameOverWidget();
 	UFUNCTION(BlueprintCallable)
 	void AddGameResultWidget();
-
-	void AddDamageTextToPlayer(float Damage, FVector2D ScreenPosition);
 
 private:
 
@@ -53,11 +53,12 @@ private:
 	TObjectPtr<APlayerController> OwningPlayerController;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UDamageTextWidget> DamageTextWidgetClass; 
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 
 public:
 	
 	FORCEINLINE UPlayerOverlay* GetPlayerOverlayWidget() { return PlayerOverlayWidget; }
+	FORCEINLINE TSubclassOf<UDamageTextComponent> GetDamageTextComponnet() { return DamageTextComponentClass; }
 
 };
  

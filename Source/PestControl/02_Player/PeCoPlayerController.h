@@ -16,8 +16,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartDashCooldown, float, DashCoold
 class UUserWidget;
 class UInputMappingContext;
 class UInPutActionDataAsset;
-
+class UDamageTextComponent;
 class APeCoHUD;
+class APeCoCharacter;
 class APeCoGameMode;
 
 UCLASS()
@@ -36,13 +37,17 @@ public:
 	virtual void SetupInputComponent() override;
 	//~End of AActor interface
 
-	void SetHUDItemSlotCount(EItemType ItemType, uint32 Amount);
+	void SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount);
 
 
 	UPROPERTY(BlueprintAssignable)
 	FStartDash OnStartDash;
 	UPROPERTY(BlueprintAssignable)
 	FStartDashCooldown OnStartDashCooldown;
+
+	//~Floating Text
+	void ShowDamageText(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
+	//~End of Floating Text
 
 protected:
 
@@ -58,15 +63,14 @@ protected:
 	float TotalGameTime = 0.f;
 	float LevelStartingTime = 0.f;
 
+	uint32 CountdownInt = 0;
 	// To do : 라운드 별 시간 추가?
 
 	void GetGameTimeData();
 	void SetHUDTime(float DeltaTime);
 	void SetHUDGameTimer(float CountdownTime);
-
 	//~End of Timer Widget
 
-	uint32 CountdownInt = 0;
 
 
 private:
@@ -92,7 +96,7 @@ private:
 
 	// ~End of Player Movement
 
-		// HUD Class Reference
+	// Class Reference
 	TObjectPtr<APeCoHUD> PeCoHUD = nullptr;
 
 	TObjectPtr<APeCoGameMode> PeCoGameMode = nullptr;

@@ -12,6 +12,7 @@
 #include "04_UI/PlayerOverlay.h"
 #include "04_UI/SubWidget/GameTimerWidget.h"
 #include "04_UI/SubWidget/PeCoProgressBar.h"
+#include "04_UI/WidgetComponents/DamageTextComponent.h"
 
 #include "Components/ProgressBar.h"
 
@@ -136,7 +137,7 @@ void APeCoPlayerController::CoolDownDash()
 
 
 
-void APeCoPlayerController::SetHUDItemSlotCount(EItemType ItemType, uint32 Amount)
+void APeCoPlayerController::SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount)
 {
 	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
 	if (bHUDValid)
@@ -194,6 +195,19 @@ void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 		int32 Seconds = CountdownTime - Minutes * 60;
 		FString CountdownText = FString::Printf(TEXT("%02d : %02d"), Minutes, Seconds);
 		PeCoHUD->GetPlayerOverlayWidget()->GameTimer->GameTimer->SetText(FText::FromString(CountdownText));
+	}
+}
+
+void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (PeCoHUD && PeCoHUD->GetDamageTextComponnet())
+	{
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, PeCoHUD->GetDamageTextComponnet());
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
 	}
 }
 

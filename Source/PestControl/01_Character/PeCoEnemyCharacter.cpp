@@ -46,21 +46,6 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), Damage);
 	
 	float DamageToHealth = Damage;
-	/*
-	if (Shield > 0.f)
-	{
-		if (Shield >= Damage)
-		{
-			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
-			DamageToHealth = 0.f;
-		}
-		else
-		{
-			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
-			Shield = 0.f;
-		}
-	}
-	*/
 
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 

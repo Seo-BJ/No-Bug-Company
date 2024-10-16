@@ -7,6 +7,9 @@
 #include "21_Data/PeCoDataTypes.h"
 #include "CombatInterface.generated.h"
 
+
+class APeCoCharacter;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UCombatInterface : public UInterface
@@ -21,24 +24,28 @@ class PESTCONTROL_API ICombatInterface
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
 	UFUNCTION()
-	virtual void ReceiveDamage(AActor* DamagedActor, 
-		float Damage,
-		const UDamageType* DamageType,
-		AController* InstigatorController,
-		AActor* DamageCauser) = 0;
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage,const UDamageType* DamageType, AController* InstigatorController,AActor* DamageCauser);
 
 	virtual void CharacterDie() = 0;
 
+	//~Team 
 	ETeam Team = ETeam::ET_Neutral;
-
 	FORCEINLINE ETeam GetTeam() const { return Team; }
 	void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
 
+	//~End of Team
 
+protected:
+
+	//~Floating Text 
+
+	// Show Floating Text when ReceiveDamage
+	void ShowFloatingText(AActor* DamagedActor, AController* InstigatorController, float Damage, bool bCriticalHi = false, bool bBlockedHit = false) const;
+
+	//~End of Floating Text
 
 
 };
