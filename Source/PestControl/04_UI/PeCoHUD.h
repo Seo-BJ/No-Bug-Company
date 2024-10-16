@@ -30,8 +30,6 @@ public :
 
 	void AddDamageTextToPlayer(float Damage, FVector2D ScreenPosition);
 
-
-
 private:
 
 	TObjectPtr<UPeCoUserWidget>  LevelUpWidget;
