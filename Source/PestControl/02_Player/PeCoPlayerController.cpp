@@ -5,6 +5,8 @@
 
 
 #include "00_GameModes/PeCoGameMode.h"
+#include "01_Character/PeCoPlayerCharacter.h"
+#include "01_Character/Components/InventoryComponent.h"
 
 #include "03_Input/InPutActionDataAsset.h"
 
@@ -76,6 +78,16 @@ void APeCoPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(InputComponent);
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
 	PEI->BindAction(InputActions->InputActionDash, ETriggerEvent::Triggered, this, &APeCoPlayerController::Dash);
+
+	PEI->BindAction(InputActions->InputActionUseConsumableItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::UseConsumableItem);
+	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Started, this, &APeCoPlayerController::PressConsumableItemKey);
+	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldConsumableItemKey);
+
+	PEI->BindAction(InputActions->InputActionUseCombatItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::UseCombatleItem);
+	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Started, this, &APeCoPlayerController::PressCombatbleItemKey);
+	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldCombatItemKey);
+
+	PEI->BindAction(InputActions->InputActionChangeItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::ChangeItemOnSlot);
 }
 
 
@@ -99,10 +111,8 @@ void APeCoPlayerController::Move(const FInputActionValue& Value)
 	}
 
 }
-
 void APeCoPlayerController::Dash(const FInputActionValue& Value)
 {
-
 	if (bCanDash && !CurrentMoveDirection.IsNearlyZero())
 	{
 		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal();
@@ -118,6 +128,86 @@ void APeCoPlayerController::Dash(const FInputActionValue& Value)
 	}
 }
 
+void APeCoPlayerController::ChangeItemOnSlot(const FInputActionValue& Value)
+{
+	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
+	FVector2D ValueVector = Value.Get<FVector2D>();
+	if (PeCoPlayerCharacter)
+	{
+		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
+		if (InventoryComponent)
+		{
+			if (ValueVector.X > 0) // 마우스 휠 축 위 입력
+			{
+				if (bConsumableItemKeyPressed)
+				{
+					InventoryComponent->CycleItemSlot(EItemType::EItemType_Consumable, true);
+				}
+				if (bCombatItemKeyPressed)
+				{
+					InventoryComponent->CycleItemSlot(EItemType::EItemType_Combat, true);
+				}
+			}
+			else // 마우스 휠 축 아래 입력
+			{
+				if (bConsumableItemKeyPressed)
+				{
+					InventoryComponent->CycleItemSlot(EItemType::EItemType_Consumable, false);
+				}
+				if (bCombatItemKeyPressed)
+				{
+					InventoryComponent->CycleItemSlot(EItemType::EItemType_Combat, false);
+				}
+			}
+		}
+	}
+}
+void APeCoPlayerController::PressConsumableItemKey(const FInputActionValue& Value)
+{
+	bConsumableItemKeyPressed = true;
+}
+void APeCoPlayerController::HeldConsumableItemKey(const FInputActionValue& Value)
+{
+	bConsumableItemKeyPressed = false;
+}
+void APeCoPlayerController::PressCombatbleItemKey(const FInputActionValue& Value)
+{
+	bCombatItemKeyPressed = true;
+
+}
+void APeCoPlayerController::HeldCombatItemKey(const FInputActionValue& Value)
+{
+	bCombatItemKeyPressed = false;
+}
+void APeCoPlayerController::UseConsumableItem(const FInputActionValue& Value)
+{
+	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
+	if (PeCoPlayerCharacter)
+	{
+		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
+		if (InventoryComponent)
+		{
+			InventoryComponent->UseItemInQuickSlot(EItemType::EItemType_Consumable);
+		}
+	}
+}
+void APeCoPlayerController::UseCombatleItem(const FInputActionValue& Value)
+{
+	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
+	if (PeCoPlayerCharacter)
+	{
+		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
+		if (InventoryComponent)
+		{
+			InventoryComponent->UseItemInQuickSlot(EItemType::EItemType_Combat);
+		}
+	}
+}
+
+
+
+#pragma region Dash
+
 void APeCoPlayerController::ResetDash()
 {
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
@@ -129,13 +219,14 @@ void APeCoPlayerController::ResetDash()
 	GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::CoolDownDash, DashCooldown, false);
 	OnStartDashCooldown.Broadcast(DashCooldown);
 }
-
 void APeCoPlayerController::CoolDownDash()
 {
 	bCanDash = true;
 }
 
+#pragma endregion
 
+#pragma region User Interface
 
 void APeCoPlayerController::SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount)
 {
@@ -211,4 +302,4 @@ void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* T
 	}
 }
 
-
+#pragma endregion

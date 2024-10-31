@@ -4,6 +4,7 @@
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "01_Character/Components/InventoryComponent.h"
+#include "01_Character/Components/EquipmentComponent.h"
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
@@ -72,6 +73,7 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	 bIsInvincible = false;
 
 	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	 EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 

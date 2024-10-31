@@ -17,6 +17,7 @@
 #include "PeCoPlayerCharacter.generated.h"
 
 class UInventoryComponent;
+class UEquipmentComponent;
 /**
  * 
  */
@@ -42,6 +43,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UEquipmentComponent> EquipmentComponent;
+
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;

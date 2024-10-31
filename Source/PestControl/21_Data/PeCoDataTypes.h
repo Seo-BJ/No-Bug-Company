@@ -10,23 +10,26 @@ enum class ETeam : uint8
 	ET_Neutral UMETA(DisplayName = "Neutral"),
 };
 
+
 UENUM(BlueprintType)
-enum class EConsumableItemType : uint8
+enum class EItemType : uint8
 {
-	EItemType_Potion UMETA(DisplayName = "Potion"),
-	EItemType_Drink UMETA(DisplayName = "Drink"),
-	EItemType_Trap UMETA(DisplayName = "Trap"),
+	EItemType_Consumable UMETA(DisplayName = "Consumable"),
+	EItemType_Combat UMETA(DisplayName = "Combat"),
 
 	EItemType_Default UMETA(DisplayName = "Default", Hidden),
 
+};
+
+UENUM(BlueprintType)
+enum class EConsumableItemType : uint8
+{
+	EConsumableItemType_Default UMETA(DisplayName = "Default", Hidden),
 };
 
 enum class ECombatItemType : uint8
 {
-	EItemType_Potion UMETA(DisplayName = "Potion"),
-	EItemType_Drink UMETA(DisplayName = "Drink"),
-	EItemType_Trap UMETA(DisplayName = "Trap"),
-
-	EItemType_Default UMETA(DisplayName = "Default", Hidden),
-
+	ECombatItemType_Default UMETA(DisplayName = "Default", Hidden),
 };
+
+
