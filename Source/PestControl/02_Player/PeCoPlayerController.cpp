@@ -7,6 +7,7 @@
 #include "00_GameModes/PeCoGameMode.h"
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "01_Character/Components/InventoryComponent.h"
+#include "01_Character/Components/EquipmentComponent.h"
 
 #include "03_Input/InPutActionDataAsset.h"
 
@@ -15,6 +16,8 @@
 #include "04_UI/SubWidget/GameTimerWidget.h"
 #include "04_UI/SubWidget/PeCoProgressBar.h"
 #include "04_UI/WidgetComponents/DamageTextComponent.h"
+
+#include "21_Data/PeCoDataTypes.h"
 
 #include "Components/ProgressBar.h"
 
@@ -79,15 +82,15 @@ void APeCoPlayerController::SetupInputComponent()
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
 	PEI->BindAction(InputActions->InputActionDash, ETriggerEvent::Triggered, this, &APeCoPlayerController::Dash);
 
-	PEI->BindAction(InputActions->InputActionUseConsumableItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::UseConsumableItem);
-	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Started, this, &APeCoPlayerController::PressConsumableItemKey);
+	PEI->BindAction(InputActions->InputActionUseConsumableItem, ETriggerEvent::Completed, this, &APeCoPlayerController::UseConsumableItem);
+	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::PressConsumableItemKey);
 	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldConsumableItemKey);
 
-	PEI->BindAction(InputActions->InputActionUseCombatItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::UseCombatleItem);
-	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Started, this, &APeCoPlayerController::PressCombatbleItemKey);
+	PEI->BindAction(InputActions->InputActionUseCombatItem, ETriggerEvent::Completed, this, &APeCoPlayerController::UseCombatleItem);
+	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::PressCombatbleItemKey);
 	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldCombatItemKey);
 
-	PEI->BindAction(InputActions->InputActionChangeItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::ChangeItemOnSlot);
+
 }
 
 
@@ -128,66 +131,62 @@ void APeCoPlayerController::Dash(const FInputActionValue& Value)
 	}
 }
 
-void APeCoPlayerController::ChangeItemOnSlot(const FInputActionValue& Value)
-{
-	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
-	FVector2D ValueVector = Value.Get<FVector2D>();
-	if (PeCoPlayerCharacter)
-	{
-		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
-		if (InventoryComponent)
-		{
-			if (ValueVector.X > 0) // 마우스 휠 축 위 입력
-			{
-				if (bConsumableItemKeyPressed)
-				{
-					InventoryComponent->CycleItemSlot(EItemType::EItemType_Consumable, true);
-				}
-				if (bCombatItemKeyPressed)
-				{
-					InventoryComponent->CycleItemSlot(EItemType::EItemType_Combat, true);
-				}
-			}
-			else // 마우스 휠 축 아래 입력
-			{
-				if (bConsumableItemKeyPressed)
-				{
-					InventoryComponent->CycleItemSlot(EItemType::EItemType_Consumable, false);
-				}
-				if (bCombatItemKeyPressed)
-				{
-					InventoryComponent->CycleItemSlot(EItemType::EItemType_Combat, false);
-				}
-			}
-		}
-	}
-}
 void APeCoPlayerController::PressConsumableItemKey(const FInputActionValue& Value)
 {
-	bConsumableItemKeyPressed = true;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Consumtion);
+		}
+	}
+	
 }
 void APeCoPlayerController::HeldConsumableItemKey(const FInputActionValue& Value)
 {
-	bConsumableItemKeyPressed = false;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Consumtion);
+		}
+	}
 }
 void APeCoPlayerController::PressCombatbleItemKey(const FInputActionValue& Value)
 {
-	bCombatItemKeyPressed = true;
-
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Combat);
+		}
+	}
 }
 void APeCoPlayerController::HeldCombatItemKey(const FInputActionValue& Value)
 {
-	bCombatItemKeyPressed = false;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Combat);
+		}
+	}
 }
+
+
 void APeCoPlayerController::UseConsumableItem(const FInputActionValue& Value)
 {
 	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
 	if (PeCoPlayerCharacter)
 	{
-		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
-		if (InventoryComponent)
+		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
+		if (EquipmentComponent)
 		{
-			InventoryComponent->UseItemInQuickSlot(EItemType::EItemType_Consumable);
+			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Consumption);
 		}
 	}
 }
@@ -196,10 +195,10 @@ void APeCoPlayerController::UseCombatleItem(const FInputActionValue& Value)
 	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
 	if (PeCoPlayerCharacter)
 	{
-		UInventoryComponent* InventoryComponent = PeCoPlayerCharacter->InventoryComponent;
-		if (InventoryComponent)
+		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
+		if (EquipmentComponent)
 		{
-			InventoryComponent->UseItemInQuickSlot(EItemType::EItemType_Combat);
+			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Combat);
 		}
 	}
 }
@@ -227,18 +226,6 @@ void APeCoPlayerController::CoolDownDash()
 #pragma endregion
 
 #pragma region User Interface
-
-void APeCoPlayerController::SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount)
-{
-	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
-	if (bHUDValid)
-	{
-
-
-
-
-	}
-}
 
 void APeCoPlayerController::GetGameTimeData()
 {

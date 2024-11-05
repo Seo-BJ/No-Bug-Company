@@ -4,7 +4,9 @@
 #include "EquipmentComponent.h"
 
 #include "01_Character/Components/InventoryComponent.h"
-#include "09_Items/PeCoItem.h"
+#include "02_Player/PeCoPlayerController.h"
+#include "09_Items/Components/PeCoItemComponent.h"
+#include "20_System/PeCoFunctionLibrary.h"
 
 UEquipmentComponent::UEquipmentComponent()
 {
@@ -18,22 +20,24 @@ void UEquipmentComponent::BeginPlay()
 	
 }
 
-
- bool UEquipmentComponent::GetAllItems(TArray<AActor*>& OutItems)
+bool UEquipmentComponent::UseItemInSlot(const ESlotType SlotType)
 {
-     OutItems.Reset(EquipmentList.Num());
-
-     for (const FEquipmentInfo& EquipmentItem : EquipmentList)
-     {
-         if (IsValid(EquipmentItem.ItemActor))
-         {
-             OutItems.Add(EquipmentItem.ItemActor);
-         }
-     }
-     return OutItems.Num() > 0;
+    AActor* ItemInSlot;
+    if (GetItemInSlot(SlotType, ItemInSlot))
+    {
+        UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemInSlot);
+        if (ItemComponent && ItemComponent->GetOwner())
+        {
+            ItemComponent->UseItem(GetOwner());
+        }
+        OnItemUsedInSlot.Broadcast(ItemInSlot, SlotType);
+        return true;
+    }
+    return false;
 }
 
-bool UEquipmentComponent::EquipItemInSlot(const FName Slot, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem)
+
+bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem)
 {
     if (!IsValid(GetOwner()) || !IsValid(ItemActor))
     {
@@ -42,11 +46,10 @@ bool UEquipmentComponent::EquipItemInSlot(const FName Slot, AActor* ItemActor, A
 
     // 이미 같은 아이템이 장착된 경우 조기 return
     AActor* ItemInSlot;
-    if (GetItemInSlot(Slot, ItemInSlot))
+    if (GetItemInSlot(SlotType, ItemInSlot))
     {
         if (ItemInSlot == ItemActor)
         {
-            // Same item is already equipped
             return false;
         }
     }
@@ -55,55 +58,54 @@ bool UEquipmentComponent::EquipItemInSlot(const FName Slot, AActor* ItemActor, A
     {
         const FEquipmentInfo& EquipmentElement = EquipmentList[i];
 
-        if (Slot != EquipmentElement.Id)
+        if (SlotType != EquipmentElement.CurrentSlot)
         {
             continue;
         }
-
-        if (!ItemActor->ActorHasTag(APeCoItem::TAG_ITEM))
+        if (!ItemActor->ActorHasTag(UPeCoItemComponent::TAG_ITEM))
         {
             continue;
         }
-
-        APeCoItem* PeCoItem = Cast<APeCoItem>(ItemActor);
-        if (!IsValid(PeCoItem))
+        const UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemActor);
+        if (!IsValid(ItemComponent))
         {
             continue;
         }
-
-        const bool bMatches = PeCoItem->ItemInfo.ItemType == EquipmentElement.AcceptableSlotType;
+        const bool bMatches = ItemComponent->ItemInfo.SlotType == EquipmentElement.AcceptableSlotType;
         if (!bMatches)
         {
             continue;
         }
 
-        // All conditions are met -> Start to equip item
+        // 아이템 장착 시작
 
         // Skip UnEquip if item is NOT valid (empty slot!)
         if (IsValid(EquipmentElement.ItemActor))
         {
             OutPreviousItem = EquipmentElement.ItemActor;
-            APeCoItem* OutPeCoItem = Cast<APeCoItem>(OutPreviousItem);
-            if (IsValid(OutPeCoItem))
+            const UPeCoItemComponent* PreviousItemComponent = UPeCoFunctionLibrary::GetItemComponent(OutPreviousItem);
+            if (IsValid(PreviousItemComponent))
             {
-                OutPeCoItem->UnEquipInternal(Slot);
+                PreviousItemComponent->UnEquipInternal(SlotType);
             }
         }
 
         EquipmentList[i].ItemActor = ItemActor;
         OutNewItem = ItemActor;
 
-        PeCoItem->EquipInternal(Slot);
+        ItemComponent->EquipInternal(SlotType);
 
         // Item equipped successfully
+
+
+        OnItemEquip.Broadcast(OutNewItem, SlotType);
         return true;
     }
 
     // Failed to equip item
     return false;
 }
-
-bool UEquipmentComponent::UnEquipItemFromSlot(const FName Slot, AActor*& OutItemUnequipped)
+bool UEquipmentComponent::UnEquipItemFromSlot(const ESlotType SlotType, AActor*& OutItemUnequipped)
 {
     if (!IsValid(GetOwner()))
     {
@@ -114,7 +116,7 @@ bool UEquipmentComponent::UnEquipItemFromSlot(const FName Slot, AActor*& OutItem
     {
         FEquipmentInfo& EquipmentElement = EquipmentList[i];
 
-        if (Slot != EquipmentElement.Id)
+        if (SlotType != EquipmentElement.CurrentSlot)
         {
             continue;
         }
@@ -129,23 +131,25 @@ bool UEquipmentComponent::UnEquipItemFromSlot(const FName Slot, AActor*& OutItem
         OutItemUnequipped = EquipmentElement.ItemActor;
         EquipmentElement.ItemActor = nullptr;
 
-        APeCoItem* OutPeCoItem = Cast<APeCoItem>(OutItemUnequipped);
-        if (IsValid(OutPeCoItem))
+        const UPeCoItemComponent* UnequippedItemComponent = UPeCoFunctionLibrary::GetItemComponent(OutItemUnequipped);
+        if (IsValid(UnequippedItemComponent))
         {
-            OutPeCoItem->UnEquipInternal(Slot);
+            UnequippedItemComponent->UnEquipInternal(SlotType);
         }
 
         // Item unequipped successfully
+        OnItemUnEquip.Broadcast(OutItemUnequipped, SlotType);
         return true;
     }
     // Failed to UnEquip item
     return false;
 }
-bool UEquipmentComponent::GetItemInSlot(const FName Slot, AActor*& OutItem)
+
+bool UEquipmentComponent::GetItemInSlot(const ESlotType SlotType, AActor*& OutItem)
 {
     for (const FEquipmentInfo& EquipmentElement : EquipmentList)
     {
-        if (EquipmentElement.Id != Slot)
+        if (EquipmentElement.CurrentSlot != SlotType)
         {
             continue;
         }
@@ -167,6 +171,18 @@ bool UEquipmentComponent::GetItemInSlot(const FName Slot, AActor*& OutItem)
     // Failed to find item
     return false;
 }
+bool UEquipmentComponent::GetAllItems(TArray<AActor*>& OutItems)
+{
+    OutItems.Reset(EquipmentList.Num());
 
+    for (const FEquipmentInfo& EquipmentItem : EquipmentList)
+    {
+        if (IsValid(EquipmentItem.ItemActor))
+        {
+            OutItems.Add(EquipmentItem.ItemActor);
+        }
+    }
+    return OutItems.Num() > 0;
+}
 
 

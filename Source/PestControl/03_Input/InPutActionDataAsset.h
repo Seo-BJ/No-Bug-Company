@@ -24,9 +24,6 @@ public:
 	UInputAction* InputActionSettings;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* InputActionChangeItem;
-
-	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* InputActionUseConsumableItem;
 
 	UPROPERTY(EditAnywhere, Category = Input)

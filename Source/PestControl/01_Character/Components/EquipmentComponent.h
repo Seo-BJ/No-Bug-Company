@@ -14,53 +14,76 @@ struct FEquipmentInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Equipment")
-	FName Id;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
+	ESlotType CurrentSlot;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Equipment")
-	EItemType AcceptableSlotType;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
+	ESlotType AcceptableSlotType;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Equipment")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
 	AActor* ItemActor = nullptr;
 };
 
-class APeCoItem;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemEquip, AActor*, Item, ESlotType, Slot);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUnEquip, AActor*, Item, ESlotType, Slot);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUsedInSlot, AActor*, Item, ESlotType, Slot);
+
+class UPeCoItemComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PESTCONTROL_API UEquipmentComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend APeCoItem;
+	friend UPeCoItemComponent;
 
 public:	
 
 	UEquipmentComponent();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Equipment")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
 	TArray<FEquipmentInfo> EquipmentList;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGR")
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
+	UPARAM(DisplayName = "Success") bool UseItemInSlot(const ESlotType SlotType);
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
+	UPARAM(DisplayName = "Success") bool EquipItemInSlot(const ESlotType SlotType, AActor* ItemActor, UPARAM(DisplayName = "PreviousItem") AActor*& OutPreviousItem, UPARAM(DisplayName = "NewItem") AActor*& OutNewItem);
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
+	UPARAM(DisplayName = "Success") bool UnEquipItemFromSlot(const ESlotType SlotType,UPARAM(DisplayName = "ItemUnequipped") AActor*& OutItemUnequipped);
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
+	UPARAM(DisplayName = "Success") bool GetItemInSlot(const ESlotType SlotType, UPARAM(DisplayName = "Item") AActor*& OutItem);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Equipment")
 	UPARAM(DisplayName = "Has Items") bool GetAllItems(UPARAM(DisplayName = "Items") TArray<AActor*>& OutItems);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AGR")
-	UPARAM(DisplayName = "Success") bool EquipItemInSlot(const FName Slot, AActor* ItemActor, UPARAM(DisplayName = "PreviousItem") AActor*& OutPreviousItem, UPARAM(DisplayName = "NewItem") AActor*& OutNewItem);
+	// 아이템 장착시 Broadcast
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnItemEquip OnItemEquip;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AGR")
-	UPARAM(DisplayName = "Success") bool UnEquipItemFromSlot(const FName Slot,UPARAM(DisplayName = "ItemUnequipped") AActor*& OutItemUnequipped);
+	// 아이템 장착 해제시 Broadcast
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnItemUnEquip OnItemUnEquip;
 
-	UFUNCTION(BlueprintCallable, Category = "AGR")
-	UPARAM(DisplayName = "Success") bool GetItemInSlot(const FName Slot, UPARAM(DisplayName = "Item") AActor*& OutItem);
+	// Slot에 장착된 아이템을 슬롯에서 사용시 BroadCast
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnItemUnEquip OnItemUsedInSlot;
+
+
 
 protected:
 
 	virtual void BeginPlay() override;
 
+private:
 
 
 
-public:	
-	
+
 
 
 

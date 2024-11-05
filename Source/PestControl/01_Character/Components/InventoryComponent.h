@@ -10,20 +10,17 @@
 
 
 class APeCoPlayerController;
+class UPeCoItemComponent;
 
-class APotion;
-class APeCoItem;
-class ACombatItem;
-class AConsumableItem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUpdated, AActor*, Item);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(BlueprintType, Blueprintable, ClassGroup = ("InventorySystem"), meta = (BlueprintSpawnableComponent))
 class PESTCONTROL_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend APeCoItem;
+	friend UPeCoItemComponent;
 
 public:	
 
@@ -32,20 +29,11 @@ public:
 	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, SaveGame, Category = "AGR|Game Play")
 	//TArray<FEquipmentInfo> EquipmentList;
 
-
-	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
+	UPROPERTY(BlueprintReadWrite, Category = "InventorySystem|Inventory")
 	AActor* InventoryStorage = nullptr;
 
-
-	UPROPERTY(BlueprintAssignable, Category = "AGR|Events")
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
 	FOnItemUpdated OnItemUpdated;
-
-
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	UPARAM(DisplayName = "Success") bool EquipItemInSlot(const FName Slot, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem);
-
-
 
 protected:
 	// Called when the game starts
@@ -53,39 +41,43 @@ protected:
 
 public:	
 
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool AddItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AGR")
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool RemoveItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote);
 
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	UPARAM(DisplayName = "Found") bool GetAllItemsOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "FilteredArray") TArray<AActor*>& OutFilteredArray);
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Found") bool GetItemOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool GetAlItemsOfType(const EItemType ItemType, UPARAM(DisplayName = "FilteredArray") TArray<AActor*>& OutFilteredArray);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Items") TArray<AActor*> GetAllItems();
 
-	UFUNCTION(BlueprintCallable, Category = "AGR")
+
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool HasEnoughItems(const TSubclassOf<AActor> Item,const int32 Quantity, FText& OutNote);
 
 
-		
-	void UseItemInQuickSlot(EItemType ItemType);
-
-	APeCoItem* CycleItemSlot(EItemType ItemType, bool bIndexUp);
-
-	void SetItemInQuickSlot(EItemType ItemType, APeCoItem* Item);
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfItem(const TSubclassOf<AActor> Class);
 
 
+	/*
+	* UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Equipment")
+		UPARAM(DisplayName = "Success") bool GetNextIndexItem(UPARAM(DisplayName = "Items") TArray<AActor*>& OutItems);
+	* 
+	* 
+		*/
 
 
+
+	void SetupInventoryStorageReference();
 
 private:
 
-	TObjectPtr<APeCoPlayerController> PlayerController;
-
-	void SetupInventoryStorageReference();
-		
 };

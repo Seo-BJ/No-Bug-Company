@@ -46,11 +46,22 @@ void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 	}
 	*/
 	float NewHealth = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+	SetHealth(NewHealth, DamagedActor, InstigatorController);
+}
+
+void APeCoPlayerState::SetHealth(float NewHealth, AActor* DamagedActor, AController* InstigatorController)
+{
 	OnHealthChagned.Broadcast(Health, NewHealth, nullptr);
+	float Damage = Health - NewHealth;
 	Health = NewHealth;
 
-	ShowFloatingText(DamagedActor, InstigatorController, Damage);
+	// 데미지를 입는 경우
+	if (Damage > 0)
+	{
+		ShowFloatingText(DamagedActor, InstigatorController, Damage);
+	}
 
+	// 죽음 처리
 	if (Health <= 0.f)
 	{
 		PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
@@ -95,6 +106,7 @@ void APeCoPlayerState::CharacterDie()
 
 	// To Do: 추가 Death Event 처리
 }
+
 
 
 
