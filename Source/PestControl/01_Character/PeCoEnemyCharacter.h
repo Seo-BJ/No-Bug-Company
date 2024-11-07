@@ -63,7 +63,7 @@ private:
 
 	//~Status effect
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status Effect")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
 	bool bIsSlowed = false;  
 
 	void ResetSlowStatus();
@@ -72,12 +72,5 @@ public:
 	bool bIsStunned = false; 
 
 	void ResetStunStatus();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
-	bool bIsBurning = false; 
-
-	FTimerHandle ResetBurnHandle;
-
-	void ResetBurnStatus();
 	//~End of Status effect
 };

@@ -85,14 +85,10 @@ void APeCoPlayerCharacter::BeginPlay()
 	PeCoPlayerController = Cast<APlayerController>(GetController());
 
 	UE_LOG(LogTemp, Warning, TEXT("health: %f"), PeCoPlayerState->Health);
-	
-	SpawnLarvaLauncher();
-	SpawnPestShotgun();
-	SpawnWebRevolver();
-	SpawnRoachShooter();
-	SpawnAirGun();
-	SpawnPesticide();
-	SpawnFlamethrower();
+
+	InitializeWeaponClasses();
+
+	SpawnWeapon("LarvaLauncher");
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -145,7 +141,6 @@ void APeCoPlayerCharacter::PossessedBy(AController* NewController)
 
 }
 
-
 void APeCoPlayerCharacter::InitPlayerCharacter()
 {
 	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
@@ -160,122 +155,45 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 
 }
 
-void APeCoPlayerCharacter::SpawnLarvaLauncher()
+void APeCoPlayerCharacter::InitializeWeaponClasses()
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (LarvaLauncherClass)
-	{
-		LarvaLauncherInstance = GetWorld()->SpawnActor<ALarvaLauncher>(LarvaLauncherClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (LarvaLauncherInstance)
-		{
-			LarvaLauncherInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedLaL = LarvaLauncherInstance;
-		}
-	}
+	WeaponClassMap.Add("LarvaLauncher", LarvaLauncherClass);
+	WeaponClassMap.Add("WebRevolver", WebRevolverClass);
+	WeaponClassMap.Add("PestShotgun", PestShotgunClass);
+	WeaponClassMap.Add("RoachShooter", RoachShooterClass);
+	WeaponClassMap.Add("AirGun", AirGunClass);
+	WeaponClassMap.Add("Pesticide", PesticideClass);
+	WeaponClassMap.Add("Flamethrower", FlamethrowerClass);
 }
 
-void APeCoPlayerCharacter::SpawnWebRevolver()
+void APeCoPlayerCharacter::SpawnWeapon(FName WeaponName)
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (WebRevolverClass)
+	if (!WeaponClassMap.Contains(WeaponName) || !WeaponSpawnPoint)
 	{
-		WebRevolverInstance = GetWorld()->SpawnActor<AWebRevolver>(WebRevolverClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (WebRevolverInstance)
-		{
-			WebRevolverInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedWR = WebRevolverInstance;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Weapon class or spawn point is invalid for %s"), *WeaponName.ToString());
+		return;
 	}
-}
 
-void APeCoPlayerCharacter::SpawnPestShotgun()
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (PestShotgunClass)
+	TSubclassOf<AWeapon> WeaponClass = WeaponClassMap[WeaponName];
+	if (!WeaponClass)
 	{
-		PestShotgunInstance = GetWorld()->SpawnActor<APestShotgun>(PestShotgunClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (PestShotgunInstance)
-		{
-			PestShotgunInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedPS = PestShotgunInstance;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("No valid weapon class found for %s"), *WeaponName.ToString());
+		return;
 	}
-}
 
-void APeCoPlayerCharacter::SpawnRoachShooter()
-{
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	if (RoachShooterClass)
+	AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+	if (SpawnedWeapon)
 	{
-		RoachShooterInstance = GetWorld()->SpawnActor<ARoachShooter>(RoachShooterClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (RoachShooterInstance)
-		{
-			RoachShooterInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedRS = RoachShooterInstance;
-		}
+		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		SpawnedWeapons.Add(WeaponName, SpawnedWeapon);
+		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponName.ToString());
 	}
-}
-
-void APeCoPlayerCharacter::SpawnAirGun()
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (AirGunClass)
+	else
 	{
-		AirGunInstance = GetWorld()->SpawnActor<AAirGun>(AirGunClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (AirGunInstance)
-		{
-			AirGunInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedAG = AirGunInstance;
-		}
-	}
-}
-
-void APeCoPlayerCharacter::SpawnPesticide()
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (PesticideClass)
-	{
-		PesticideInstance = GetWorld()->SpawnActor<APesticide>(PesticideClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (PesticideInstance)
-		{
-			PesticideInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedPesticide = PesticideInstance;
-		}
-	}
-}
-
-void APeCoPlayerCharacter::SpawnFlamethrower()
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-
-	if (FlamethrowerClass)
-	{
-		FlamethrowerInstance = GetWorld()->SpawnActor<AFlamethrower>(FlamethrowerClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-
-		if (FlamethrowerInstance)
-		{
-			FlamethrowerInstance->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-			EquippedFT = FlamethrowerInstance;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn weapon: %s"), *WeaponName.ToString());
 	}
 }
 
@@ -302,4 +220,3 @@ void APeCoPlayerCharacter::EndInvincible()
 	bIsInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }
-

@@ -17,26 +17,12 @@ class PESTCONTROL_API AWebRevolver : public AWeapon
 public:
 	AWebRevolver();
 
-private:
-	FTimerHandle FireTimerHandle;
-
-	int32 BaseAmmo = 6;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	FTimerHandle CooldownHandle;
-	
-	FTimerHandle StartCooldDown;
 
 public:
-
-	void WebRevolverFire();
-
-	void StartCooldown();
-
-	void SpawnProjectiles();
 
 	void ApplySlowEffect(class APeCoEnemyCharacter* EnemyCharacter);
 	

@@ -20,20 +20,4 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	FTimerHandle CooldownHandle;
-
-private:
-	FTimerHandle FireTimerHandle;
-		
-public:
-
-	void LarvaLauncherFire();
-
-	void StartCooldown();
-
-	void SpawnProjectiles();
-
-	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsLarvaLauncherValid = false;
 };

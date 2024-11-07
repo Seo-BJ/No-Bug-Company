@@ -14,21 +14,11 @@ class PESTCONTROL_API APestShotgun : public AWeapon
 {
 	GENERATED_BODY()
 
+public:
+	APestShotgun();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	FTimerHandle CooldownHandle;
-
-public:
-
-	APestShotgun();
-
-public:
-	void PestShotgunFire();
-
-	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsPestshogunValid = false;
-
-	FRotator SpreadRotation;
 };

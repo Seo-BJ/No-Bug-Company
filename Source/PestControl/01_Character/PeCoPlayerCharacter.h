@@ -46,6 +46,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
+	TMap<FName, AWeapon*> SpawnedWeapons;
+
+
 private:
 
 	void InitPlayerCharacter();
@@ -59,61 +63,45 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 
-	//Spawn Weapon
-	//todo Ui클릭시 SpawnWeapon
+	//~Spawn Weapon
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* WeaponSpawnPoint;
 
-	void SpawnLarvaLauncher();
-
-	ALarvaLauncher* LarvaLauncherInstance;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<class AWeapon> LarvaLauncherClass;
-
-	void SpawnWebRevolver();
-
-	AWebRevolver* WebRevolverInstance;
+	TSubclassOf<class AWeapon> LarvaLauncherClass; 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> WebRevolverClass;
 
-	void SpawnPestShotgun();
-
-	APestShotgun* PestShotgunInstance;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> PestShotgunClass;
-
-	void SpawnRoachShooter();
-
-	ARoachShooter* RoachShooterInstance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> RoachShooterClass;
 
-	void SpawnAirGun();
-
-	AAirGun* AirGunInstance;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> AirGunClass;
-
-	void SpawnPesticide();
-
-	APesticide* PesticideInstance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> PesticideClass;
 
-	void SpawnFlamethrower();
-
-
-	AFlamethrower* FlamethrowerInstance;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> FlamethrowerClass;
-	//End of Spawn Weapon
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapons")
+	TMap<FName, TSubclassOf<AWeapon>> WeaponClassMap;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapons")
+	TMap<FName, AWeapon*> WeaponInstanceMap;
+
+
+
+	void SpawnWeapon(FName WeaponName);
+
+	void InitializeWeaponClasses();
+
+	//~End of Spawn Weapon
 
 	APlayerController* PeCoPlayerController;
 

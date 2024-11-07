@@ -22,19 +22,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void InitInfo();
-
-	void ApplyDamageToEnemiesInRange();
-
-	FVector InitialLocation;
-	FRotator InitialRotation;
-
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	//~ Weapon initialize
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
 	UDataTable* WeaponDataTable;
+	UPROPERTY(EditAnywhere, Category = "Weapon Type")
+	EWeaponType WeaponType;
 
 	FName WeaponID;
 
@@ -42,20 +38,18 @@ public:
 
 	void LoadWeaponStats(int32 Level);
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void LevelUp();
-
-	//~Weapon Properties
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float CriticalChance;
+	float CriticalChance = 0.05f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float CriticalDamageMultiplier;
+	float CriticalDamageMultiplier = 1.5f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float DamageMultiplier;
+	float DamageMultiplier = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float BaseDamage;
+	float BaseDamage = 10.0f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float Cooldown;
+	float Cooldown = 0.4;
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float Delay = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Root;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
@@ -64,38 +58,46 @@ public:
 	USceneComponent* BulletSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
 	TSubclassOf<class AProjectile> BulletClass;
-
-	//~End of Weapon propoerties
-
-	//~ Projectile weapon properties
 	UPROPERTY(EditAnywhere, Category = "Projectile Stats")
 	int NumberOfProjectiles = 1;
-	//~ end of projectile properties
 
-	// ~ Conshaped weapon properties
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float FireAngle;
+	float FireAngle = 30;
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float RangeRadius;
+	float RangeRadius = 30;
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float DurationTime;
-	// ~End of conshaped weapon properties
+	float DurationTime = 1.0f;
+
+protected:
+	void InitInfo();
+
+	void DealDamageInSector();
+
+	FVector InitialLocation;
+	FRotator InitialRotation;
+
+	FColor DebugColor;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void LevelUp();
+
+
+private:
+
+	void FireWeapon();
+
+	FTimerHandle CooldownHandle;
+	FTimerHandle FireTimerHandle;
+
+	void SpawnProjectile();
+
 	void ProjectileFire();
-	void ShotgunFire();	
+	void StartProjectileCooldown();
 
-	void ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter);
+	void ShotgunFire();
+	void StartShotgunCooldown();
 
-	void ApplyDamageToEnemy(APeCoEnemyCharacter* Enemy, float Damage);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
-	float BurnDamage = 5.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
-	float BurnDuration = 3.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Burn Effect")
-	float BurnTickTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Type")
-	EWeaponType WeaponType = EWeaponType::None;
+	void ConicalFire();
+	void StartConicalCooldown();
 };

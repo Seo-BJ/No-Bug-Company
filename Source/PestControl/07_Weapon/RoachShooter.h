@@ -15,25 +15,9 @@ class PESTCONTROL_API ARoachShooter : public AWeapon
 	GENERATED_BODY()
 
 public:
-	ARoachShooter();
-
-private:
-	FTimerHandle FireTimerHandle;
+	ARoachShooter();	
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	FTimerHandle CooldownHandle;
-
-public:
-
-	void RoachShooterFire();
-
-	void SpawnProjectiles();
-
-
-	UPROPERTY(EditAnywhere, Category = "Check Valid")
-	bool bIsRoachShooterValid = false;
-	
 };

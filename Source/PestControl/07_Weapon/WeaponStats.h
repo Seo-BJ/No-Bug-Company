@@ -31,6 +31,9 @@ struct FWeaponStats : public FTableRowBase
     float Cooldown;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    float Delay;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     int32 NumberOfProjectiles;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")

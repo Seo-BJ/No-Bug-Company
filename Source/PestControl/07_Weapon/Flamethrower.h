@@ -20,18 +20,21 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects")
-    UParticleSystem* SprayEffect;
+public:
+    void ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter);
 
-    FTimerHandle DurationTimeHandle;
-    FTimerHandle CooldownHandle;
+private:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
+    float BurnDamage = 5.0f;
 
-    float TickTime = 0.25f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
+    float BurnDuration = 3.0f;
 
-    void FlamethrowerFire();
-    void DealDamage();
-    void StartCooldown();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
+    float BurnTickTime = 0.5f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Check Valid")
-    bool bIsFlamethrowerValid = false;
+    TMap<AActor*, FTimerHandle> ActiveBurnTimers;
+
+    void ApplyBurnDamage(AActor* Target);
+    void StopBurnEffect(AActor* Target);
 };
