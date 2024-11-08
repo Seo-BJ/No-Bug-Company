@@ -8,34 +8,11 @@
 APestShotgun::APestShotgun()
 {
 	WeaponID = FName(TEXT("PestShotgun"));
-
-	CriticalChance = 0.05f;
-	CriticalDamageMultiplier = 2.0f;
-	BaseDamage = 15.f;
-	DamageMultiplier = 1.0f;
-	Cooldown = 0.7f;
-	NumberOfProjectiles = 1;
-
-	FireAngle = 30;
 }
 
 void APestShotgun::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpreadRotation = BulletSpawnPoint->GetComponentRotation();
-
-	if (bIsPestshogunValid)
-	{
-		GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &APestShotgun::PestShotgunFire, Cooldown, true);
-	}
+	WeaponType = EWeaponType::Shotgun;
 }
-
-void APestShotgun::PestShotgunFire()
-{
-	if (this)
-	{
-		AWeapon::ShotgunFire();
-	}
-}
-

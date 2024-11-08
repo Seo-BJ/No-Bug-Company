@@ -4,6 +4,7 @@
 
 #include "07_Weapon/Weapon.h"
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/Flamethrower.h" 
 
 #include "01_Character/PeCoEnemyCharacter.h" 
 
@@ -37,6 +38,8 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
     LoadWeaponStats(CurrentLevel);
+
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, true);
 }
 
 // Called every frame
@@ -46,8 +49,71 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
-void AWeapon::ProjectileFire()
+void AWeapon::LoadWeaponStats(int32 Level)
 {
+    if (WeaponID.IsNone())
+    {
+        WeaponID = FName(TEXT("NoWeapon"));
+    }
+    FString RowNameString = FString::Printf(TEXT("%s_Lv%d"), *WeaponID.ToString(), Level);
+    FName RowName = FName(*RowNameString);
+
+    if (WeaponDataTable)
+    {
+        FWeaponStats* WeaponStats = WeaponDataTable->FindRow<FWeaponStats>(RowName, TEXT(""));
+        if (WeaponStats)
+        {
+            BaseDamage = WeaponStats->BaseDamage;
+            DamageMultiplier = WeaponStats->DamageMultiplier;
+            CriticalChance = WeaponStats->CriticalChance;
+            CriticalDamageMultiplier = WeaponStats->CriticalDamageMultiplier;
+            Cooldown = WeaponStats->Cooldown;
+            Delay = WeaponStats->Delay;
+            NumberOfProjectiles = WeaponStats->NumberOfProjectiles;
+            FireAngle = WeaponStats->FireAngle;
+            RangeRadius = WeaponStats->RangeRadius;
+            DurationTime = WeaponStats->DurationTime;
+
+            UE_LOG(LogTemp, Log, TEXT("Loaded stats for %s at Level %d"), *WeaponID.ToString(), Level);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Weapon stats not found in Data Table for %s at Level %d"), *WeaponID.ToString(), Level);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("WeaponDataTable is null"));
+    }
+}
+
+void AWeapon::FireWeapon()
+{
+    {
+        switch (WeaponType)
+        {
+        case EWeaponType::Projectile:
+            ProjectileFire();
+            break;
+
+        case EWeaponType::Conical:
+            ConicalFire();
+            break;
+
+        case EWeaponType::Shotgun:
+            ShotgunFire();
+            break;
+
+        default:
+            UE_LOG(LogTemp, Warning, TEXT("Unknown weapon type"));
+            break;
+        }
+    }
+}
+
+void AWeapon::SpawnProjectile()
+{
+    UE_LOG(LogTemp, Display, TEXT("Spawn Projectile called"));
     if (!BulletClass)
     {
         return;
@@ -60,13 +126,13 @@ void AWeapon::ProjectileFire()
 
     FVector Location = BulletSpawnPoint->GetComponentLocation();
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
-
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation);
+
     if (!Projectile)
     {
         return;
     }
- 
+
     float ActualDamage = BaseDamage * DamageMultiplier;
     if (FMath::RandRange(0.f, 1.f) < CriticalChance)
     {
@@ -75,6 +141,26 @@ void AWeapon::ProjectileFire()
 
     Projectile->SetDamage(ActualDamage);
     Projectile->SetOwner(this);
+}
+
+void AWeapon::ProjectileFire()
+{
+    for (int32 i = 1; i <= NumberOfProjectiles; i++)
+    {
+        FTimerHandle TempHandle;
+        float DelayTime = FMath::Max(i * Delay, Delay);
+
+        GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::SpawnProjectile, DelayTime, false);
+    }
+
+    float TotalFireTime = FMath::Max(NumberOfProjectiles * Delay, Delay);
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::StartProjectileCooldown, TotalFireTime, false);
+ 
+}
+
+void AWeapon::StartProjectileCooldown()
+{
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ProjectileFire, Cooldown, false);
 }
 
 void AWeapon::ShotgunFire()
@@ -87,11 +173,14 @@ void AWeapon::ShotgunFire()
     FVector SpawnLocation = BulletSpawnPoint->GetComponentLocation();
     FRotator BaseRotation = BulletSpawnPoint->GetComponentRotation();
 
-    for (int32 i = 0; i < NumberOfProjectiles + 2; i++)
+    float AngleIncrement = FireAngle / (NumberOfProjectiles - 1);
+
+    float StartYaw = BaseRotation.Yaw - (FireAngle / 2.0f);
+
+    for (int32 i = 0; i < NumberOfProjectiles; i++)
     {
-        float RandomYaw = FMath::RandRange(-FireAngle, FireAngle);
         FRotator NewRotation = BaseRotation;
-        NewRotation.Yaw += RandomYaw;
+        NewRotation.Yaw = StartYaw + i * AngleIncrement;
 
         AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, SpawnLocation, NewRotation);
 
@@ -117,42 +206,9 @@ void AWeapon::ShotgunFire()
     }
 }
 
-void AWeapon::LoadWeaponStats(int32 Level)
+void AWeapon::StartShotgunCooldown()
 {
-    if (WeaponID.IsNone())
-    {
-        WeaponID = FName(TEXT("NoWeapon"));
-    }
-    FString RowNameString = FString::Printf(TEXT("%s_Lv%d"), *WeaponID.ToString(), Level);
-    FName RowName = FName(*RowNameString);
-
-    if (WeaponDataTable)
-    {
-        FWeaponStats* WeaponStats = WeaponDataTable->FindRow<FWeaponStats>(RowName, TEXT(""));
-        if (WeaponStats)
-        {
-
-            BaseDamage = WeaponStats->BaseDamage;
-            DamageMultiplier = WeaponStats->DamageMultiplier;
-            CriticalChance = WeaponStats->CriticalChance;
-            CriticalDamageMultiplier = WeaponStats->CriticalDamageMultiplier;
-            Cooldown = WeaponStats->Cooldown;
-            NumberOfProjectiles = WeaponStats->NumberOfProjectiles;
-            FireAngle = WeaponStats->FireAngle;
-            RangeRadius = WeaponStats->RangeRadius;
-            DurationTime = WeaponStats->DurationTime;
-
-            UE_LOG(LogTemp, Log, TEXT("Loaded stats for %s at Level %d"), *WeaponID.ToString(), Level);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Weapon stats not found in Data Table for %s at Level %d"), *WeaponID.ToString(), Level);
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("WeaponDataTable is null"));
-    }
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ShotgunFire, Cooldown, false);
 }
 
 void AWeapon::LevelUp()
@@ -175,22 +231,72 @@ void AWeapon::InitInfo()
     InitialRotation = GetActorRotation();
 }
 
-void AWeapon::ApplyDamageToEnemiesInRange()
+void AWeapon::ConicalFire()
 {
-    FVector WeaponLocation = InitialLocation;
-    FRotator WeaponRotation = InitialRotation;
+    //if (SprayEffect)
+    //{
+    //    UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(
+    //        GetWorld(),
+    //        SprayEffect,
+    //        GetActorLocation(),
+    //        GetActorRotation(),
+    //        true
+    //    );
+    //    if (ParticleComp)
+    //    {
+    //        FTimerHandle ParticleTimerHandle;
+    //        GetWorld()->GetTimerManager().SetTimer(ParticleTimerHandle, [ParticleComp]() { ParticleComp->DestroyComponent(); }, DurationTime + 0.5f, false);
+    //    }
+    //}
 
-    float SphereRadius = RangeRadius + 50;
+    InitInfo();
+
+    for (int32 i = 1; i < DurationTime / Delay + 1; i++)
+    {
+        FTimerHandle TempHandle;
+        float DelayTime = FMath::Max(i * Delay, Delay);
+        GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::DealDamageInSector, DelayTime, false);
+    }
+
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::StartConicalCooldown, DurationTime, false);
+}
+
+void AWeapon::StartConicalCooldown()
+{
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ConicalFire, Cooldown, false);
+}
+
+
+void AWeapon::DealDamageInSector()
+{
+    FVector WeaponLocation = GetActorLocation();
+    FVector ForwardVector = GetActorRotation().Vector();
+
+    float SectorRadius = RangeRadius;
+    float HalfAngleRadians = FMath::DegreesToRadians(FireAngle / 2.0f);
 
     TArray<FOverlapResult> OverlapResults;
-    FCollisionShape CollisionSphere = FCollisionShape::MakeSphere(SphereRadius);
+    FCollisionShape CollisionShape = FCollisionShape::MakeSphere(SectorRadius);
 
     bool bHasOverlaps = GetWorld()->OverlapMultiByChannel(
         OverlapResults,
         WeaponLocation,
         FQuat::Identity,
         ECC_Pawn,
-        CollisionSphere
+        CollisionShape
+    );
+
+    DrawDebugCone(
+        GetWorld(),
+        WeaponLocation,
+        ForwardVector,
+        SectorRadius,
+        HalfAngleRadians,
+        HalfAngleRadians,
+        12,
+        DebugColor,
+        false,
+        0.2f
     );
 
     if (bHasOverlaps)
@@ -205,15 +311,14 @@ void AWeapon::ApplyDamageToEnemiesInRange()
                 float DistanceToEnemy = DirectionToEnemy.Size();
                 DirectionToEnemy.Normalize();
 
-                FVector ForwardVector = WeaponRotation.Vector();
                 float DotProduct = FVector::DotProduct(DirectionToEnemy, ForwardVector);
+                float AngleBetween = FMath::Acos(DotProduct) * (180.f / PI);
 
-                if (DistanceToEnemy < 100.f || (FMath::Acos(DotProduct) * (180.f / PI)) <= FireAngle / 2.0f)
+                if (DistanceToEnemy <= SectorRadius && AngleBetween <= FireAngle / 2.0f + 5.0f)
                 {
                     APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OverlappedActor);
                     if (EnemyCharacter)
                     {
-                        // 일반 대미지 적용
                         float ActualDamage = BaseDamage * DamageMultiplier;
                         if (FMath::RandRange(0.f, 1.f) < CriticalChance)
                         {
@@ -222,70 +327,19 @@ void AWeapon::ApplyDamageToEnemiesInRange()
 
                         UGameplayStatics::ApplyDamage(EnemyCharacter, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 
-                        UE_LOG(LogTemp, Log, TEXT("Enemy %s hit by fan fire! Damage: %f"), *EnemyCharacter->GetName(), ActualDamage);
+                        UE_LOG(LogTemp, Log, TEXT("Enemy %s hit by sector fire Damage: %f"), *EnemyCharacter->GetName(), ActualDamage);
 
-                        if (WeaponType == EWeaponType::Burn)
+                        if (WeaponID == FName("Flamethrower"))
                         {
-                            ApplyBurnDamage(EnemyCharacter);
+                            AFlamethrower* Flamethrower = Cast<AFlamethrower>(this);
+                            if (Flamethrower)
+                            {
+                                Flamethrower->ApplyBurnEffect(EnemyCharacter);
+                            }
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-void AWeapon::ApplyBurnDamage(APeCoEnemyCharacter* EnemyCharacter)
-{
-    if (IsValid(EnemyCharacter))
-    {
-        if (!EnemyCharacter->bIsBurning)
-        {
-            EnemyCharacter->bIsBurning = true;
-
-            int32 NumTicks = FMath::FloorToInt(BurnDuration / BurnTickTime);
-            for (int32 i = 0; i < NumTicks; i++)
-            {
-                if (IsValid(EnemyCharacter))  
-                {
-                    FTimerHandle BurnDamageHandle;
-                    GetWorld()->GetTimerManager().SetTimer(BurnDamageHandle, FTimerDelegate::CreateLambda([=]()
-                        {
-                            if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill())
-                            {
-                                UGameplayStatics::ApplyDamage(EnemyCharacter, BurnDamage, nullptr, this, nullptr);
-                                UE_LOG(LogTemp, Warning, TEXT("Applying %f burn damage to %s"), BurnDamage, *EnemyCharacter->GetName());
-                            }
-                            else
-                            {
-                                return;
-                            }
-                        }), BurnTickTime * (i + 1), false);
-                }
-            }
-            FTimerHandle ResetBurnHandle;
-            GetWorld()->GetTimerManager().SetTimer(ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
-                {
-                    if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill())  
-                    {
-                        EnemyCharacter->ResetBurnStatus();
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }), BurnDuration, false);
-        }
-        else
-        {
-            GetWorld()->GetTimerManager().ClearTimer(EnemyCharacter->ResetBurnHandle);
-            GetWorld()->GetTimerManager().SetTimer(EnemyCharacter->ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
-                {
-                    if (IsValid(EnemyCharacter) && !EnemyCharacter->IsPendingKill()) 
-                    {
-                        EnemyCharacter->ResetBurnStatus();
-                    }
-                }), BurnDuration, false);
         }
     }
 }

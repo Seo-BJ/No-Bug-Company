@@ -10,86 +10,56 @@
 AFlamethrower::AFlamethrower()
 {
     WeaponID = FName(TEXT("Flamethrower"));
-
-    WeaponType = EWeaponType::Burn;
-
-    BaseDamage = 115.f;
-    DamageMultiplier = 1.0f;
-    CriticalChance = 0.05f;
-    CriticalDamageMultiplier = 1.5f;
-    Cooldown = 2.0f;
-    FireAngle = 20.f;
-    RangeRadius = 350.f;
-
-    DurationTime = 1.f;
-
-    BurnDamage = 5.0f;
-    BurnDuration = 3.0f;
-    BurnTickTime = 0.5f;
 }
 
 void AFlamethrower::BeginPlay()
 {
     Super::BeginPlay();
-    if (bIsFlamethrowerValid)
+    WeaponType = EWeaponType::Conical;
+    DebugColor = FColor::Red;
+}
+
+void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
+{
+    UE_LOG(LogTemp, Log, TEXT("Applied burn effect Called"));
+    if (EnemyCharacter && !ActiveBurnTimers.Contains(EnemyCharacter))  
     {
-        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AFlamethrower::FlamethrowerFire, Cooldown, true);
+        FTimerHandle BurnTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(BurnTimerHandle, FTimerDelegate::CreateLambda([=]()
+            {
+                ApplyBurnDamage(EnemyCharacter);
+
+            }), BurnTickTime, true);
+
+        ActiveBurnTimers.Add(EnemyCharacter, BurnTimerHandle);
+
+        FTimerHandle ResetBurnHandle;
+        GetWorld()->GetTimerManager().SetTimer(ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
+            {
+                StopBurnEffect(EnemyCharacter);
+
+            }), BurnDuration, false);
+
+        UE_LOG(LogTemp, Log, TEXT("Applied burn effect to %s: Burning for %f seconds"),
+            *EnemyCharacter->GetName(), BurnDuration);
     }
 }
 
-void AFlamethrower::FlamethrowerFire()
+void AFlamethrower::ApplyBurnDamage(AActor* Target)
 {
-    if (SprayEffect)
+    if (Target)
     {
-        UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(
-            GetWorld(),
-            SprayEffect,
-            GetActorLocation(),
-            GetActorRotation(),
-            true
-        );
-        if (ParticleComp)
-        {
-            FTimerHandle ParticleTimerHandle;
-            GetWorld()->GetTimerManager().SetTimer(ParticleTimerHandle, [ParticleComp]() { ParticleComp->DestroyComponent(); }, DurationTime + 0.5, false);
-        }
+        UGameplayStatics::ApplyDamage(Target, BurnDamage, GetInstigatorController(), this, nullptr);
+        UE_LOG(LogTemp, Log, TEXT("Burn Damage applied to %s: %f"), *Target->GetName(), BurnDamage);
     }
-
-    InitInfo();
-
-    for (int32 i = 1; i < DurationTime / TickTime + 1; i++)
-    {
-        FTimerHandle TempHandle;
-        float Delay = FMath::Max(i * 0.25f, 0.25f); 
-        GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AFlamethrower::DealDamage, Delay, false);
-    }
-
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AFlamethrower::StartCooldown, DurationTime, false);
 }
 
-void AFlamethrower::DealDamage()
+void AFlamethrower::StopBurnEffect(AActor* Target)
 {
-	ApplyDamageToEnemiesInRange();
-
-	FVector WeaponLocation = InitialLocation;
-	FVector ForwardVector = InitialRotation.Vector();
-	float ConeRadius = RangeRadius + 50;
-	float HalfAngleRadians = FMath::DegreesToRadians(FireAngle / 2.0f);
-
-	DrawDebugCone(
-		GetWorld(),
-		WeaponLocation,
-		ForwardVector,
-		ConeRadius,
-		HalfAngleRadians,
-		HalfAngleRadians,
-		12,
-		FColor::Red,
-		false,
-		0.2f
-	);
-
-}void AFlamethrower::StartCooldown()
-{
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AFlamethrower::FlamethrowerFire, Cooldown, false);
+    if (ActiveBurnTimers.Contains(Target))
+    {
+        GetWorld()->GetTimerManager().ClearTimer(ActiveBurnTimers[Target]);
+        ActiveBurnTimers.Remove(Target);
+        UE_LOG(LogTemp, Log, TEXT("Burn effect stopped for %s"), *Target->GetName());
+    }
 }
