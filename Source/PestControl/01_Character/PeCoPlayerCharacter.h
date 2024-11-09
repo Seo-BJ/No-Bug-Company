@@ -54,14 +54,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
-<<<<<<< HEAD
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TMap<FName, AWeapon*> SpawnedWeapons;
-=======
+
 protected:
 
 	virtual void BeginPlay() override;
->>>>>>> BeforeMergeBranch
+
 
 
 private:
