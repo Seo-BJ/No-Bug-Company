@@ -17,6 +17,9 @@
 #include "PeCoPlayerCharacter.generated.h"
 
 class UInventoryComponent;
+class UEquipmentComponent;
+class UBuffComponent;
+
 /**
  * 
  */
@@ -28,9 +31,8 @@ class PESTCONTROL_API APeCoPlayerCharacter : public APeCoCharacter
 public:
 	APeCoPlayerCharacter();
 
-	// Called every frame.
-	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void PostInitializeComponents() override;
 
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
@@ -43,11 +45,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UEquipmentComponent> EquipmentComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBuffComponent> BuffComponent;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
+<<<<<<< HEAD
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TMap<FName, AWeapon*> SpawnedWeapons;
+=======
+protected:
+
+	virtual void BeginPlay() override;
+>>>>>>> BeforeMergeBranch
 
 
 private:

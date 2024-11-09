@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "04_UI/PeCoUserWidget.h"
+#include "21_Data/PeCoDataTypes.h"
+
 #include "PlayerOverlay.generated.h"
 
 
@@ -32,10 +34,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UPeCoUserWidget* ExpBar;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UWeaponItemSlot* WeaponItemSlot;
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowInventoryWidget(EItemType ItemType);
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	USpecialEventWidget* SpecialEvent;
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideInventoryWidget(EItemType ItemType);
 
+	// UFUNCTION(BlueprintImplementableEvent)
+	// void EquipItem(EItemType ItemType);
 };

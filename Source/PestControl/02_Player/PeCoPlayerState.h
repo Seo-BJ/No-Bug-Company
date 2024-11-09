@@ -28,17 +28,24 @@ public:
 
 	APeCoPlayerState();
 
+
+
 	//~ICombatInterface
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
 
+	void SetHealth(float NewHealth, AActor* DamagedActor, AController* InstigatorController);
+
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
+	// 
 	//~Player Stats
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float Health;
 
 	UPROPERTY(EditAnywhere, Category = "PlayerStats")
 	float MaxHealth = 100;
+
+
 
 	/*
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -104,6 +111,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
+
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetHealth() { return Health; }
 	UFUNCTION(BlueprintCallable)

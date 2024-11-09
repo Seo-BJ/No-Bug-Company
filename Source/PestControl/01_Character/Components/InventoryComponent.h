@@ -10,56 +10,74 @@
 
 
 class APeCoPlayerController;
+class UPeCoItemComponent;
 
-class APotion;
-class APeCoItem;
-class ACombatItem;
-class AConsumableItem;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUpdated, AActor*, Item);
+
+UCLASS(BlueprintType, Blueprintable, ClassGroup = ("InventorySystem"), meta = (BlueprintSpawnableComponent))
 class PESTCONTROL_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	friend UPeCoItemComponent;
+
 public:	
-	// Sets default values for this component's properties
+
 	UInventoryComponent();
+
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, SaveGame, Category = "AGR|Game Play")
+	//TArray<FEquipmentInfo> EquipmentList;
+
+	UPROPERTY(BlueprintReadWrite, Category = "InventorySystem|Inventory")
+	AActor* InventoryStorage = nullptr;
+
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnItemUpdated OnItemUpdated;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//~Weapon
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool AddItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TObjectPtr<AActor> SelectedWeapon;
-
-	//~End of Weapon
-
-	//~Item Inventory
-
-	TMap<EConsumableItemType, uint32> PossessedConsumableItem;
-	TMap<EConsumableItemType, uint32> PossessedCombatItem;
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool RemoveItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote);
 
 
-	void AddItemToInveotry(APeCoItem* Item, uint32 Counts);
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Found") bool GetItemOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
-	void UpdateItemSlot(EConsumableItemType ItemType);
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool GetAlItemsOfType(const EItemType ItemType, UPARAM(DisplayName = "FilteredArray") TArray<AActor*>& OutFilteredArray);
 
-	void ChangeItemInSlot(APeCoItem* NewItem);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Items") TArray<AActor*> GetAllItems();
 
-	EConsumableItemType CurrentItemTypeInSlot;
 
-	//~End of Item Inventory
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool HasEnoughItems(const TSubclassOf<AActor> Item,const int32 Quantity, FText& OutNote);
+
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfItem(const TSubclassOf<AActor> Class);
+
+
+	/*
+	* UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Equipment")
+		UPARAM(DisplayName = "Success") bool GetNextIndexItem(UPARAM(DisplayName = "Items") TArray<AActor*>& OutItems);
+	* 
+	* 
+		*/
+
+
+
+	void SetupInventoryStorageReference();
 
 private:
 
-	TObjectPtr<APeCoPlayerController> PlayerController;
-
-
-		
 };

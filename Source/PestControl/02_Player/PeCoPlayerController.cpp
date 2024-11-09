@@ -5,6 +5,9 @@
 
 
 #include "00_GameModes/PeCoGameMode.h"
+#include "01_Character/PeCoPlayerCharacter.h"
+#include "01_Character/Components/InventoryComponent.h"
+#include "01_Character/Components/EquipmentComponent.h"
 
 #include "03_Input/InPutActionDataAsset.h"
 
@@ -13,6 +16,8 @@
 #include "04_UI/SubWidget/GameTimerWidget.h"
 #include "04_UI/SubWidget/PeCoProgressBar.h"
 #include "04_UI/WidgetComponents/DamageTextComponent.h"
+
+#include "21_Data/PeCoDataTypes.h"
 
 #include "Components/ProgressBar.h"
 
@@ -76,6 +81,16 @@ void APeCoPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(InputComponent);
 	PEI->BindAction(InputActions->InputActionMove, ETriggerEvent::Triggered, this, &APeCoPlayerController::Move);
 	PEI->BindAction(InputActions->InputActionDash, ETriggerEvent::Triggered, this, &APeCoPlayerController::Dash);
+
+	PEI->BindAction(InputActions->InputActionUseConsumableItem, ETriggerEvent::Completed, this, &APeCoPlayerController::UseConsumableItem);
+	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::PressConsumableItemKey);
+	PEI->BindAction(InputActions->InputActionPressConsumableItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldConsumableItemKey);
+
+	PEI->BindAction(InputActions->InputActionUseCombatItem, ETriggerEvent::Completed, this, &APeCoPlayerController::UseCombatleItem);
+	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Triggered, this, &APeCoPlayerController::PressCombatbleItemKey);
+	PEI->BindAction(InputActions->InputActionPressCombatItem, ETriggerEvent::Completed, this, &APeCoPlayerController::HeldCombatItemKey);
+
+
 }
 
 
@@ -99,10 +114,8 @@ void APeCoPlayerController::Move(const FInputActionValue& Value)
 	}
 
 }
-
 void APeCoPlayerController::Dash(const FInputActionValue& Value)
 {
-
 	if (bCanDash && !CurrentMoveDirection.IsNearlyZero())
 	{
 		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal();
@@ -118,6 +131,82 @@ void APeCoPlayerController::Dash(const FInputActionValue& Value)
 	}
 }
 
+void APeCoPlayerController::PressConsumableItemKey(const FInputActionValue& Value)
+{
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Consumtion);
+		}
+	}
+	
+}
+void APeCoPlayerController::HeldConsumableItemKey(const FInputActionValue& Value)
+{
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Consumtion);
+		}
+	}
+}
+void APeCoPlayerController::PressCombatbleItemKey(const FInputActionValue& Value)
+{
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Combat);
+		}
+	}
+}
+void APeCoPlayerController::HeldCombatItemKey(const FInputActionValue& Value)
+{
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Combat);
+		}
+	}
+}
+
+
+void APeCoPlayerController::UseConsumableItem(const FInputActionValue& Value)
+{
+	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
+	if (PeCoPlayerCharacter)
+	{
+		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
+		if (EquipmentComponent)
+		{
+			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Consumption);
+		}
+	}
+}
+void APeCoPlayerController::UseCombatleItem(const FInputActionValue& Value)
+{
+	APeCoPlayerCharacter* PeCoPlayerCharacter = Cast<APeCoPlayerCharacter>(GetPawn());
+	if (PeCoPlayerCharacter)
+	{
+		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
+		if (EquipmentComponent)
+		{
+			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Combat);
+		}
+	}
+}
+
+
+
+#pragma region Dash
+
 void APeCoPlayerController::ResetDash()
 {
 	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
@@ -129,25 +218,14 @@ void APeCoPlayerController::ResetDash()
 	GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::CoolDownDash, DashCooldown, false);
 	OnStartDashCooldown.Broadcast(DashCooldown);
 }
-
 void APeCoPlayerController::CoolDownDash()
 {
 	bCanDash = true;
 }
 
+#pragma endregion
 
-
-void APeCoPlayerController::SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount)
-{
-	bool bHUDValid = PeCoHUD && PeCoHUD->GetPlayerOverlayWidget() && PeCoHUD->GetPlayerOverlayWidget()->WeaponItemSlot;
-	if (bHUDValid)
-	{
-
-
-
-
-	}
-}
+#pragma region User Interface
 
 void APeCoPlayerController::GetGameTimeData()
 {
@@ -211,4 +289,4 @@ void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* T
 	}
 }
 
-
+#pragma endregion

@@ -1,84 +1,326 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "01_Character/Components/InventoryComponent.h"
+#include "InventoryComponent.h"
 
-#include "02_Player/PeCoPlayerController.h"
 #include "01_Character/PeCoPlayerCharacter.h"
+#include "02_Player/PeCoPlayerController.h"
+#include "09_Items/Components/PeCoItemComponent.h"
+#include "20_System/PeCoFunctionLibrary.h"
+#include "21_Data/PeCoDataTypes.h"
 
-#include "09_Items/PeCoItem.h"
-#include "09_Items/Potion.h"
+#include "GameFramework/PlayerState.h"
+#include "Kismet/KismetArrayLibrary.h"
+#include "Kismet/KismetGuidLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
-// Sets default values for this component's properties
+
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
-
-
-// Called when the game starts
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
+	SetupInventoryStorageReference();
 }
 
-
-// Called every frame
-void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+bool UInventoryComponent::AddItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-void UInventoryComponent::AddItemToInveotry(APeCoItem* Item, uint32 Amount)
-{
-	if (Item)
+	AActor* InventoryManagerOwner = GetOwner();
+	if (!IsValid(InventoryManagerOwner))
 	{
-		EConsumableItemType ItemType = Item->GetItemType();
+		OutNote = FText::FromString("아이템의 Owner가 유효하지 않음");
+		return false;
+	}
+
+	if (Quantity <= 0)
+	{
+		// Failed to add item to inventory
+		OutNote = FText::FromString("Quantity는 반드시 0보다 커야함.");
+		return false;
+	}
+
+	/* Check if inventory already has this item */
+	AActor* FiteredActor;
+	const bool bAlreadyHasItem = GetItemOfClass(Class, FiteredActor);
+
+	// 이미 해당 아이템을 가지고 있는 경우
+	if (bAlreadyHasItem)
+	{
+		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FiteredActor);
+		if (!IsValid(ItemComponent))
 		{
-			if (PossessedConsumableItem.Contains(ItemType))
+			OutNote = FText::FromString("해당 Item에 ItemComponent가 존재하지 않음.");
+			return false;
+		}
+
+		if (!ItemComponent->ItemInfo.bStackable)
+		{
+			// Failed to add item to inventory
+			OutNote = FText::FromString("해당 아이템은 1개만 가질 수 있음.");
+			return false;
+		}
+
+		ItemComponent->ItemInfo.CurrentQuantity += Quantity;
+		OutNote = FText::FromString("아이템 개수 증가.");
+		OnItemUpdated.Broadcast(FiteredActor);
+
+		return true;
+	}
+
+	// 아이템을 가지고 있지 않는 경우
+	UWorld* World = GetWorld();
+	if (!ensure(IsValid(World)))
+	{
+		return false;
+	}
+
+	SetupInventoryStorageReference();
+	if (!IsValid(InventoryStorage))
+	{
+		return false;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = InventoryManagerOwner;
+	SpawnParams.Instigator = InventoryManagerOwner->GetInstigator();
+
+	const AActor* ItemCDO = Cast<AActor>(Class->StaticClass()->GetDefaultObject());
+	FTransform NewTransform = InventoryStorage->GetActorTransform();
+	NewTransform.SetScale3D(IsValid(ItemCDO) ? ItemCDO->GetActorScale() : FVector::OneVector);
+	AActor* NewItemActor = World->SpawnActor(Class, &NewTransform, SpawnParams);
+
+	UPeCoItemComponent* NewItemComponent = UPeCoFunctionLibrary::GetItemComponent(NewItemActor);
+	if (!IsValid(NewItemComponent))
+	{
+		return false;
+	}
+
+	NewItemComponent->HideShowItem(true);
+
+	FAttachmentTransformRules AttachmentRules(
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::KeepWorld,
+		false);
+	NewItemActor->AttachToActor(InventoryStorage, AttachmentRules, NAME_None);
+
+	// 전체 Quantity를 새 아이템에 설정
+	NewItemComponent->ItemInfo.CurrentQuantity = Quantity;
+	OnItemUpdated.Broadcast(NewItemActor);
+
+	OutNote = FText::FromString("New item spawned and registered to inventory");
+	return true;
+}
+bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, const int32 Quantity, FText& OutNote)
+{
+	const AActor* InventoryManagerOwner = GetOwner();
+	if (!IsValid(InventoryManagerOwner))
+	{
+		return false;
+	}
+
+	FText Note;
+	const bool bHasEnoughItems = HasEnoughItems(Class, Quantity, Note);
+	if (!bHasEnoughItems)
+	{
+		// Failed to remove items
+		OutNote = FText::FromString("제거할 만큼 충분한 아이템을 가지고 있지 않음.");
+		return false;
+	}
+
+	AActor* FiltertedActor;
+	if (!GetItemOfClass(Class, FiltertedActor))
+	{
+		OutNote = FText::FromString("제거하려는 Class의 아이템이 존재하지 않음.");
+		return false;
+	}
+	if (!IsValid(FiltertedActor))
+	{
+		OutNote = FText::FromString("제거하려는 아이템이 유효하지 않음.");
+		return false;
+	}
+	UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FiltertedActor);
+	if (!IsValid(ItemComponent))
+	{
+		OutNote = FText::FromString("제거하려는 아이템에 ItemComponent가 유효하지 않음.");
+		return false;
+	}
+
+	if (!ItemComponent->ItemInfo.bStackable)
+	{
+		// Failed to remove items
+		OutNote = FText::FromString("Not a fungible stackable item!");
+		return false;
+	}
+
+	if (ItemComponent->ItemInfo.CurrentQuantity > Quantity)
+	{
+		ItemComponent->ItemInfo.CurrentQuantity -= Quantity;
+	}
+	else
+	{
+		FiltertedActor->Destroy();
+	}
+	OutNote = FText::FromString("성공적으로 아이템을 줄임.");
+	return true;
+}
+
+TArray<AActor*> UInventoryComponent::GetAllItems()
+{
+	TArray<AActor*> Items;
+	SetupInventoryStorageReference();
+	if (!IsValid(InventoryStorage))
+	{
+		return Items;
+	}
+
+	InventoryStorage->GetAttachedActors(Items, true);
+
+	/* Reverse loop as if we do normal loop.
+	 * By deleting an index, the next item immediately takes its place so we skip one item
+	 */
+	for (int32 i = Items.Num() - 1; i >= 0; --i)
+	{
+		const AActor* ItemActor = Items[i];
+		UE_LOG(LogTemp, Warning, TEXT("Items Length  = %f"), Items.Num());
+
+		if (!ItemActor->ActorHasTag(UPeCoItemComponent::TAG_ITEM))
+		{
+			Items.RemoveAt(i);
+			continue;
+		}
+
+		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemActor);
+		if (!IsValid(ItemComponent))
+		{
+			continue;
+		}
+	}
+	return Items;
+}
+bool UInventoryComponent::GetItemOfClass(const TSubclassOf<AActor> Class, AActor*& OutActor)
+{
+	TArray<AActor*> TargetArray = GetAllItems();
+
+	for (auto It = TargetArray.CreateConstIterator(); It; It++)
+	{
+		AActor* TargetElement = (*It);
+		if (TargetElement && TargetElement->IsA(Class))
+		{
+			OutActor = TargetElement;
+			return true;
+		}
+	}
+	return false;
+}
+bool UInventoryComponent::GetAlItemsOfType(const EItemType ItemType, TArray<AActor*>& OutFilteredArray)
+{
+	TArray<AActor*> FilteredArray;
+	FilteredArray.Empty();
+
+	TArray<AActor*> AllItmes = GetAllItems();
+
+	for (auto It = AllItmes.CreateConstIterator(); It; It++)
+	{
+		AActor* TargetElement = (*It);
+		if (TargetElement)
+		{
+			UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(TargetElement);
+			if (IsValid(ItemComponent) && ItemComponent->ItemInfo.ItemType == ItemType)
 			{
-				PossessedConsumableItem[ItemType] = PossessedConsumableItem[ItemType] + Amount;
-				if (ItemType == CurrentItemTypeInSlot)
-				{
-					UpdateItemSlot(ItemType);
-				}
+				FilteredArray.Add(TargetElement);
 			}
 		}
 	}
+	if (FilteredArray.Num() > 0)
+	{
+		OutFilteredArray = FilteredArray;
+		return true;
+	}
+
+	return false;
 }
 
-void UInventoryComponent::UpdateItemSlot(EConsumableItemType ItemType)
+bool UInventoryComponent::HasEnoughItems(const TSubclassOf<AActor> Item, const int32 Quantity, UPARAM(DisplayName = "Note") FText& OutNote)
 {
-	if (PossessedConsumableItem.Contains(ItemType))
+	if (Quantity <= 0)
 	{
-		uint32 ItemAmount = PossessedConsumableItem[ItemType];
-		APeCoPlayerCharacter* Character = Cast<APeCoPlayerCharacter>(GetOwner());
-		if (Character)
+		OutNote = FText::FromString("Quantity는 반드시 0보다 커야함.");
+		return false;
+	}
+
+	int32 QuantityMissing = Quantity;
+
+	AActor* FilteredActor;
+	if (!GetItemOfClass(Item, FilteredActor))
+	{
+		OutNote = FText::FromString("Has enough 확인 실패: 해당 Class로 아이템을 찾을 수 없음.");
+		return false;
+	}
+
+	const UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
+	if (!ensure(IsValid(ItemComponent)))
+	{
+		OutNote = FText::FromString("해당 Item에 ItemComponent가 존재하지 않음.");
+		return false;
+	}
+
+	if (QuantityMissing <= ItemComponent->ItemInfo.CurrentQuantity)
+	{
+		OutNote = FText::FromString("성공. 충분한 아이템을 가지고 있음.");
+		return true;
+	}
+	OutNote = FText::FromString("실패. 아이템이 부족함.");
+	return false;
+}
+int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
+{
+	int32 result = 0;
+	AActor* FilteredActor;
+	if (GetItemOfClass(Class, FilteredActor))
+	{
+		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
+		if (!ensure(IsValid(ItemComponent)))
 		{
-			PlayerController = PlayerController == nullptr ? Cast<APeCoPlayerController>(Character->GetController()) : PlayerController;
-			if (PlayerController)
-			{
-				PlayerController->SetHUDItemSlotCount(ItemType, ItemAmount);
-			}
+			return 0;
+		}
+		result += ItemComponent->ItemInfo.CurrentQuantity;
+	}
+	return result;
+ }
+
+ void UInventoryComponent::SetupInventoryStorageReference()
+{
+	if (IsValid(InventoryStorage))
+	{
+		// Storage ref already set up
+		return;
+	}
+	AActor* InventoryOwner = GetOwner();
+	if (!IsValid(InventoryOwner))
+	{
+		return;
+	}
+	bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
+	if (bHasPlayerState)
+	{
+		// Try to get a ref to the player state.
+		const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
+		if (!IsValid(OwningPawn))
+		{
+			return;
+		}
+		AActor* PlayerState = OwningPawn->GetPlayerState();
+		if (IsValid(PlayerState))
+		{
+			InventoryStorage = PlayerState;
 		}
 	}
+	else
+	{
+		InventoryStorage = InventoryOwner;
+	}
 }
-
-void UInventoryComponent::ChangeItemInSlot(APeCoItem* NewItem)
-{
-
-
-
-
-}
-
-

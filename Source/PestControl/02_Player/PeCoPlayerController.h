@@ -37,7 +37,7 @@ public:
 	virtual void SetupInputComponent() override;
 	//~End of AActor interface
 
-	void SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount);
+	// void SetHUDItemSlotCount(EConsumableItemType ItemType, uint32 Amount);
 
 
 	UPROPERTY(BlueprintAssignable)
@@ -51,8 +51,24 @@ public:
 
 protected:
 
+	//~Input Actions
 	void Move(const FInputActionValue& Value);
 	void Dash(const FInputActionValue& Value);
+
+
+	void PressConsumableItemKey(const FInputActionValue& Value);
+	void HeldConsumableItemKey(const FInputActionValue& Value);
+
+	void PressCombatbleItemKey(const FInputActionValue& Value);
+	void HeldCombatItemKey(const FInputActionValue& Value);
+	
+	void UseConsumableItem(const FInputActionValue& Value);
+	void UseCombatleItem(const FInputActionValue& Value);
+
+	bool bConsumableItemKeyPressed = false;
+	bool bCombatItemKeyPressed = false;
+	//~End of Input Actions
+
 	void ResetDash();
 	void CoolDownDash();
 

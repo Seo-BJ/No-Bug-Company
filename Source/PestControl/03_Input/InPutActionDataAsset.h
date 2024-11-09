@@ -21,9 +21,21 @@ public:
 	UInputAction* InputActionDash;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* InputActionItem;
+	UInputAction* InputActionSettings;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* InputActionSettings;
+	UInputAction* InputActionUseConsumableItem;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InputActionUseCombatItem;
+
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InputActionPressConsumableItem;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InputActionPressCombatItem;
+
+
 	
 };
