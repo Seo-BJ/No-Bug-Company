@@ -21,5 +21,13 @@ public:
 protected:
 	
 	virtual void BeginPlay() override;
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
+private:
+		
+	// Temporarily stop AI movement during knockback
+	void StopAIMovementDuringKnockback(float Duration);
+	
+	// Timer handle to manage knockback recovery time
+	FTimerHandle KnockbackTimerHandle;
 };
