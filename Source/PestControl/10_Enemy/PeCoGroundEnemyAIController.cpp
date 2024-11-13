@@ -19,13 +19,13 @@ void APeCoGroundEnemyAIController::BeginPlay()
 		{
 			// Start the behavior tree
 			RunBehaviorTree(GroundAIBehavior);
-			APawn* ControlledPawn = GetPawn();
+			/*APawn* ControlledPawn = GetPawn();
 			if (ControlledPawn && BlackboardComponent)
 			{
 				FVector StartLocation = ControlledPawn->GetActorLocation();
 				BlackboardComponent->SetValueAsVector(TEXT("StartLocation"), StartLocation);
 				
-			}
+			}*/
 		}
 		else
 		{
@@ -42,6 +42,13 @@ void APeCoGroundEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (bIsKnockedBack) // 넉백 상태라면 이동 중지
+	{
+		// 타이머 클리어 및 상태 리셋
+		GetWorld()->GetTimerManager().ClearTimer(KnockbackTimerHandle);
+		return;
+	}
+
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	
 	if (PlayerPawn && BlackboardComponent) // Ensure BlackboardComponent is valid
@@ -57,4 +64,13 @@ void APeCoGroundEnemyAIController::Tick(float DeltaSeconds)
 		}
 	}
 	
+}
+
+void APeCoGroundEnemyAIController::SetIsKnockedBack(bool IsKnockedBack)
+{
+	bIsKnockedBack = IsKnockedBack;
+	if (BlackboardComponent)
+	{
+		BlackboardComponent->SetValueAsBool(TEXT("bIsKnockedBack"), IsKnockedBack);
+	}
 }
