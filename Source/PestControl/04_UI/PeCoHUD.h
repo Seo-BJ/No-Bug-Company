@@ -25,7 +25,7 @@ public :
 	virtual void DrawHUD() override;
 	void InitOverlay(APlayerController* PC, APlayerState* PS);
 
-	void AddLevelUpWidget();
+	// void AddLevelUpWidget();
 	void AddGameOverWidget();
 	UFUNCTION(BlueprintCallable)
 	void AddGameResultWidget();

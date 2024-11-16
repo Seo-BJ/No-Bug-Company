@@ -1,0 +1,73 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "PeCoGameplayTags.h"
+
+#include "PlayerStatPresenterComponent.generated.h"
+
+class APeCoPlayerState;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPresenterStatChanged, float, OldValue, float, NewValue);
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class PESTCONTROL_API UPlayerStatPresenterComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:	
+
+	UPlayerStatPresenterComponent();
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void BroadcastInitialValues();
+	void BindCallbacksToDependencies();
+
+protected:
+
+	virtual void BeginPlay() override;
+
+public:	
+	
+	UFUNCTION(BlueprintCallable)
+	void AddHealth(float Amount, AActor* CauserActor = nullptr);
+	UFUNCTION(BlueprintCallable)
+	void MaximizeHealth(AActor* CauserActor = nullptr);
+	UFUNCTION(BlueprintCallable)
+	void MultiplyHealth(float Percent, AActor* CauserActor = nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
+	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
+	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
+	void ResetSpeeds();
+	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
+	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
+
+	UFUNCTION(BlueprintCallable)
+	void UpgradeStat(FGameplayTag StatTag);
+
+	FTimerHandle SpeedBuffTimer;
+
+	float InitialBaseSpeed = 0.f;
+	float InitialCrouchSpeed = 0.f;
+
+
+	//~Stat Upgrade when Level Up
+
+
+
+	//~End of Stat Upgrade when Level Up
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnMaxHealthChanged;
+
+private:
+
+	APeCoPlayerState* GetPlayerState();
+		
+};

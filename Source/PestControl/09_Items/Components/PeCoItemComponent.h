@@ -24,13 +24,13 @@ public:
 	int32 CurrentQuantity = 0;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InventorySystem|Information")
-	EItemType ItemType = EItemType::EItemType_Default;
+	EItemType ItemType = EItemType::EItemType_Combat;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InventorySystem|Information")
-	EPlayerItem ItemEnum = EPlayerItem::EPlayerItem_Default;
+	EPlayerItem ItemEnum = EPlayerItem::EPlayerItem_Health;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InventorySystem|Information")
-	ESlotType SlotType = ESlotType::ESlotType_Default;
+	ESlotType SlotType = ESlotType::ESlotType_Combat;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InventorySystem|Item|Information")
 	UTexture2D* Image;

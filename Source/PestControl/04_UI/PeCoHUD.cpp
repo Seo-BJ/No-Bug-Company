@@ -31,6 +31,7 @@ void APeCoHUD::InitOverlay(APlayerController* PC, APlayerState* PS)
 
 }
 
+/*
 void APeCoHUD::AddLevelUpWidget()
 {
 	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
@@ -40,6 +41,8 @@ void APeCoHUD::AddLevelUpWidget()
 		LevelUpWidget->AddToViewport();
 	}
 }
+*/
+
 void APeCoHUD::AddGameOverWidget()
 {
 	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;

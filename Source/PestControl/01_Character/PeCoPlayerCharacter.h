@@ -48,11 +48,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UEquipmentComponent> EquipmentComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UBuffComponent> BuffComponent;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
+
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
@@ -61,8 +59,6 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-
-
 
 private:
 

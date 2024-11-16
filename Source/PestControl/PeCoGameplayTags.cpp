@@ -1,0 +1,63 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "PeCoGameplayTags.h"
+
+namespace PeCoGameplayTags
+{
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption, "Item.Consumption");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Combat, "Item.Combat");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material, "Item.Material");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Health, "Item.Consumption.Health");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Speed, "Item.Consumption.Speed");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Power, "Item.Consumption.Power");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Adrenaline, "Item.Consumption.Adrenaline");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Mine, "Item.Combat.Mine");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Adhesive, "Item.Combat.Adhesive");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Grenade, "Item.Combat.Grenade");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_AntiSpray, "Item.Combat.AntiSpray");
+
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material_MechanicalComponent, "Item.Material.MechanicalComponent");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material_BiologicalSample, "Item.Material.BiologicalSample");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material_FlameBioSample, "Item.Material.FlameBioSample");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material_VirusSample, "Item.Material.VirusSample");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Material_WebSample, "Item.Material.WebSample");
+
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackPower, "PlayerStat.AttackPower");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackSpeed, "PlayerStat.AttackSpeed");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_DamageResistance, "PlayerStat.DamageResistance");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalChance, "PlayerStat.CriticalChance");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalDamage, "PlayerStat.CriticalDamage");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Range, "PlayerStat.Range");
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_SkillCoolTime, "PlayerStat.SkillCoolTime");
+
+
+	FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count)
+	{
+		TArray<FGameplayTag> TagsArray;
+		TargetTagContainer.GetGameplayTagArray(TagsArray);
+		FGameplayTagContainer RandomTags;
+
+		if (Count <= 0 || TagsArray.Num() == 0)
+		{
+			return RandomTags; // 빈 컨테이너 반환
+		}
+
+		// Count와 AvailableTags의 크기 비교 후 안전하게 처리
+		int32 MaxCount = FMath::Min(Count, TagsArray.Num());
+
+		while (RandomTags.Num() < MaxCount)
+		{
+			int32 RandomIndex = FMath::RandRange(0, TagsArray.Num() - 1);
+			RandomTags.AddTag(TagsArray[RandomIndex]);
+			TagsArray.RemoveAt(RandomIndex); // 중복 방지
+		}
+
+		return RandomTags;
+	}
+}

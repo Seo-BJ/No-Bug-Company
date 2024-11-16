@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "01_Character/PeCoPlayerCharacter.h"
+#include "PeCoPlayerCharacter.h"
+
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "01_Character/Components/InventoryComponent.h"
 #include "01_Character/Components/EquipmentComponent.h"
-#include "01_Character/Components/BuffComponent.h"
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
@@ -75,7 +75,6 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 
 	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	 EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
-	 BuffComponent = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
 }
 
 
@@ -87,8 +86,6 @@ void APeCoPlayerCharacter::BeginPlay()
 	OnTakeAnyDamage.AddDynamic(PeCoPlayerState, &APeCoPlayerState::ReceiveDamage);
 
 	PeCoPlayerController = Cast<APlayerController>(GetController());
-
-	UE_LOG(LogTemp, Warning, TEXT("health: %f"), PeCoPlayerState->Health);
 
 	InitializeWeaponClasses();
 
@@ -116,13 +113,6 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 void APeCoPlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	if (BuffComponent)
-	{
-		if (GetCharacterMovement())
-		{
-			BuffComponent->SetInitialSpeeds(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
-		}
-	}
 }
 
 
@@ -161,6 +151,11 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 {
 	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
 	check(PeCoPS);
+	PeCoPS->InitPlayerStat();
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
+	}
 
 	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
 	check(PeCOPC);
@@ -168,7 +163,6 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
 	check(PeCoHUD);
 	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
-
 }
 
 void APeCoPlayerCharacter::InitializeWeaponClasses()

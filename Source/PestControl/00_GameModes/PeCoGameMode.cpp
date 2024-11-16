@@ -6,6 +6,8 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 
+#include "21_Data/PeCoDataTypes.h"
+
 APeCoGameMode::APeCoGameMode()
 {
 }

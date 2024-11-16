@@ -21,6 +21,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	
+
 	//~End of AActor Interface
 
 	virtual ETeam GetTeam();

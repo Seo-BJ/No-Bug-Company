@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "PeCoUserWidget.generated.h"
 
+
+class UPlayerStatPresenterComponent;
 /**
  * 
  */
@@ -14,4 +16,12 @@ class PESTCONTROL_API UPeCoUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	UPlayerStatPresenterComponent* GetStatPresenter();
+
+
 };

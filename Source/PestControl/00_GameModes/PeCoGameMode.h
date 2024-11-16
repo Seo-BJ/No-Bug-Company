@@ -28,10 +28,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	//~End of AGameMode Interface
+
 	// Start Next Round
 	void StartNextRound();
-
-	//~End of AGameMode Interface
 
 
 	float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
