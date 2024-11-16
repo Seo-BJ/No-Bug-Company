@@ -113,7 +113,6 @@ void AWeapon::FireWeapon()
 
 void AWeapon::SpawnProjectile()
 {
-    UE_LOG(LogTemp, Display, TEXT("Spawn Projectile called"));
     if (!BulletClass)
     {
         return;

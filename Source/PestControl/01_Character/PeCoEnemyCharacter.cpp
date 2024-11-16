@@ -7,7 +7,6 @@
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "02_Player/PeCoPlayerState.h"
 
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()

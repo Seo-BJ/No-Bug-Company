@@ -7,6 +7,7 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
