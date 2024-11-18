@@ -14,7 +14,13 @@
 #include "04_UI/PeCoHUD.h"
 
 #include "07_Weapon/Projectile.h"
-#include "07_Weapon/LarvaLauncher.h"
+#include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
+#include "07_Weapon/ProjectileWeapon/WebRevolver.h"
+#include "07_Weapon/ProjectileWeapon/PestShotgun.h"
+#include "07_Weapon/ProjectileWeapon/RoachShooter.h"
+#include "07_Weapon/ProjectileWeapon/AirGun.h"
+#include "07_Weapon/ConicalWeapon/Pesticide.h"
+#include "07_Weapon/ConicalWeapon/Flamethrower.h"
 
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"

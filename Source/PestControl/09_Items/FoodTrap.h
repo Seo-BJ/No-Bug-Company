@@ -62,4 +62,6 @@ private:
     bool bIsTrapActive = false;
 
     float SpawnDelay = 3.0f;
+
+    class APeCoEnemyCharacter* AttachedEnemy;
 };

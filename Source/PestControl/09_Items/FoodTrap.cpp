@@ -30,9 +30,10 @@ AFoodTrap::AFoodTrap()
     ExplodeRange->SetupAttachment(Mesh);
     ExplodeRange->SetSphereRadius(400.f);
 
-    ExplodeDelay = 1.5f;
+    ExplodeDelay = 3.0f;
     
     bIsTrapActive = false;
+    AttachedEnemy = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -50,22 +51,37 @@ void AFoodTrap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    if (AttachedEnemy)
+    {
+        if (AttachedEnemy->IsValidLowLevel() && !AttachedEnemy->IsPendingKill())
+        {
+            SetActorLocation(AttachedEnemy->GetActorLocation());
+        }
+        else
+        {
+            AttachedEnemy = nullptr;
+            Explode();
+        }
+    }
+
 }
 
 void AFoodTrap::OnEnemyOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
     bool bFromSweep, const FHitResult& SweepResult)
 {
-    if(bIsTrapActive)
-    { 
+    if (bIsTrapActive && !AttachedEnemy)
+    {
         APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OtherActor);
-        if (EnemyCharacter) 
+        if (EnemyCharacter)
         {
-           GetWorld()->GetTimerManager().SetTimer(ExplodeTimerHandle, this, &AFoodTrap::Explode, ExplodeDelay, false);
+            AttachToActor(EnemyCharacter, FAttachmentTransformRules::KeepWorldTransform);
+            AttachedEnemy = EnemyCharacter;
 
-           UE_LOG(LogTemp, Log, TEXT("FoodTrap Activated!"));
+            GetWorld()->GetTimerManager().SetTimer(ExplodeTimerHandle, this, &AFoodTrap::Explode, ExplodeDelay, false);
+
+            UE_LOG(LogTemp, Log, TEXT("FoodTrap Attached to Enemy!"));
         }
-        
     }
 }
 
