@@ -2,8 +2,8 @@
 
 
 #include "07_Weapon/Projectile.h"
-#include "07_Weapon/WebRevolver.h"
-#include "07_Weapon/AirGun.h"
+#include "07_Weapon/ProjectileWeapon/WebRevolver.h"
+#include "07_Weapon/ProjectileWeapon/AirGun.h"
 
 #include "01_Character/PeCoEnemyCharacter.h"
 

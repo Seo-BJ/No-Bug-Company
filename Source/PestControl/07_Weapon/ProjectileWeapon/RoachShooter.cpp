@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "07_Weapon/RoachShooter.h"
+#include "07_Weapon/ProjectileWeapon/RoachShooter.h"
 
 ARoachShooter::ARoachShooter()
 {

@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "07_Weapon/PestShotgun.h"
-#include "07_Weapon/Projectile.h"
+#include "07_Weapon/ProjectileWeapon/PestShotgun.h"
 
 
 APestShotgun::APestShotgun()

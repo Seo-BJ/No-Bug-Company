@@ -6,19 +6,12 @@
 
 #include "01_Character/PeCoCharacter.h"
 
-#include "07_Weapon/LarvaLauncher.h"
-#include "07_Weapon/WebRevolver.h"
-#include "07_Weapon/PestShotgun.h"
-#include "07_Weapon/RoachShooter.h"
-#include "07_Weapon/AirGun.h"
-#include "07_Weapon/Pesticide.h"
-#include "07_Weapon/Flamethrower.h"
-
 #include "PeCoPlayerCharacter.generated.h"
 
 class UInventoryComponent;
 class UEquipmentComponent;
 class UBuffComponent;
+class AWeapon;
 
 /**
  * 

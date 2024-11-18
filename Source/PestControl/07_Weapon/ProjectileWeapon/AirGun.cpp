@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "07_Weapon/AirGun.h"
+#include "07_Weapon/ProjectileWeapon/AirGun.h"
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
 #include "Kismet/GameplayStatics.h"
-
 #include "GameFramework/CharacterMovementComponent.h"
 
 AAirGun::AAirGun()
