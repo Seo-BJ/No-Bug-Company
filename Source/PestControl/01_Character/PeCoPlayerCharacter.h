@@ -102,8 +102,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapons")
 	TMap<FName, AWeapon*> WeaponInstanceMap;
 
-
-
 	void SpawnWeapon(FName WeaponName);
 
 	void InitializeWeaponClasses();
@@ -129,28 +127,16 @@ public:
 
 	void EndInvincible();
 
-	//for LevelUp Test... ToDo Delete after test
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedPesticide;
+	//~ Spray Bomb Test
+	UFUNCTION(BlueprintCallable, Category = "SprayBomb")
+	void SprayBombFire();
 
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedLaL;
+	UPROPERTY(EditDefaultsOnly, Category = "SprayBomb")
+	TSubclassOf<class ASprayBomb> SprayBombClass;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedWR;
+	FVector GetCursorLocation();
 
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedPS;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedRS;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedAG;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedFT;
-	// ~ End of for levelup test
+	//~ End of Spray Bomb Test
 
 protected:
 	bool bIsInvincible;

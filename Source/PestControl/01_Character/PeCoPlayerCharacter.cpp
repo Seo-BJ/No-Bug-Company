@@ -22,6 +22,8 @@
 #include "07_Weapon/ConicalWeapon/Pesticide.h"
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
 
+#include "09_Items/SprayBomb.h"
+
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -241,4 +243,56 @@ void APeCoPlayerCharacter::EndInvincible()
 {
 	bIsInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
+}
+
+void APeCoPlayerCharacter::SprayBombFire()
+{
+	FVector startLoc = GetActorLocation(); // 발사 지점
+	FVector targetLoc = GetCursorLocation();  // 타겟 지점.
+	float arcValue = 0.5f;                       // ArcParam (0.0-1.0)
+	FVector outVelocity = FVector::ZeroVector;   // 결과 Velocity
+	if (UGameplayStatics::SuggestProjectileVelocity_CustomArc(this, outVelocity, startLoc, targetLoc, GetWorld()->GetGravityZ(), arcValue))
+	{
+		FPredictProjectilePathParams predictParams(20.0f, startLoc, outVelocity, 1.0f);   // 20: tracing 보여질 프로젝타일 크기, 15: 시물레이션되는 Max 시간(초)
+		predictParams.DrawDebugTime = 1.0f;     //디버그 라인 보여지는 시간 (초)
+		predictParams.DrawDebugType = EDrawDebugTrace::Type::ForDuration;  // DrawDebugTime 을 지정하면 EDrawDebugTrace::Type::ForDuration 필요.
+		predictParams.OverrideGravityZ = GetWorld()->GetGravityZ();
+		FPredictProjectilePathResult result;
+		UGameplayStatics::PredictProjectilePath(this, predictParams, result);
+
+
+		FVector SpawnLocation = WeaponSpawnPoint->GetComponentLocation();
+		FRotator SpawnRotation = WeaponSpawnPoint->GetComponentRotation();
+
+		ASprayBomb* BombInstance = GetWorld()->SpawnActor<ASprayBomb>(SprayBombClass, SpawnLocation, SpawnRotation);
+		
+		if (BombInstance && BombInstance->BombMesh) // 널 포인터 확인
+		{
+			BombInstance->BombMesh->AddImpulse(outVelocity, NAME_None, true); // Impulse 추가
+		}
+
+	}
+
+}
+
+FVector APeCoPlayerCharacter::GetCursorLocation()
+{
+	FVector HitLocation = FVector::ZeroVector;
+
+	if (APeCoPlayerController* PlayerController = Cast<APeCoPlayerController>(GetController()))
+	{
+
+		if (PlayerController != nullptr)
+		{
+			FHitResult HitResult;
+			PlayerController->GetHitResultUnderCursor(
+				ECollisionChannel::ECC_WorldStatic,
+				false,
+				HitResult
+			);
+
+			HitLocation = HitResult.Location;
+		}
+	}
+	return HitLocation;
 }

@@ -74,4 +74,6 @@ public:
 
 	void ResetStunStatus();
 	//~End of Status effect
+
+	float GetMaxHealth();
 };
