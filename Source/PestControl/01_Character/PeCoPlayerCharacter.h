@@ -25,7 +25,12 @@ public:
 	APeCoPlayerCharacter();
 
 	virtual void Tick(float DeltaSeconds) override;
+	
 	virtual void PostInitializeComponents() override;
+
+	void RotateAim(FVector LookAtTarget);
+
+	void MoveWeaponSpawnPoint(FVector MouseLocation);
 
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
@@ -121,11 +126,18 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Crash Invincible")
 	float CrashInvincibleDuration = 3.0f;
-	//~End of Player Crash damage
 
-	void BecomeInvincible(float InvincibleDuration);
+	void BecomeCrashInvincible(float Duration);
 
-	void EndInvincible();
+	void EndCrashInvincible();
+
+protected:
+	bool bIsCrashInvincible;
+
+	FTimerHandle CrashInvincibilityTimerHandle;
+	//~End of InvincibleState
+
+public:
 
 	//~ Spray Bomb Test
 	UFUNCTION(BlueprintCallable, Category = "SprayBomb")
@@ -136,11 +148,23 @@ public:
 
 	FVector GetCursorLocation();
 
+	UPROPERTY(EditAnywhere, Category = "SprayBomb")
+	float BombRange = 1000.0f;
 	//~ End of Spray Bomb Test
 
-protected:
-	bool bIsInvincible;
+	//~ Anti Spray Test
+	UPROPERTY(EditDefaultsOnly, Category = "Anti Spray")
+	TSubclassOf<class AAntiSpray> AntiSprayClass;
 
+	UFUNCTION(BlueprintCallable, Category = "Anti Spray")
+	void UseAntiSpray();
+
+	void ActivateInvincibility(float Duration);
+
+private:
+		
 	FTimerHandle InvincibilityTimerHandle;
-	//~End of InvincibleState
+
+	void DeactivateInvincibility();
+	//~ End of Anti Spray Test
 };

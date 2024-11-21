@@ -40,14 +40,12 @@ void AStickyTrap::OnEnemyOverlapped(UPrimitiveComponent* OverlappedComp, AActor*
         APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OtherActor);
         if (!EnemyCharacter)
         {
-            UE_LOG(LogTemp, Error, TEXT("OtherActor is not APeCoEnemyCharacter!"));
             return;
         }
 
         UCharacterMovementComponent* MovementComponent = EnemyCharacter->GetCharacterMovement();
         if (!MovementComponent)
         {
-            UE_LOG(LogTemp, Error, TEXT("EnemyCharacter has no valid MovementComponent!"));
             return;
         }
 

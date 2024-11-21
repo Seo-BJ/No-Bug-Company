@@ -32,18 +32,6 @@ void APeCoCharacter::Tick(float DeltaTime)
 
 }
 
-void APeCoCharacter::RotateAim(FVector LookAtTarget)
-{
-	FVector ToTarget = LookAtTarget - RootComponent->GetComponentLocation();
-	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
-	RootComponent->SetWorldRotation(
-		FMath::RInterpTo(
-			RootComponent->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this),
-			10.f)
-	);
-}
 
 ETeam APeCoCharacter::GetTeam()
 {

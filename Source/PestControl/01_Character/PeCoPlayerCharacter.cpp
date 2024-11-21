@@ -23,6 +23,7 @@
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
 
 #include "09_Items/SprayBomb.h"
+#include "09_Items/AntiSpray.h"
 
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -79,7 +80,9 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 
 	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
 
-	 bIsInvincible = false;
+	 bIsCrashInvincible = false;
+
+	 SetCanBeDamaged(true);
 
 	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	 EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
@@ -106,19 +109,53 @@ void APeCoPlayerCharacter::BeginPlay()
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	GetCharacterMovement()->bOrientRotationToMovement = true;
 
-	if (PeCoPlayerController)
+	if (PeCoPlayerController && WeaponSpawnPoint)
 	{
 		FHitResult HitResult;
-		PeCoPlayerController->GetHitResultUnderCursor(
+		bool bHit = PeCoPlayerController->GetHitResultUnderCursor(
 			ECollisionChannel::ECC_Visibility,
-			false,
-			HitResult);
+			true,
+			HitResult
+		);
 
-		RotateAim(HitResult.ImpactPoint);
+		FVector TargetLocation = FVector::ZeroVector;
+
+		if (bHit)
+		{
+			TargetLocation = HitResult.ImpactPoint;
+		}
+		MoveWeaponSpawnPoint(TargetLocation);
 	}
+}
 
+void APeCoPlayerCharacter::MoveWeaponSpawnPoint(FVector MouseLocation)
+{
+	FVector CharacterLocation = GetActorLocation();
+	FVector DirectionToMouse = (MouseLocation - CharacterLocation).GetSafeNormal();
+
+	FVector TargetLocation = CharacterLocation + DirectionToMouse ;
+
+	FVector FinalLocation = FMath::ClosestPointOnLine(CharacterLocation, TargetLocation, MouseLocation);
+
+	WeaponSpawnPoint->SetWorldLocation(FinalLocation);
+
+	RotateAim(MouseLocation);
+}
+
+void APeCoPlayerCharacter::RotateAim(FVector LookAtTarget)
+{
+	FVector ToTarget = LookAtTarget - WeaponSpawnPoint->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+
+	WeaponSpawnPoint->SetWorldRotation(
+		FMath::RInterpTo(
+			WeaponSpawnPoint->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this),
+			10.f
+		)
+	);
 }
 
 void APeCoPlayerCharacter::PostInitializeComponents()
@@ -223,65 +260,68 @@ void APeCoPlayerCharacter::SpawnWeapon(FName WeaponName)
 
 void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!bIsInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
+	if (!bIsCrashInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
 	{
 		UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
 		
-		BecomeInvincible(CrashInvincibleDuration); 
+		BecomeCrashInvincible(CrashInvincibleDuration);
 	}
 }
 
-void APeCoPlayerCharacter::BecomeInvincible(float InvincibleDuration)
+void APeCoPlayerCharacter::BecomeCrashInvincible(float Duration)
 {
-	bIsInvincible = true;
+	bIsCrashInvincible = true;
 	UE_LOG(LogTemp, Warning, TEXT("Player is now invincible!"));
 
-	GetWorld()->GetTimerManager().SetTimer(InvincibilityTimerHandle, this, &APeCoPlayerCharacter::EndInvincible, InvincibleDuration, false);
+	GetWorld()->GetTimerManager().SetTimer(CrashInvincibilityTimerHandle, this, &APeCoPlayerCharacter::EndCrashInvincible, CrashInvincibleDuration, false);
 }
 
-void APeCoPlayerCharacter::EndInvincible()
+void APeCoPlayerCharacter::EndCrashInvincible()
 {
-	bIsInvincible = false;
+	bIsCrashInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }
 
+//~ Spray Bomb Test
 void APeCoPlayerCharacter::SprayBombFire()
 {
-	FVector startLoc = GetActorLocation(); // 발사 지점
-	FVector targetLoc = GetCursorLocation();  // 타겟 지점.
+	FVector startLoc = GetActorLocation(); 
+	FVector targetLoc = GetCursorLocation(); 
 	float arcValue = 0.5f;                       // ArcParam (0.0-1.0)
-	FVector outVelocity = FVector::ZeroVector;   // 결과 Velocity
-	if (UGameplayStatics::SuggestProjectileVelocity_CustomArc(this, outVelocity, startLoc, targetLoc, GetWorld()->GetGravityZ(), arcValue))
-	{
-		FPredictProjectilePathParams predictParams(20.0f, startLoc, outVelocity, 1.0f);   // 20: tracing 보여질 프로젝타일 크기, 15: 시물레이션되는 Max 시간(초)
-		predictParams.DrawDebugTime = 1.0f;     //디버그 라인 보여지는 시간 (초)
-		predictParams.DrawDebugType = EDrawDebugTrace::Type::ForDuration;  // DrawDebugTime 을 지정하면 EDrawDebugTrace::Type::ForDuration 필요.
-		predictParams.OverrideGravityZ = GetWorld()->GetGravityZ();
-		FPredictProjectilePathResult result;
-		UGameplayStatics::PredictProjectilePath(this, predictParams, result);
+	FVector outVelocity = FVector::ZeroVector;  
 
-
-		FVector SpawnLocation = WeaponSpawnPoint->GetComponentLocation();
-		FRotator SpawnRotation = WeaponSpawnPoint->GetComponentRotation();
-
-		ASprayBomb* BombInstance = GetWorld()->SpawnActor<ASprayBomb>(SprayBombClass, SpawnLocation, SpawnRotation);
-		
-		if (BombInstance && BombInstance->BombMesh) // 널 포인터 확인
+	float Distance = FVector::Dist(GetActorLocation(), targetLoc);
+	
+	if(Distance <= BombRange)
+	{ 
+		if (UGameplayStatics::SuggestProjectileVelocity_CustomArc(this, outVelocity, startLoc, targetLoc, GetWorld()->GetGravityZ(), arcValue))
 		{
-			BombInstance->BombMesh->AddImpulse(outVelocity, NAME_None, true); // Impulse 추가
+			FPredictProjectilePathParams predictParams(20.0f, startLoc, outVelocity, 1.0f);  
+			predictParams.DrawDebugType = EDrawDebugTrace::Type::ForDuration;  
+			predictParams.OverrideGravityZ = GetWorld()->GetGravityZ();
+			FPredictProjectilePathResult result;
+			UGameplayStatics::PredictProjectilePath(this, predictParams, result);
+
+
+			FVector SpawnLocation = WeaponSpawnPoint->GetComponentLocation();
+			FRotator SpawnRotation = WeaponSpawnPoint->GetComponentRotation();
+
+			ASprayBomb* BombInstance = GetWorld()->SpawnActor<ASprayBomb>(SprayBombClass, SpawnLocation, SpawnRotation);
+		
+			if (BombInstance && BombInstance->BombMesh) 
+			{
+				BombInstance->BombMesh->AddImpulse(outVelocity, NAME_None, true);
+			}
 		}
-
 	}
-
 }
 
 FVector APeCoPlayerCharacter::GetCursorLocation()
 {
 	FVector HitLocation = FVector::ZeroVector;
-
+	
 	if (APeCoPlayerController* PlayerController = Cast<APeCoPlayerController>(GetController()))
 	{
-
 		if (PlayerController != nullptr)
 		{
 			FHitResult HitResult;
@@ -294,5 +334,38 @@ FVector APeCoPlayerCharacter::GetCursorLocation()
 			HitLocation = HitResult.Location;
 		}
 	}
+
 	return HitLocation;
 }
+
+
+void APeCoPlayerCharacter::UseAntiSpray()
+{
+	
+	FVector SpawnLocation = WeaponSpawnPoint->GetComponentLocation();
+	FRotator SpawnRotation = WeaponSpawnPoint->GetComponentRotation();
+
+	AAntiSpray* AntiSprayInstance = GetWorld()->SpawnActor<AAntiSpray>(AntiSprayClass, SpawnLocation, SpawnRotation);
+	
+	AntiSprayInstance->ActivateItem(this);
+}
+
+//~ End of Spray Bomb Test
+void APeCoPlayerCharacter::ActivateInvincibility(float Duration)
+{
+
+	SetCanBeDamaged(false);
+	UE_LOG(LogTemp, Log, TEXT("Invincibility activated: CanBeDamaged = false"));
+
+
+	GetWorldTimerManager().SetTimer(InvincibilityTimerHandle, this, &APeCoPlayerCharacter::DeactivateInvincibility, Duration, false);
+}
+
+void APeCoPlayerCharacter::DeactivateInvincibility()
+{
+	SetCanBeDamaged(true);
+	UE_LOG(LogTemp, Log, TEXT("Invincibility deactivated: CanBeDamaged = true"));
+}
+
+
+// ~ Anti Spray Test
