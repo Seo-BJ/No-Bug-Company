@@ -7,6 +7,8 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 
+#include "10_Enemy/EnemyStats.h"
+
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
@@ -50,8 +52,24 @@ public:
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
 
+	// (EnemyID)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	FName EnemyID;
+
+	// 체력
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float Health;
+
+	// 최대 체력
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float MaxHealth;
+
+	// 데이터 테이블에서 받은 값 적용
+	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
+
 private:
-	//~Enemy Stats
+
+	/*//~Enemy Stats
 	UPROPERTY(EditAnywhere, Category = "EnemyStats")
 	float Health;
 
@@ -59,7 +77,7 @@ private:
 	float MaxHealth = 100;
 
 
-	//~End of Enemy Stats
+	//~End of Enemy Stats*/
 
 	//~Status effect
 public:
