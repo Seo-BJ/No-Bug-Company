@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "10_Enemy/PeCoEnemySpawner.h"
+#include "10_Enemy/EnemyStats.h"
 #include "PeCoGameMode.generated.h"
 
 /**
@@ -57,5 +58,40 @@ private:
 
 	// 최대 스폰 가능한 적의 수
 	int32 MaxSpawnCount = 10;
+
+	// 스포너 인스턴스
+	UPROPERTY()
+	APeCoEnemySpawner* EnemySpawnerInstance;
+
+	// 현재 라운드
+	int32 CurrentRound;
+
+	// 현재 라운드에서 남아있는 적의 수
+	int32 RemainingEnemies;
+
+	// 최대 라운드
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 MaxRounds = 5;
+
+	// 라운드 진행 간격
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	float TimeBetweenRounds = 5.0f;
+
+	// 라운드별 시간
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	TArray<float> RoundTimes;
+
+	// 현재 라운드 경과 시간
+	float CurrentRoundElapsedTime;
+
+	// 현재 게임이 진행 중인지
+	bool bIsGameActive;
+
+	// 라운드 타이머 핸들
+	FTimerHandle RoundTimerHandle;
+
+	void CheckGameOver();
+	void CheckRoundTimer(float DeltaTime);
+
 
 };
