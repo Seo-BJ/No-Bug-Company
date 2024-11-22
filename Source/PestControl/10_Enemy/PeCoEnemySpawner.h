@@ -23,17 +23,6 @@ public:
     // 라운드 설정
     void SetRound(int32 NewRound);
 
-    /*// 스폰할 적의 클래스 (BP로 설정 가능)
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    TSubclassOf<APeCoEnemyCharacter> EnemyClass;
-
-    // 스폰 간격 (초 단위)
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    float SpawnInterval = 10.0f;
-
-    // 한 번에 스폰할 적의 수
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    int32 SpawnCount = 3;*/
     // 스폰 간격
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 2.0f;

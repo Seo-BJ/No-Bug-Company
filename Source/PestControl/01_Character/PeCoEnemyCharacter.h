@@ -69,16 +69,6 @@ public:
 
 private:
 
-	/*//~Enemy Stats
-	UPROPERTY(EditAnywhere, Category = "EnemyStats")
-	float Health;
-
-	UPROPERTY(EditAnywhere, Category = "EnemyStats")
-	float MaxHealth = 100;
-
-
-	//~End of Enemy Stats*/
-
 	//~Status effect
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
