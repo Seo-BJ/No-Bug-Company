@@ -33,7 +33,7 @@
 	CHARACTERSTAT_BASEVALUE_SETTER(StatName) \
 	CHARACTERSTAT_VALUE_INITTER(StatName)
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStatChanged, float, Value);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, float, float);
 
 USTRUCT(BlueprintType)
 struct PESTCONTROL_API FPeCoStatData
@@ -41,47 +41,60 @@ struct PESTCONTROL_API FPeCoStatData
 	GENERATED_BODY()
 
 	FPeCoStatData();
-	FOnStatChanged OnStatChanged;
-
 	FPeCoStatData(FGameplayTag StatTag)
 		: StatTag(StatTag)
 	{}
 
-	float GetCurrentValue() const;
+	FOnStatChanged OnStatChanged;
 
-	float GetBaseValue() const
+	virtual void InitValue(float Value)
 	{
-		return BaseValue;
+		BaseValue = Value;
+		CurrentValue = (BaseValue + AdditiveBonus) * (1 + MultiplierBonus) / (1 + MultiplierReduction);
 	}
-	virtual void SetBaseValue(float NewValue)
-	{
-		BaseValue = NewValue; 
-		OnStatChanged.Broadcast(GetCurrentValue());
-	}
-	virtual void InitValue(float NewValue)
-	{
-		BaseValue = NewValue;
-		CurrentValue = NewValue;
-	}
-
-	int32 GetStatLevel() const
-	{
-		return StatLevel;
-	}	
 	void IncreaseLevel(int32 Amount)
 	{
 		StatLevel += Amount;
+		NotifyStatChanged(StatLevel - Amount, StatLevel);
 	}
+	void SetBaseValue(float Value)
+	{
+		float OldBaseValue = BaseValue;
+		BaseValue = Value;
+		CurrentValue = (BaseValue + AdditiveBonus) * (1 + MultiplierBonus) / (1 + MultiplierReduction);
+		NotifyStatChanged(OldBaseValue, BaseValue);
+	}
+
 
 	void AddAdditiveBonus(float Amount);
 	void AddMultiplierBonus(float Amount);
 	void AddMultiplierReduction(float Amount);
 	
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
-	FGameplayTag StatTag;
+	float GetCurrentValue() const { return CurrentValue; }
+	float GetBaseValue() const { return BaseValue; }
+	FGameplayTag GetStatTag() const { return StatTag; }
+	int32 GetStatLevel() const { return StatLevel; }
+	float GetAdditiveBonus() const { return AdditiveBonus; }
+	float GetMultiplierBonus() const { return MultiplierBonus; }
+	float GetMultiplierReduction() const { return MultiplierReduction; }
 
 protected:
+
+	void UpdateCurrentValue()
+	{
+		float OldValue = CurrentValue;
+		CurrentValue = (BaseValue + AdditiveBonus) * (1 + MultiplierBonus) / (1 + MultiplierReduction);
+		NotifyStatChanged(OldValue, CurrentValue);
+	}
+
+	void NotifyStatChanged(float OldValue, float NewValue)
+	{
+		OnStatChanged.Broadcast(OldValue, NewValue);
+	}
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
+	FGameplayTag StatTag;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
 	int32 StatLevel = 1;

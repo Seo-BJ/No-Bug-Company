@@ -51,20 +51,18 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 
-	// To Do
-	// UpdateHUDHealth();
-	// UpdateHUDShield();
-	// PlayHitReactMontage();
-
 	if (Health <= 0.f)
 	{
-		PeCoGameMode = PeCoGameMode == nullptr ? GetWorld()->GetAuthGameMode<APeCoGameMode>() : PeCoGameMode;
-		if (PeCoGameMode)
+		if (IsValid(InstigatorController))
 		{
-			CharacterDie();
+			APeCoPlayerState* PS = InstigatorController->GetPlayerState<APeCoPlayerState>();
+			if (IsValid(PS))
+			{
+				PS->AddToKillCount(1);
+			}
 		}
+		CharacterDie();
 	}
-
 }
 
 void APeCoEnemyCharacter::CharacterDie()

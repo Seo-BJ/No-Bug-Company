@@ -30,7 +30,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	
+
 	UFUNCTION(BlueprintCallable)
 	void AddHealth(float Amount, AActor* CauserActor = nullptr);
 	UFUNCTION(BlueprintCallable)
@@ -53,21 +53,38 @@ public:
 	float InitialBaseSpeed = 0.f;
 	float InitialCrouchSpeed = 0.f;
 
-
-	//~Stat Upgrade when Level Up
-
-
-
-	//~End of Stat Upgrade when Level Up
-
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
 	FPresenterStatChanged OnHealthChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
 	FPresenterStatChanged OnMaxHealthChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnMoveSpeedChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnAttackPowerChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnAttackSpeedChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnDamageResistanceChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnCriticalChanceChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnCriticalDamageChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnRangeChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
+	FPresenterStatChanged OnSkillCoolTimeChanged;
+
+
 private:
 
-	APeCoPlayerState* GetPlayerState();
 		
 };
