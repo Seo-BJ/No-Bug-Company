@@ -8,6 +8,8 @@
 #include "01_Character/CombatInterface.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "10_Enemy/EnemyStats.h"
+
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
@@ -51,8 +53,24 @@ public:
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
 
+	// (EnemyID)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	FName EnemyID;
+
+	// ü��
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float Health;
+
+	// �ִ� ü��
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float MaxHealth;
+
+	// ������ ���̺����� ���� �� ����
+	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
+
 private:
-	//~Enemy Stats
+
+	/*//~Enemy Stats
 	UPROPERTY(EditAnywhere, Category = "EnemyStats")
 	float Health;
 
@@ -60,7 +78,7 @@ private:
 	float MaxHealth = 100;
 
 
-	//~End of Enemy Stats
+	//~End of Enemy Stats*/
 
 	//~Status effect
 public:

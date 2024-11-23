@@ -19,8 +19,11 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 	// Set up Hit event
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoEnemyCharacter::OnHit);
 
+	// 기본 EnemyID 값 설정 (필요시 자식 클래스에서 덮어씌움)
+	EnemyID = NAME_None;
 
-	MaxHealth = 100.f; // set max health
+
+	MaxHealth = 100.0f; // set max health
 	Health = MaxHealth; // when the game start, set health = max health
 }
 
@@ -108,4 +111,24 @@ void APeCoEnemyCharacter::ResetKnockbackFlag()
 {
 	bRecentlyKnockedBack = false;
 	 
+}
+
+void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
+{
+	// 데이터 테이블에서 값 적용
+	Health = Stats.Health;
+	MaxHealth = Stats.Health;
+	
+
+	// 이동 속도 설정
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Flying)
+	{
+		GetCharacterMovement()->MaxFlySpeed = Stats.FlySpeed;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = Stats.WalkSpeed;
+	}
+
+	
 }
