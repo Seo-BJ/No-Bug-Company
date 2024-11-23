@@ -7,6 +7,9 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
+#include "10_Enemy/EnemyStats.h"
+
 #include "GameFramework/Character.h"
 #include "PeCoEnemyCharacter.generated.h"
 
@@ -27,7 +30,7 @@ public:
 
 	
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	// Flag to prevent collision from being processed again for a certain time after the initial collision
 	bool bRecentlyKnockedBack;
@@ -50,8 +53,24 @@ public:
 	virtual void CharacterDie() override;
 	//~End of ICombatInterface
 
+	// (EnemyID)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	FName EnemyID;
+
+	// ü��
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float Health;
+
+	// �ִ� ü��
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float MaxHealth;
+
+	// ������ ���̺����� ���� �� ����
+	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
+
 private:
-	//~Enemy Stats
+
+	/*//~Enemy Stats
 	UPROPERTY(EditAnywhere, Category = "EnemyStats")
 	float Health;
 
@@ -59,7 +78,7 @@ private:
 	float MaxHealth = 100;
 
 
-	//~End of Enemy Stats
+	//~End of Enemy Stats*/
 
 	//~Status effect
 public:
@@ -73,4 +92,6 @@ public:
 
 	void ResetStunStatus();
 	//~End of Status effect
+
+	float GetMaxHealth();
 };

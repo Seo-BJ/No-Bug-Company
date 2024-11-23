@@ -4,7 +4,7 @@
 
 #include "07_Weapon/Weapon.h"
 #include "07_Weapon/Projectile.h"
-#include "07_Weapon/Flamethrower.h" 
+#include "07_Weapon/ConicalWeapon/Flamethrower.h" 
 
 #include "01_Character/PeCoEnemyCharacter.h" 
 
@@ -113,7 +113,6 @@ void AWeapon::FireWeapon()
 
 void AWeapon::SpawnProjectile()
 {
-    UE_LOG(LogTemp, Display, TEXT("Spawn Projectile called"));
     if (!BulletClass)
     {
         return;

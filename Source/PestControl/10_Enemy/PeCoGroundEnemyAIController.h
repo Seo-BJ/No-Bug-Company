@@ -15,8 +15,13 @@ class PESTCONTROL_API APeCoGroundEnemyAIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void Tick(float DeltaSeconds) override;
+	
+	void SetIsKnockedBack(bool IsKnockedBack);
+	bool IsKnockedBack() const { return bIsKnockedBack; }
+	
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -27,5 +32,10 @@ protected:
 	// Blackboard Component 
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BlackboardComponent;
+
+private:
+	bool bIsKnockedBack = false;
 	
+	// Timer handle for managing knockback duration
+	FTimerHandle KnockbackTimerHandle;
 };

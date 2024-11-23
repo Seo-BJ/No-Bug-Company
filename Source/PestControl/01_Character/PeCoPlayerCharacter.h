@@ -6,19 +6,12 @@
 
 #include "01_Character/PeCoCharacter.h"
 
-#include "07_Weapon/LarvaLauncher.h"
-#include "07_Weapon/WebRevolver.h"
-#include "07_Weapon/PestShotgun.h"
-#include "07_Weapon/RoachShooter.h"
-#include "07_Weapon/AirGun.h"
-#include "07_Weapon/Pesticide.h"
-#include "07_Weapon/Flamethrower.h"
-
 #include "PeCoPlayerCharacter.generated.h"
 
 class UInventoryComponent;
 class UEquipmentComponent;
 class UBuffComponent;
+class AWeapon;
 
 /**
  * 
@@ -32,7 +25,12 @@ public:
 	APeCoPlayerCharacter();
 
 	virtual void Tick(float DeltaSeconds) override;
+	
 	virtual void PostInitializeComponents() override;
+
+	void RotateAim(FVector LookAtTarget);
+
+	void MoveWeaponSpawnPoint(FVector MouseLocation);
 
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
@@ -105,8 +103,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapons")
 	TMap<FName, AWeapon*> WeaponInstanceMap;
 
-
-
 	void SpawnWeapon(FName WeaponName);
 
 	void InitializeWeaponClasses();
@@ -126,38 +122,45 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Crash Invincible")
 	float CrashInvincibleDuration = 3.0f;
-	//~End of Player Crash damage
 
-	void BecomeInvincible(float InvincibleDuration);
+	void BecomeCrashInvincible(float Duration);
 
-	void EndInvincible();
-
-	//for LevelUp Test... ToDo Delete after test
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedPesticide;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedLaL;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedWR;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedPS;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedRS;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedAG;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
-	AWeapon* EquippedFT;
-	// ~ End of for levelup test
+	void EndCrashInvincible();
 
 protected:
-	bool bIsInvincible;
+	bool bIsCrashInvincible;
 
-	FTimerHandle InvincibilityTimerHandle;
+	FTimerHandle CrashInvincibilityTimerHandle;
 	//~End of InvincibleState
+
+public:
+
+	//~ Spray Bomb Test
+	UFUNCTION(BlueprintCallable, Category = "SprayBomb")
+	void SprayBombFire();
+
+	UPROPERTY(EditDefaultsOnly, Category = "SprayBomb")
+	TSubclassOf<class ASprayBomb> SprayBombClass;
+
+	FVector GetCursorLocation();
+
+	UPROPERTY(EditAnywhere, Category = "SprayBomb")
+	float BombRange = 1000.0f;
+	//~ End of Spray Bomb Test
+
+	//~ Anti Spray Test
+	UPROPERTY(EditDefaultsOnly, Category = "Anti Spray")
+	TSubclassOf<class AAntiSpray> AntiSprayClass;
+
+	UFUNCTION(BlueprintCallable, Category = "Anti Spray")
+	void UseAntiSpray();
+
+	void ActivateInvincibility(float Duration);
+
+private:
+		
+	FTimerHandle InvincibilityTimerHandle;
+
+	void DeactivateInvincibility();
+	//~ End of Anti Spray Test
 };

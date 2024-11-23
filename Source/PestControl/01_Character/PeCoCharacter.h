@@ -26,8 +26,4 @@ public:
 	//~End of AActor Interface
 
 	virtual ETeam GetTeam();
-
-protected:
-
-	void RotateAim(FVector LookAtTarget);
 };
