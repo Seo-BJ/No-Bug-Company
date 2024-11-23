@@ -89,6 +89,11 @@ void APeCoEnemyCharacter::ResetStunStatus()
 {
 }
 
+float APeCoEnemyCharacter::GetMaxHealth()
+{
+	return MaxHealth;
+}
+
 void APeCoEnemyCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OtherActor && OtherActor != this && OtherActor->IsA(APeCoPlayerCharacter::StaticClass()))

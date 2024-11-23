@@ -14,21 +14,17 @@ AStickyTrap::AStickyTrap()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // Root component
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
-    // Trap Mesh
     TrapMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TrapMesh"));
     TrapMesh->SetupAttachment(RootComponent);
 
-    // Detection Box
     DetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("DetectionBox"));
     DetectionBox->SetupAttachment(TrapMesh);
     DetectionBox->SetBoxExtent(FVector(200.f, 200.f, 10.f));
 
     DetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AStickyTrap::OnEnemyOverlapped);
 
-    // Initial state
     bIsTrapActive = false;
 }
 
@@ -44,14 +40,12 @@ void AStickyTrap::OnEnemyOverlapped(UPrimitiveComponent* OverlappedComp, AActor*
         APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OtherActor);
         if (!EnemyCharacter)
         {
-            UE_LOG(LogTemp, Error, TEXT("OtherActor is not APeCoEnemyCharacter!"));
             return;
         }
 
         UCharacterMovementComponent* MovementComponent = EnemyCharacter->GetCharacterMovement();
         if (!MovementComponent)
         {
-            UE_LOG(LogTemp, Error, TEXT("EnemyCharacter has no valid MovementComponent!"));
             return;
         }
 

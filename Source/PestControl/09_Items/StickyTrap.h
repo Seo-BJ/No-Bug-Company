@@ -38,7 +38,7 @@ private:
 	UBoxComponent* DetectionBox;
 
 	UPROPERTY(EditAnywhere, Category = "Trap Settings")
-	float TrapDuration = 5.0f; // Delay time to deactivate the trap after activation
+	float TrapDuration = 5.0f;
 
 	TArray<APeCoEnemyCharacter*> OverlappingEnemies;
 
