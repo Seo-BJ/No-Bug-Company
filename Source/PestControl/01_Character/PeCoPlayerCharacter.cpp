@@ -100,7 +100,7 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	InitializeWeaponClasses();
 
-	SpawnWeapon("Flamethrower");
+	SpawnWeapon("LarvaLauncher");
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
