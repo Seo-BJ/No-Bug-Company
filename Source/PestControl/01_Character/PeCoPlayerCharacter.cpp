@@ -145,14 +145,7 @@ void APeCoPlayerCharacter::RotateAim(FVector LookAtTarget)
 	FVector ToTarget = LookAtTarget - WeaponSpawnPoint->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 
-	WeaponSpawnPoint->SetWorldRotation(
-		FMath::RInterpTo(
-			WeaponSpawnPoint->GetComponentRotation(),
-			LookAtRotation,
-			UGameplayStatics::GetWorldDeltaSeconds(this),
-			10.f
-		)
-	);
+	WeaponSpawnPoint->SetWorldRotation(LookAtRotation);
 }
 
 void APeCoPlayerCharacter::PostInitializeComponents()
@@ -337,8 +330,9 @@ FVector APeCoPlayerCharacter::GetCursorLocation()
 
 	return HitLocation;
 }
+//~ End of Spray Bomb Test
 
-
+// ~ Anti Spray Test
 void APeCoPlayerCharacter::UseAntiSpray()
 {
 	
@@ -350,7 +344,7 @@ void APeCoPlayerCharacter::UseAntiSpray()
 	AntiSprayInstance->ActivateItem(this);
 }
 
-//~ End of Spray Bomb Test
+
 void APeCoPlayerCharacter::ActivateInvincibility(float Duration)
 {
 
@@ -366,6 +360,4 @@ void APeCoPlayerCharacter::DeactivateInvincibility()
 	SetCanBeDamaged(true);
 	UE_LOG(LogTemp, Log, TEXT("Invincibility deactivated: CanBeDamaged = true"));
 }
-
-
-// ~ Anti Spray Test
+// ~End of  Anti Spray Test

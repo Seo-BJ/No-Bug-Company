@@ -60,13 +60,17 @@ public:
 	TSubclassOf<class AProjectile> BulletClass;
 	UPROPERTY(EditAnywhere, Category = "Projectile Stats")
 	int NumberOfProjectiles = 1;
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	int32 Ammo = 1;
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	int32 MaxAmmo = 1;
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float ReloadCoolDown = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
 	float FireAngle = 30;
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
 	float RangeRadius = 30;
-	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float DurationTime = 1.0f;
 
 protected:
 	void InitInfo();
@@ -86,6 +90,10 @@ public:
 private:
 
 	void FireWeapon();
+
+	void StartReload();
+
+	void Reload();
 
 	FTimerHandle CooldownHandle;
 	FTimerHandle FireTimerHandle;

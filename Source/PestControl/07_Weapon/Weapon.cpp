@@ -38,7 +38,7 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
     LoadWeaponStats(CurrentLevel);
-
+    
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, true);
 }
 
@@ -70,9 +70,12 @@ void AWeapon::LoadWeaponStats(int32 Level)
             Cooldown = WeaponStats->Cooldown;
             Delay = WeaponStats->Delay;
             NumberOfProjectiles = WeaponStats->NumberOfProjectiles;
+            Ammo = WeaponStats->Ammo;
+            MaxAmmo = WeaponStats->Ammo;
+            ReloadCoolDown = WeaponStats->ReloadCoolDown;
             FireAngle = WeaponStats->FireAngle;
             RangeRadius = WeaponStats->RangeRadius;
-            DurationTime = WeaponStats->DurationTime;
+
 
             UE_LOG(LogTemp, Log, TEXT("Loaded stats for %s at Level %d"), *WeaponID.ToString(), Level);
         }
@@ -89,27 +92,59 @@ void AWeapon::LoadWeaponStats(int32 Level)
 
 void AWeapon::FireWeapon()
 {
+    if (Ammo <= 0)
     {
-        switch (WeaponType)
-        {
-        case EWeaponType::Projectile:
-            ProjectileFire();
-            break;
+        StartReload();
+        return;
+    }
 
-        case EWeaponType::Conical:
-            ConicalFire();
-            break;
+    switch (WeaponType)
+    {
+    case EWeaponType::Projectile:
+        ProjectileFire();
+        Ammo--;
+        break;
 
-        case EWeaponType::Shotgun:
-            ShotgunFire();
-            break;
+    case EWeaponType::Conical:
+        ConicalFire();
+        Ammo = Ammo - 25;
+        break;
 
-        default:
-            UE_LOG(LogTemp, Warning, TEXT("Unknown weapon type"));
-            break;
-        }
+    case EWeaponType::Shotgun:
+        ShotgunFire();
+        Ammo--;
+        break;
+
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("Unknown weapon type"));
+        break;
+    }
+
+    if (Ammo > 0)
+    {
+        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+    }
+    else
+    {
+        StartReload();
     }
 }
+
+void AWeapon::StartReload()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
+
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::Reload, ReloadCoolDown, false);
+}
+
+void AWeapon::Reload()
+{
+    Ammo = MaxAmmo;
+    UE_LOG(LogTemp, Log, TEXT("Reload complete. Ammo refilled to %d"), Ammo);
+
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+}
+
 
 void AWeapon::SpawnProjectile()
 {
@@ -153,14 +188,10 @@ void AWeapon::ProjectileFire()
     }
 
     float TotalFireTime = FMath::Max(NumberOfProjectiles * Delay, Delay);
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::StartProjectileCooldown, TotalFireTime, false);
- 
+   
 }
 
-void AWeapon::StartProjectileCooldown()
-{
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ProjectileFire, Cooldown, false);
-}
+
 
 void AWeapon::ShotgunFire()
 {
@@ -250,21 +281,13 @@ void AWeapon::ConicalFire()
 
     InitInfo();
 
-    for (int32 i = 1; i < DurationTime / Delay + 1; i++)
+    for (int32 i = 1; i < Cooldown / Delay + 1 ; i++)
     {
         FTimerHandle TempHandle;
         float DelayTime = FMath::Max(i * Delay, Delay);
         GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::DealDamageInSector, DelayTime, false);
     }
-
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::StartConicalCooldown, DurationTime, false);
 }
-
-void AWeapon::StartConicalCooldown()
-{
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ConicalFire, Cooldown, false);
-}
-
 
 void AWeapon::DealDamageInSector()
 {
