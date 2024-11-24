@@ -25,15 +25,16 @@ APeCoPlayerState::APeCoPlayerState()
 
 	PlayerStatPresenterComponent = CreateDefaultSubobject<UPlayerStatPresenterComponent>(TEXT("StatPresenter"));
 	CharacterStats.Add(Health);
-	CharacterStats.Add(MaxHealth);
-	CharacterStats.Add(MoveSpeed);
-	CharacterStats.Add(AttackPower);
-	CharacterStats.Add(AttackSpeed);
+	CharacterStats.Add( MaxHealth);
+	CharacterStats.Add( MoveSpeed);
+	CharacterStats.Add( AttackPower);
+	CharacterStats.Add( AttackSpeed);
 	CharacterStats.Add(DamageResistance);
-	CharacterStats.Add(CriticalChance);
-	CharacterStats.Add(CriticalDamage);
+	CharacterStats.Add( CriticalChance);
+	CharacterStats.Add( CriticalDamage);
 	CharacterStats.Add(Range);
 	CharacterStats.Add(SkillCoolTime);
+
 }
 void APeCoPlayerState::BeginPlay()
 {
@@ -72,7 +73,7 @@ void APeCoPlayerState::AddHealth(float Amount, AController* InstigatorController
 	float NewHealth = FMath::Clamp(OldHealth + Amount, 0.f, GetMaxHealth());
 	SetBaseHealth(NewHealth);
 	HandleHealthChagne(Amount * -1, InstigatorController, DamageCauser);
-	OnHealthChagned.Broadcast(OldHealth, NewHealth);
+	Health.OnStatChanged.Broadcast(OldHealth, NewHealth);
 }
 void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser)
 {
@@ -151,7 +152,7 @@ void APeCoPlayerState::InitPlayerStat()
 		UE_LOG(LogTemp, Error, TEXT("플레이어 스탯 데이터 테이블 없음."));
 		return;
 	}
-
+	check(PlayerStatPresenterComponent);
 	PlayerStatPresenterComponent->BindCallbacksToDependencies();
 	// To Do:행 이름 변경
 	FName RowName = FName("0");
@@ -168,6 +169,8 @@ void APeCoPlayerState::InitPlayerStat()
 		InitCriticalDamage(RowData->CriticalDamage);
 		InitRange(RowData->Range);
 		InitSkillCoolTime(RowData->SkillCoolTime);
+
+		PlayerStatPresenterComponent->BroadcastInitialValues();
 	}
 	else
 	{
@@ -185,23 +188,27 @@ int32 APeCoPlayerState::GetStatUpgradeData(FGameplayTag StatTag)
 	}
 	for (const auto Stat : CharacterStats)
 	{
-		if (Stat.StatTag.MatchesTagExact(StatTag))
+		if (Stat.GetStatTag() == StatTag)
 		{
 			TargetStat = Stat;
 			break;
 		}
 	}
-	FName RowName = StatTag.GetTagName(); 
-	FRealCurve* StatCurve = StatUpgradeCurveTable->FindCurve(RowName, TEXT(""));
-	if (!StatCurve)
+	if (&TargetStat != nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
-		return -1;
-	}
-	int32 TargetStatLevel = TargetStat.GetStatLevel() + 1;
-	float RewardValue = StatCurve->Eval(TargetStatLevel);
+		FName RowName = StatTag.GetTagName();
+		FRealCurve* StatCurve = StatUpgradeCurveTable->FindCurve(RowName, TEXT(""));
+		if (!StatCurve)
+		{
+			UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
+			return -1;
+		}
+		int32 TargetStatLevel = TargetStat.GetStatLevel() + 1;
+		float RewardValue = StatCurve->Eval(TargetStatLevel);
 
-	return  RewardValue;
+		return  RewardValue;
+	}
+	return -1;
 }
 
 void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
@@ -248,11 +255,11 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 FGameplayTagContainer APeCoPlayerState::GetRandomStat(const int NumberOfRewards)
 {
 	FGameplayTagContainer TagContainer;
-	for (const auto Stat : CharacterStats)
+	for (auto Stat : CharacterStats)
 	{
-		if (!Stat.StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_Health))
+		if (!(Stat.GetStatTag().MatchesTagExact(PeCoGameplayTags::PlayerStat_Health)))
 		{
-			TagContainer.AddTag(Stat.StatTag);
+			TagContainer.AddTag(Stat.GetStatTag());
 		}
 	}
 	return PeCoGameplayTags::GetRandomTags(TagContainer, NumberOfRewards);
@@ -348,3 +355,43 @@ int32 APeCoPlayerState::GetCurrentLevelRequiredKillCount()
 	return FMath::CeilToInt(CurrentLevelExperience);
 }
 
+FPeCoStatData APeCoPlayerState::GetStatByTag(FGameplayTag Tag)
+{
+	if (Tag == PeCoGameplayTags::PlayerStat_MaxHealth)
+	{
+		return MaxHealth;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_MoveSpeed)
+	{
+		return MoveSpeed;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_AttackPower)
+	{
+		return AttackPower;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_AttackSpeed)
+	{
+		return AttackSpeed;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_DamageResistance)
+	{
+		return DamageResistance;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_CriticalChance)
+	{
+		return CriticalChance;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_CriticalDamage)
+	{
+		return CriticalDamage;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_Range)
+	{
+		return Range;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_SkillCoolTime)
+	{
+		return SkillCoolTime;
+	}
+	return FPeCoStatData();
+}

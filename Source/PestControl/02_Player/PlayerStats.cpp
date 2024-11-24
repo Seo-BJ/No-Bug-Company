@@ -6,34 +6,22 @@
 FPeCoStatData::FPeCoStatData()
 {
 }
-float FPeCoStatData::GetCurrentValue() const
-{
-	return (BaseValue * (1 + MultiplierBonus) / (1 + MultiplierReduction)) + AdditiveBonus;
-}
 
 
 void FPeCoStatData::AddAdditiveBonus(float Amount)
 {
 	AdditiveBonus += Amount;
+	UpdateCurrentValue();
 }
 
 void FPeCoStatData::AddMultiplierBonus(float Amount)
 {
 	MultiplierBonus += Amount;
+	UpdateCurrentValue();
 }
 
 void FPeCoStatData::AddMultiplierReduction(float Amount)
 {
 	MultiplierReduction += Amount;
+	UpdateCurrentValue();
 }
-/*
-float FPeCoStatData::GetFinalValue() const
-{
-	return ((BaseValue * (1 + MultiplierBonus) / (1 + MultiplierReduction)) + AdditiveBonus);
-}
-
-float FPeCoStatData::GetFinalValueInverse() const
-{
-	return ((BaseValue / (1 + MultiplierBonus) * (1 + MultiplierReduction)) + AdditiveBonus);
-}
-*/

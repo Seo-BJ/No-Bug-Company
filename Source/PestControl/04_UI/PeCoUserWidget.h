@@ -20,7 +20,7 @@ class PESTCONTROL_API UPeCoUserWidget : public UUserWidget
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UPlayerStatPresenterComponent* GetStatPresenter();
 
 

@@ -57,6 +57,7 @@ private:
 
 public:
 	
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE UPlayerOverlay* GetPlayerOverlayWidget() { return PlayerOverlayWidget; }
 	FORCEINLINE TSubclassOf<UDamageTextComponent> GetDamageTextComponnet() { return DamageTextComponentClass; }
 

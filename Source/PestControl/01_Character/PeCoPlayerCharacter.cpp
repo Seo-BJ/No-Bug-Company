@@ -242,8 +242,14 @@ void APeCoPlayerCharacter::SpawnWeapon(FName WeaponName)
 	AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
 	if (SpawnedWeapon)
 	{
+		AController* PlayerController = GetController();  // PlayerCharacter의 Controller 가져오기
+		if (PlayerController)
+		{
+			SpawnedWeapon->SetInstigator(this);  // 무기의 InstigatorController 설정
+		}
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 		SpawnedWeapons.Add(WeaponName, SpawnedWeapon);
+		
 		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponName.ToString());
 	}
 	else

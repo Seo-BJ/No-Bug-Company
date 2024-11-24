@@ -17,7 +17,20 @@ UPlayerStatPresenterComponent::UPlayerStatPresenterComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-
+	/*
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_Health, OnHealthChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_MaxHealth, OnMaxHealthChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_MoveSpeed, OnMoveSpeedChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_AttackPower, OnAttackPowerChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_AttackSpeed, OnAttackSpeedChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_DamageResistance, OnDamageResistanceChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_CriticalChance, OnCriticalChanceChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_CriticalDamage, OnCriticalDamageChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_Range, OnRangeChanged);
+	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_SkillCoolTime, OnSkillCoolTimeChanged);
+	
+	*/
+	
 }
 
 
@@ -25,26 +38,30 @@ UPlayerStatPresenterComponent::UPlayerStatPresenterComponent()
 void UPlayerStatPresenterComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-
-
-	
 }
-
 
 // Called every frame
 void UPlayerStatPresenterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-
 }
 
 void UPlayerStatPresenterComponent::BroadcastInitialValues()
 {
-
-
-
+	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
+	if (IsValid(PlayerState))
+	{
+		OnHealthChanged.Broadcast(0, PlayerState->GetHealth());
+		OnMaxHealthChanged.Broadcast(0, PlayerState->GetMaxHealth());
+		OnMoveSpeedChanged.Broadcast(0, PlayerState->GetMoveSpeed());
+		OnAttackPowerChanged.Broadcast(0, PlayerState->GetAttackPower());
+		OnAttackSpeedChanged.Broadcast(0, PlayerState->GetAttackSpeed());
+		OnDamageResistanceChanged.Broadcast(0, PlayerState->GetDamageResistance());
+		OnCriticalChanceChanged.Broadcast(0, PlayerState->GetCriticalChance());
+		OnCriticalDamageChanged.Broadcast(0, PlayerState->GetCriticalDamage());
+		OnRangeChanged.Broadcast(0, PlayerState->GetRange());
+		OnSkillCoolTimeChanged.Broadcast(0, PlayerState->GetSkillCoolTime());
+	}
 }
 
 void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
@@ -52,14 +69,67 @@ void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
 	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
 	if (IsValid(PlayerState))
 	{
-		PlayerState->OnHealthChagned.AddLambda(
+		PlayerState->Health.OnStatChanged.AddLambda(
 			[this](const float OldValue, const float NewValue)
 			{
 				OnHealthChanged.Broadcast(OldValue, NewValue);
 			}
 		);
+		PlayerState->MaxHealth.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnMaxHealthChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->MoveSpeed.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnMoveSpeedChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->AttackPower.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnAttackPowerChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->AttackSpeed.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnAttackSpeedChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->DamageResistance.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnDamageResistanceChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->CriticalChance.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnCriticalChanceChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->CriticalDamage.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnCriticalDamageChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->Range.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnRangeChanged.Broadcast(OldValue, NewValue);
+			}
+		);
+		PlayerState->SkillCoolTime.OnStatChanged.AddLambda(
+			[this](const float OldValue, const float NewValue)
+			{
+				OnSkillCoolTimeChanged.Broadcast(OldValue, NewValue);
+			}
+		);
 	}
-
 }
 
 void UPlayerStatPresenterComponent::AddHealth(float Amount, AActor* CauserActor)

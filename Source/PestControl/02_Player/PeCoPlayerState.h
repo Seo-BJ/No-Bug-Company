@@ -76,6 +76,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData SkillCoolTime = FPeCoStatData(PeCoGameplayTags::PlayerStat_SkillCoolTime);
 
+
+	UFUNCTION(BlueprintCallable)
+	FPeCoStatData GetStatByTag(FGameplayTag Tag);
+
 	CHARACTERSTAT_ACCESSORS(Health);
 	CHARACTERSTAT_ACCESSORS(MaxHealth);
 	CHARACTERSTAT_ACCESSORS(MoveSpeed);
@@ -87,18 +91,6 @@ public:
 	CHARACTERSTAT_ACCESSORS(Range);
 	CHARACTERSTAT_ACCESSORS(SkillCoolTime);
 
-
-
-	FPlayerStatChanged OnHealthChagned;
-	FPlayerStatChanged OnMaxHealthChanged;
-	FPlayerStatChanged OnMoveSpeedChanged;
-	FPlayerStatChanged OnAttackPowerChanged;
-	FPlayerStatChanged OnAttackSpeedChanged;
-	FPlayerStatChanged OnDamageResistanceChanged;
-	FPlayerStatChanged OnCriticalChanceChanged;
-	FPlayerStatChanged OnCriticalDamageChanged;
-	FPlayerStatChanged OnRangeChanged;
-	FPlayerStatChanged OnSkillCoolTimeChanged;
 	//~End of Character Stats
 	
 	//~ICombatInterface
