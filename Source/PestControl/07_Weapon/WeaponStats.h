@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "PeCoGameplayTags.h"
 #include "WeaponStats.generated.h"
 
 USTRUCT(BlueprintType)
@@ -49,4 +50,7 @@ struct FWeaponStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     int32 MaxLevel;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    FGameplayTag WeaponTag;
 };

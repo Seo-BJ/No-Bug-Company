@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "PeCoGameplayTags.h"
+
 #include "PeCoGameInstance.generated.h"
 
 /**
@@ -13,5 +15,10 @@ UCLASS()
 class PESTCONTROL_API UPeCoGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Conical_Pesticide;
 	
 };

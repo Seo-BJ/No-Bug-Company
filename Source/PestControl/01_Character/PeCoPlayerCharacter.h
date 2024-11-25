@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "01_Character/PeCoCharacter.h"
-
+#include "PeCoGameplayTags.h"
 #include "PeCoPlayerCharacter.generated.h"
 
 class UInventoryComponent;
@@ -32,9 +31,8 @@ public:
 
 	void MoveWeaponSpawnPoint(FVector MouseLocation);
 
-	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
-	/** Returns CameraBoom subobject **/
+
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -49,10 +47,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
-	TMap<FName, AWeapon*> SpawnedWeapons;
+	TMap<FGameplayTag, AWeapon*> SpawnedWeapons;
 
 protected:
 
@@ -98,12 +94,12 @@ private:
 	TSubclassOf<class AWeapon> FlamethrowerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapons")
-	TMap<FName, TSubclassOf<AWeapon>> WeaponClassMap;
+	TMap<FGameplayTag, TSubclassOf<AWeapon>> WeaponClassMap;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapons")
-	TMap<FName, AWeapon*> WeaponInstanceMap;
+	//UPROPERTY(VisibleAnywhere, Category = "Weapons")
+	//TMap<FName, AWeapon*> WeaponInstanceMap;
 
-	void SpawnWeapon(FName WeaponName);
+	void SpawnWeapon(FGameplayTag WeaponTag);
 
 	void InitializeWeaponClasses();
 

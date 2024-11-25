@@ -76,3 +76,5 @@ struct FWidgetInfoData : public FTableRowBase
 	FText Description = FText();
 };
 
+
+
