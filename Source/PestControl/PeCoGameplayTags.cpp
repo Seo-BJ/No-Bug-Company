@@ -25,6 +25,14 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material_VirusSample, "Item.Material.VirusSample");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material_WebSample, "Item.Material.WebSample");
 
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Conical_Pesticide, "Weapon.Conical.Pesticide");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Conical_Flamethrower, "Weapon.Conical.Flamethrower");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_AirGun, "Weapon.Projectile.AirGun");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_LarvaLauncher, "Weapon.Projectile.LarvaLauncher");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_PestShotgun, "Weapon.Projectile.PestShotgun");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_RoachShooter, "Weapon.Projectile.RoachShooter");
+	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_WebRevolver, "Weapon.Projectile.WebRevolver");
+
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");

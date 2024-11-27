@@ -25,6 +25,8 @@
 #include "09_Items/SprayBomb.h"
 #include "09_Items/AntiSpray.h"
 
+#include "20_System/PeCoGameInstance.h"
+
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -100,7 +102,11 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	InitializeWeaponClasses();
 
-	SpawnWeapon("LarvaLauncher");
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (IsValid(GameInstance))
+	{
+		SpawnWeapon(GameInstance->SelectedWeaponTag);
+	}
 }
 
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -205,27 +211,27 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 
 void APeCoPlayerCharacter::InitializeWeaponClasses()
 {
-	WeaponClassMap.Add("LarvaLauncher", LarvaLauncherClass);
-	WeaponClassMap.Add("WebRevolver", WebRevolverClass);
-	WeaponClassMap.Add("PestShotgun", PestShotgunClass);
-	WeaponClassMap.Add("RoachShooter", RoachShooterClass);
-	WeaponClassMap.Add("AirGun", AirGunClass);
-	WeaponClassMap.Add("Pesticide", PesticideClass);
-	WeaponClassMap.Add("Flamethrower", FlamethrowerClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_LarvaLauncher, LarvaLauncherClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_WebRevolver, WebRevolverClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_PestShotgun, PestShotgunClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_RoachShooter, RoachShooterClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_AirGun, AirGunClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Conical_Pesticide, PesticideClass);
+	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Conical_Flamethrower, FlamethrowerClass);
 }
 
-void APeCoPlayerCharacter::SpawnWeapon(FName WeaponName)
+void APeCoPlayerCharacter::SpawnWeapon(FGameplayTag WeaponTag)
 {
-	if (!WeaponClassMap.Contains(WeaponName) || !WeaponSpawnPoint)
+	if (!WeaponClassMap.Contains(WeaponTag) || !WeaponSpawnPoint)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Weapon class or spawn point is invalid for %s"), *WeaponName.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Weapon class or spawn point is invalid for %s"), *WeaponTag.ToString());
 		return;
 	}
 
-	TSubclassOf<AWeapon> WeaponClass = WeaponClassMap[WeaponName];
+	TSubclassOf<AWeapon> WeaponClass = WeaponClassMap[WeaponTag];
 	if (!WeaponClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid weapon class found for %s"), *WeaponName.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("No valid weapon class found for %s"), *WeaponTag.ToString());
 		return;
 	}
 
@@ -241,13 +247,13 @@ void APeCoPlayerCharacter::SpawnWeapon(FName WeaponName)
 			SpawnedWeapon->SetInstigator(this);  // 무기의 InstigatorController 설정
 		}
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-		SpawnedWeapons.Add(WeaponName, SpawnedWeapon);
+		SpawnedWeapons.Add(WeaponTag, SpawnedWeapon);
 		
-		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponName.ToString());
+		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponTag.ToString());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn weapon: %s"), *WeaponName.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn weapon: %s"), *WeaponTag.ToString());
 	}
 }
 
