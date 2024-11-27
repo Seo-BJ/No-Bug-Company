@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "09_Items/CombatItem.h"
 #include "FoodTrap.generated.h"
 
 class USceneComponent;
@@ -11,7 +11,7 @@ class UStaticMeshComponent;
 class USphereComponent;
 
 UCLASS()
-class PESTCONTROL_API AFoodTrap : public AActor
+class PESTCONTROL_API AFoodTrap : public ACombatItem
 {
 	GENERATED_BODY()
 	
@@ -26,6 +26,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+    void UseCombatItem() override;
 
 private:
     // 컴포넌트 선언

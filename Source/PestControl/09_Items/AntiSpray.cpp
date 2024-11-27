@@ -18,28 +18,41 @@ AAntiSpray::AAntiSpray()
 	Mesh->SetupAttachment(Root);
 
 }
-
-void AAntiSpray::ActivateItem(APeCoPlayerCharacter* Character)
-{
-	if (Character)
-	{
-		Character->ActivateInvincibility(InvincibilityDuration);
-	}
-
-	Destroy();
-}
-
-// Called when the game starts or when spawned
 void AAntiSpray::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
 
-// Called every frame
+}
 void AAntiSpray::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+
+
+void AAntiSpray::ActivateItem(AActor* User)
+{
+	if (IsValid(User))
+	{
+		AffectedUser = User;
+		ActivateInvincibility(InvincibilityDuration, AffectedUser);
+	}
+}
+
+void AAntiSpray::ActivateInvincibility(float Duration, AActor* User)
+{
+	if (IsValid(User))
+	{
+		User->SetCanBeDamaged(false);
+		UE_LOG(LogTemp, Log, TEXT("Invincibility activated: CanBeDamaged = false"));
+		GetWorldTimerManager().SetTimer(InvincibilityTimerHandle, this, &AAntiSpray::DeactivateInvincibility, Duration, false);
+	}
+}
+
+void AAntiSpray::DeactivateInvincibility()
+{
+	AffectedUser->SetCanBeDamaged(true);
+	UE_LOG(LogTemp, Log, TEXT("Invincibility deactivated: CanBeDamaged = true"));
 }
 

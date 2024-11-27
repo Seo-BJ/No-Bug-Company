@@ -7,16 +7,12 @@
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
 
-
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-
-
 UPlayerStatPresenterComponent::UPlayerStatPresenterComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
-
+	PrimaryComponentTick.bCanEverTick = false;
 	/*
 	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_Health, OnHealthChanged);
 	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_MaxHealth, OnMaxHealthChanged);
@@ -30,20 +26,10 @@ UPlayerStatPresenterComponent::UPlayerStatPresenterComponent()
 	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_SkillCoolTime, OnSkillCoolTimeChanged);
 	
 	*/
-	
 }
-
-
-// Called when the game starts
 void UPlayerStatPresenterComponent::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-// Called every frame
-void UPlayerStatPresenterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UPlayerStatPresenterComponent::BroadcastInitialValues()
@@ -63,7 +49,6 @@ void UPlayerStatPresenterComponent::BroadcastInitialValues()
 		OnSkillCoolTimeChanged.Broadcast(0, PlayerState->GetSkillCoolTime());
 	}
 }
-
 void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
 {
 	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
@@ -140,7 +125,6 @@ void UPlayerStatPresenterComponent::AddHealth(float Amount, AActor* CauserActor)
 		PlayerState->AddHealth(Amount, PlayerState->GetOwningController(), CauserActor);
 	}
 }
-
 void UPlayerStatPresenterComponent::MaximizeHealth(AActor* CauserActor)
 {
 	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
@@ -149,7 +133,6 @@ void UPlayerStatPresenterComponent::MaximizeHealth(AActor* CauserActor)
 		PlayerState->AddHealth(PlayerState->GetMaxHealth(), PlayerState->GetOwningController(), CauserActor);
 	}
 }
-
 void UPlayerStatPresenterComponent::MultiplyHealth(float Percent, AActor* CauserActor)
 {
 	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
@@ -160,11 +143,7 @@ void UPlayerStatPresenterComponent::MultiplyHealth(float Percent, AActor* Causer
 	}
 }
 
-
-
-
 #pragma region Speed Buff
-
 void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
 {
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
@@ -199,6 +178,8 @@ void UPlayerStatPresenterComponent::SetInitialSpeeds(float BaseSpeed, float Crou
 	InitialBaseSpeed = BaseSpeed;
 	InitialCrouchSpeed = CrouchSpeed;
 }
+#pragma endregion
+
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
 {
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
@@ -207,5 +188,3 @@ void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
 		PeCoPlayerState->UpgradeStat(StatTag);
 	}
 }
-#pragma endregion
-

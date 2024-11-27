@@ -19,14 +19,19 @@ public:
 	float InvincibilityDuration = 5.0f;
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
-	void ActivateItem(class APeCoPlayerCharacter* Character);
+	void ActivateItem(AActor* User);
+
+	void ActivateInvincibility(float Duration, AActor* User);
+	void DeactivateInvincibility();
+
+	FTimerHandle InvincibilityTimerHandle;
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
+
 	virtual void Tick(float DeltaTime) override;
 
 private:
@@ -36,5 +41,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
+
+private:
+	AActor* AffectedUser;
 
 };

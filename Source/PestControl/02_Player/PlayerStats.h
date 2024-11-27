@@ -47,7 +47,7 @@ struct PESTCONTROL_API FPeCoStatData
 
 	FOnStatChanged OnStatChanged;
 
-	virtual void InitValue(float Value)
+	void InitValue(float Value)
 	{
 		BaseValue = Value;
 		CurrentValue = (BaseValue + AdditiveBonus) * (1 + MultiplierBonus) / (1 + MultiplierReduction);

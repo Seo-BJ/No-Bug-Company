@@ -3,9 +3,5 @@
 
 #include "09_Items/Components/CombatItemComponent.h"
 
-bool UCombatItemComponent::UseItem(AActor* User)
-{
-	return Super::UseItem(User);
-}
 
 

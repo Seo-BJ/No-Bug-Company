@@ -76,7 +76,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData SkillCoolTime = FPeCoStatData(PeCoGameplayTags::PlayerStat_SkillCoolTime);
 
-
 	UFUNCTION(BlueprintCallable)
 	FPeCoStatData GetStatByTag(FGameplayTag Tag);
 

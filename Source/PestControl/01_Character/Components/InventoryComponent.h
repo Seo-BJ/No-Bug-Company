@@ -51,8 +51,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Found") bool GetItemOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
+	// Find Item By Tag
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	UPARAM(DisplayName = "Success") bool GetAlItemsOfType(const EItemType ItemType, UPARAM(DisplayName = "FilteredArray") TArray<AActor*>& OutFilteredArray);
+	UPARAM(DisplayName = "Found") bool GetItemOfTag(const FGameplayTag ItemTag, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Found") bool GetAlItemsOfTag(const FGameplayTag ItemTag, UPARAM(DisplayName = "FilteredArray") TArray<AActor*>& OutFilteredArray);
+
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Items") TArray<AActor*> GetAllItems();

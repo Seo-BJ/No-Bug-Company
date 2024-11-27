@@ -6,6 +6,8 @@
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "01_Character/PeCoPlayerCharacter.h"
 
+#include "02_Player/PeCoPlayerController.h"
+
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -14,8 +16,7 @@
 // Sets default values
 ASprayBomb::ASprayBomb()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
     BombMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BombMesh"));
     RootComponent = BombMesh;
@@ -27,8 +28,12 @@ ASprayBomb::ASprayBomb()
     ExplodeRange->SetupAttachment(BombMesh);
     
 }
+void ASprayBomb::UseCombatItem()
+{
+    Super::UseCombatItem();
+    ThrowGrenade();
+}
 
-// Called when the game starts or when spawned
 void ASprayBomb::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,14 +43,6 @@ void ASprayBomb::BeginPlay()
         BombMesh->OnComponentHit.AddDynamic(this, &ASprayBomb::OnHit);
     }
 }
-
-// Called every frame
-void ASprayBomb::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void ASprayBomb::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
     UE_LOG(LogTemp, Warning, TEXT("On Hit Called"));
@@ -58,8 +55,6 @@ void ASprayBomb::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UP
         Explode();
     }
 }
-
-
 void ASprayBomb::Explode()
 {
     TArray<AActor*> ActorsInRange;
@@ -133,4 +128,62 @@ void ASprayBomb::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter)
     }
 }
 
+void ASprayBomb::ThrowGrenade()
+{
+    if (!GetOwner())
+    {
+        return;
+    }
+    APeCoPlayerCharacter* PlayerCharacter = CastChecked<APeCoPlayerCharacter>(GetOwner());
+
+    FVector StartLocation = GetActorLocation();
+    FVector TargetLocation = GetCursorLocation();
+    float arcValue = 0.5f;                       // ArcParam (0.0-1.0)
+    FVector outVelocity = FVector::ZeroVector;
+
+    float Distance = FVector::Dist(StartLocation, TargetLocation);
+
+    // BombRange보다 먼 경우, BombRange 내의 위치로 TargetLocation을 설정
+    if (Distance > BombRange)
+    {
+        FVector Direction = (TargetLocation - StartLocation).GetSafeNormal();
+        TargetLocation = StartLocation + Direction * BombRange;
+    }
+
+    if (UGameplayStatics::SuggestProjectileVelocity_CustomArc(this, outVelocity, StartLocation, TargetLocation, GetWorld()->GetGravityZ(), arcValue))
+    {
+        FPredictProjectilePathParams predictParams(20.0f, StartLocation, outVelocity, 1.0f);
+        predictParams.DrawDebugType = EDrawDebugTrace::Type::ForDuration;
+        predictParams.OverrideGravityZ = GetWorld()->GetGravityZ();
+        FPredictProjectilePathResult result;
+        UGameplayStatics::PredictProjectilePath(this, predictParams, result);
+
+        if (IsValid(BombMesh))
+        {
+            BombMesh->AddImpulse(outVelocity, NAME_None, true);
+        }
+    }
+}
+
+FVector ASprayBomb::GetCursorLocation()
+{
+    if (!IsValid(GetOwner()))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("스프레이 폭탄의 Owner가 유효하지 않음!"));
+        return FVector();
+    }
+    APeCoPlayerController* PlayerController = GetOwner()->GetInstigatorController<APeCoPlayerController>();
+    if (!IsValid(PlayerController))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("스프레이 폭탄의 Owner의 컨트롤러가 유효하지 않음!"));
+        return FVector();
+    }
+    FHitResult HitResult;
+    PlayerController->GetHitResultUnderCursor(
+        ECollisionChannel::ECC_WorldStatic,
+        false,
+        HitResult
+    );
+    return HitResult.Location;
+}
 

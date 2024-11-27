@@ -17,8 +17,6 @@ class PESTCONTROL_API UCombatItemComponent : public UPeCoItemComponent
 public:
 
 
-	UFUNCTION(BlueprintCallable,Category = "Item")
-	virtual bool UseItem(AActor* User) override;
 
 	
 };
