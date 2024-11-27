@@ -255,9 +255,20 @@ void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor
 {
 	if (!bIsCrashInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
 	{
-		UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
+		// 적 캐릭터로 캐스팅
+		APeCoEnemyCharacter* Enemy = Cast<APeCoEnemyCharacter>(EnemyHitActor);
+		if (Enemy)
+		{
+			float EnemyDamage = Enemy->Damage; // 적의 데미지 가져오기
+			UGameplayStatics::ApplyDamage(this, EnemyDamage, Enemy->GetController(), Enemy, nullptr);
+
+			// 플레이어가 일정 시간 동안 무적 상태가 되도록 설정
+			BecomeCrashInvincible(CrashInvincibleDuration);
+		}
 		
-		BecomeCrashInvincible(CrashInvincibleDuration);
+		/*UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
+		
+		BecomeCrashInvincible(CrashInvincibleDuration);*/
 	}
 }
 
