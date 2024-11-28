@@ -24,6 +24,8 @@ public:
 	APeCoPlayerCharacter();
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	FVector GetTargetCursorLocation();
 	
 	virtual void PostInitializeComponents() override;
 
