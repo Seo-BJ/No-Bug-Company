@@ -41,13 +41,13 @@ void APeCoEnemyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	check(PeCoGameMode);
-	Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), Damage);
+	InputDamage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), InputDamage);
 	
-	float DamageToHealth = Damage;
+	float DamageToHealth = InputDamage;
 
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 
@@ -121,6 +121,7 @@ void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 	// 데이터 테이블에서 값 적용
 	Health = Stats.Health;
 	MaxHealth = Stats.Health;
+	Damage = Stats.Damage; // 데미지 값 추가 
 	
 
 	// 이동 속도 설정

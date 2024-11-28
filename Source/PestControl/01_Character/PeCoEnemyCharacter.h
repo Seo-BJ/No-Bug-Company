@@ -65,6 +65,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float MaxHealth;
 
+	// 적의 데미지 값
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	float Damage;
+
 	// ������ ���̺����� ���� �� ����
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
 
