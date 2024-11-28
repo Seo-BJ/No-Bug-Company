@@ -123,40 +123,10 @@ public:
 
 	void EndCrashInvincible();
 
+	FORCEINLINE FVector GetWeaponSpawnPointLocation() { return WeaponSpawnPoint->GetComponentLocation(); }
 protected:
 	bool bIsCrashInvincible;
 
 	FTimerHandle CrashInvincibilityTimerHandle;
 	//~End of InvincibleState
-
-public:
-
-	//~ Spray Bomb Test
-	UFUNCTION(BlueprintCallable, Category = "SprayBomb")
-	void SprayBombFire();
-
-	UPROPERTY(EditDefaultsOnly, Category = "SprayBomb")
-	TSubclassOf<class ASprayBomb> SprayBombClass;
-
-	FVector GetCursorLocation();
-
-	UPROPERTY(EditAnywhere, Category = "SprayBomb")
-	float BombRange = 1000.0f;
-	//~ End of Spray Bomb Test
-
-	//~ Anti Spray Test
-	UPROPERTY(EditDefaultsOnly, Category = "Anti Spray")
-	TSubclassOf<class AAntiSpray> AntiSprayClass;
-
-	UFUNCTION(BlueprintCallable, Category = "Anti Spray")
-	void UseAntiSpray();
-
-	void ActivateInvincibility(float Duration);
-
-private:
-		
-	FTimerHandle InvincibilityTimerHandle;
-
-	void DeactivateInvincibility();
-	//~ End of Anti Spray Test
 };

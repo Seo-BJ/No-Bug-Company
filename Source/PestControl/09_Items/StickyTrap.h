@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "09_Items/CombatItem.h"
 #include "StickyTrap.generated.h"
 
 class UBoxComponent;
@@ -11,12 +11,14 @@ class UStaticMeshComponent;
 class APeCoEnemyCharacter;
 
 UCLASS()
-class PESTCONTROL_API AStickyTrap : public AActor
+class PESTCONTROL_API AStickyTrap : public ACombatItem
 {
 	GENERATED_BODY()
 	
 public:
 	AStickyTrap();
+
+	void UseCombatItem() override;
 
 protected:
 	virtual void BeginPlay() override;

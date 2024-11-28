@@ -187,20 +187,21 @@ TArray<AActor*> UInventoryComponent::GetAllItems()
 		const AActor* ItemActor = Items[i];
 		UE_LOG(LogTemp, Warning, TEXT("Items Length  = %f"), Items.Num());
 
-		if (!ItemActor->ActorHasTag(UPeCoItemComponent::TAG_ITEM))
-		{
-			Items.RemoveAt(i);
-			continue;
-		}
-
 		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemActor);
 		if (!IsValid(ItemComponent))
 		{
 			continue;
 		}
+
+		if (!ItemComponent->ItemInfo.ItemTag.MatchesTag(PeCoGameplayTags::Item))
+		{
+			Items.RemoveAt(i);
+			continue;
+		}
 	}
 	return Items;
 }
+
 bool UInventoryComponent::GetItemOfClass(const TSubclassOf<AActor> Class, AActor*& OutActor)
 {
 	TArray<AActor*> TargetArray = GetAllItems();
@@ -216,7 +217,26 @@ bool UInventoryComponent::GetItemOfClass(const TSubclassOf<AActor> Class, AActor
 	}
 	return false;
 }
-bool UInventoryComponent::GetAlItemsOfType(const EItemType ItemType, TArray<AActor*>& OutFilteredArray)
+bool UInventoryComponent::GetItemOfTag(const FGameplayTag ItemTag, AActor*& OutActor)
+{
+	TArray<AActor*> TargetArray = GetAllItems();
+
+	for (auto It = TargetArray.CreateConstIterator(); It; It++)
+	{
+		AActor* TargetElement = (*It);
+		if (TargetElement)
+		{
+			UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(TargetElement);
+			if (IsValid(ItemComponent) && ItemComponent->ItemInfo.ItemTag.MatchesTagExact(ItemTag))
+			{
+				OutActor = TargetElement;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool UInventoryComponent::GetAlItemsOfTag(const FGameplayTag ItemTag, TArray<AActor*>& OutFilteredArray)
 {
 	TArray<AActor*> FilteredArray;
 	FilteredArray.Empty();
@@ -229,7 +249,7 @@ bool UInventoryComponent::GetAlItemsOfType(const EItemType ItemType, TArray<AAct
 		if (TargetElement)
 		{
 			UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(TargetElement);
-			if (IsValid(ItemComponent) && ItemComponent->ItemInfo.ItemType == ItemType)
+			if (IsValid(ItemComponent) && ItemComponent->ItemInfo.ItemTag.MatchesTag(ItemTag))
 			{
 				FilteredArray.Add(TargetElement);
 			}
@@ -243,6 +263,8 @@ bool UInventoryComponent::GetAlItemsOfType(const EItemType ItemType, TArray<AAct
 
 	return false;
 }
+
+
 
 bool UInventoryComponent::HasEnoughItems(const TSubclassOf<AActor> Item, const int32 Quantity, UPARAM(DisplayName = "Note") FText& OutNote)
 {

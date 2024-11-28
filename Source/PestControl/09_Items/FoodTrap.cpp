@@ -16,11 +16,10 @@ AFoodTrap::AFoodTrap()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-    RootComponent = Root;
+
 
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-    Mesh->SetupAttachment(Root);
+    RootComponent = Mesh;
 
     DetectionRange = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionRange"));
     DetectionRange->SetupAttachment(Mesh);
@@ -40,9 +39,7 @@ AFoodTrap::AFoodTrap()
 void AFoodTrap::BeginPlay()
 {
 	Super::BeginPlay();
-
     DetectionRange->OnComponentBeginOverlap.AddDynamic(this, &AFoodTrap::OnEnemyOverlapped);
-
     GetWorld()->GetTimerManager().SetTimer(ExplodeTimerHandle, this, &AFoodTrap::ActivateTrap, SpawnDelay, false);
 }
 
@@ -63,7 +60,10 @@ void AFoodTrap::Tick(float DeltaTime)
             Explode();
         }
     }
+}
 
+void AFoodTrap::UseCombatItem()
+{
 }
 
 void AFoodTrap::OnEnemyOverlapped(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

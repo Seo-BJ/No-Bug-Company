@@ -138,7 +138,7 @@ void APeCoPlayerController::PressConsumableItemKey(const FInputActionValue& Valu
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
 		if (IsValid(PlayerOverlay))
 		{
-			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Consumtion);
+			PlayerOverlay->ShowInventoryWidget(PeCoGameplayTags::Item_Consumption);
 		}
 	}
 	
@@ -150,7 +150,7 @@ void APeCoPlayerController::HeldConsumableItemKey(const FInputActionValue& Value
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
 		if (IsValid(PlayerOverlay))
 		{
-			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Consumtion);
+			PlayerOverlay->HideInventoryWidget(PeCoGameplayTags::Item_Consumption);
 		}
 	}
 }
@@ -161,7 +161,7 @@ void APeCoPlayerController::PressCombatbleItemKey(const FInputActionValue& Value
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
 		if (IsValid(PlayerOverlay))
 		{
-			PlayerOverlay->ShowInventoryWidget(EItemType::EItemType_Combat);
+			PlayerOverlay->ShowInventoryWidget(PeCoGameplayTags::Item_Combat);
 		}
 	}
 }
@@ -172,7 +172,7 @@ void APeCoPlayerController::HeldCombatItemKey(const FInputActionValue& Value)
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
 		if (IsValid(PlayerOverlay))
 		{
-			PlayerOverlay->HideInventoryWidget(EItemType::EItemType_Combat);
+			PlayerOverlay->HideInventoryWidget(PeCoGameplayTags::Item_Combat);
 		}
 	}
 }
@@ -186,7 +186,7 @@ void APeCoPlayerController::UseConsumableItem(const FInputActionValue& Value)
 		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
 		if (EquipmentComponent)
 		{
-			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Consumption);
+			EquipmentComponent->UseItemInSlot(PeCoGameplayTags::Item_Consumption);
 		}
 	}
 }
@@ -198,7 +198,7 @@ void APeCoPlayerController::UseCombatleItem(const FInputActionValue& Value)
 		UEquipmentComponent* EquipmentComponent = PeCoPlayerCharacter->EquipmentComponent;
 		if (EquipmentComponent)
 		{
-			EquipmentComponent->UseItemInSlot(ESlotType::ESlotType_Combat);
+			EquipmentComponent->UseItemInSlot(PeCoGameplayTags::Item_Combat);
 		}
 	}
 }

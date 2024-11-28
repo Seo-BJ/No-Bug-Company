@@ -20,7 +20,6 @@ class PESTCONTROL_API UPlayerStatPresenterComponent : public UActorComponent
 public:	
 
 	UPlayerStatPresenterComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void BroadcastInitialValues();
 	void BindCallbacksToDependencies();

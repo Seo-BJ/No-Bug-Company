@@ -20,24 +20,31 @@ void UEquipmentComponent::BeginPlay()
 	
 }
 
-bool UEquipmentComponent::UseItemInSlot(const ESlotType SlotType)
+bool UEquipmentComponent::UseItemInSlot(const FGameplayTag SlotTag)
 {
     AActor* ItemInSlot;
-    if (GetItemInSlot(SlotType, ItemInSlot))
+    if (GetItemInSlot(SlotTag, ItemInSlot))
     {
         UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemInSlot);
         if (ItemComponent && ItemComponent->GetOwner())
         {
-            ItemComponent->UseItem(GetOwner());
+            if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Consumption))
+            {
+                ItemComponent->UseItem(GetOwner(), false);
+            }
+            else if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Combat))
+            {
+                ItemComponent->UseItem(GetOwner(), true);
+            }
         }
-        OnItemUsedInSlot.Broadcast(ItemInSlot, SlotType);
+        OnItemUsedInSlot.Broadcast(ItemInSlot, SlotTag);
         return true;
     }
     return false;
 }
 
 
-bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem)
+bool UEquipmentComponent::EquipItemInSlot(const FGameplayTag SlotTag, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem)
 {
     if (!IsValid(GetOwner()) || !IsValid(ItemActor))
     {
@@ -46,7 +53,7 @@ bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* Item
 
     // 이미 같은 아이템이 장착된 경우 조기 return
     AActor* ItemInSlot;
-    if (GetItemInSlot(SlotType, ItemInSlot))
+    if (GetItemInSlot(SlotTag, ItemInSlot))
     {
         if (ItemInSlot == ItemActor)
         {
@@ -58,11 +65,7 @@ bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* Item
     {
         const FEquipmentInfo& EquipmentElement = EquipmentList[i];
 
-        if (SlotType != EquipmentElement.CurrentSlot)
-        {
-            continue;
-        }
-        if (!ItemActor->ActorHasTag(UPeCoItemComponent::TAG_ITEM))
+        if (!SlotTag.MatchesTagExact(EquipmentElement.SlotTypeTag))
         {
             continue;
         }
@@ -71,7 +74,12 @@ bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* Item
         {
             continue;
         }
-        const bool bMatches = ItemComponent->ItemInfo.SlotType == EquipmentElement.AcceptableSlotType;
+        if (!ItemComponent->ItemInfo.ItemTag.MatchesTag(PeCoGameplayTags::Item))
+        {
+            continue;
+        }
+
+        const bool bMatches = ItemComponent->ItemInfo.ItemTag.MatchesTag(EquipmentElement.SlotTypeTag);
         if (!bMatches)
         {
             continue;
@@ -86,26 +94,26 @@ bool UEquipmentComponent::EquipItemInSlot(const ESlotType SlotType, AActor* Item
             const UPeCoItemComponent* PreviousItemComponent = UPeCoFunctionLibrary::GetItemComponent(OutPreviousItem);
             if (IsValid(PreviousItemComponent))
             {
-                PreviousItemComponent->UnEquipInternal(SlotType);
+                PreviousItemComponent->UnEquipInternal(SlotTag);
             }
         }
 
         EquipmentList[i].ItemActor = ItemActor;
         OutNewItem = ItemActor;
 
-        ItemComponent->EquipInternal(SlotType);
+        ItemComponent->EquipInternal(SlotTag);
 
         // Item equipped successfully
 
 
-        OnItemEquip.Broadcast(OutNewItem, SlotType);
+        OnItemEquip.Broadcast(OutNewItem, SlotTag);
         return true;
     }
 
     // Failed to equip item
     return false;
 }
-bool UEquipmentComponent::UnEquipItemFromSlot(const ESlotType SlotType, AActor*& OutItemUnequipped)
+bool UEquipmentComponent::UnEquipItemFromSlot(const FGameplayTag SlotTag, AActor*& OutItemUnequipped)
 {
     if (!IsValid(GetOwner()))
     {
@@ -116,7 +124,7 @@ bool UEquipmentComponent::UnEquipItemFromSlot(const ESlotType SlotType, AActor*&
     {
         FEquipmentInfo& EquipmentElement = EquipmentList[i];
 
-        if (SlotType != EquipmentElement.CurrentSlot)
+        if (!SlotTag.MatchesTagExact(EquipmentElement.SlotTypeTag))
         {
             continue;
         }
@@ -134,28 +142,27 @@ bool UEquipmentComponent::UnEquipItemFromSlot(const ESlotType SlotType, AActor*&
         const UPeCoItemComponent* UnequippedItemComponent = UPeCoFunctionLibrary::GetItemComponent(OutItemUnequipped);
         if (IsValid(UnequippedItemComponent))
         {
-            UnequippedItemComponent->UnEquipInternal(SlotType);
+            UnequippedItemComponent->UnEquipInternal(SlotTag);
         }
 
         // Item unequipped successfully
-        OnItemUnEquip.Broadcast(OutItemUnequipped, SlotType);
+        OnItemUnEquip.Broadcast(OutItemUnequipped, SlotTag);
         return true;
     }
     // Failed to UnEquip item
     return false;
 }
 
-bool UEquipmentComponent::GetItemInSlot(const ESlotType SlotType, AActor*& OutItem)
+bool UEquipmentComponent::GetItemInSlot(const FGameplayTag SlotTag, AActor*& OutItem)
 {
     for (const FEquipmentInfo& EquipmentElement : EquipmentList)
     {
-        if (EquipmentElement.CurrentSlot != SlotType)
+        if (!EquipmentElement.SlotTypeTag.MatchesTag(SlotTag))
         {
             continue;
         }
 
-        // Found matching slot ID
-
+        // Found matching Slot Tag
         if (!IsValid(EquipmentElement.ItemActor))
         {
             // Failed to find item that is also valid

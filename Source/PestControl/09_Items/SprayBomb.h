@@ -3,28 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "09_Items/CombatItem.h"
 #include "SprayBomb.generated.h"
 
 class UStaticMeshComponent;
 class USphereComponent;
 
 UCLASS()
-class PESTCONTROL_API ASprayBomb : public AActor
+class PESTCONTROL_API ASprayBomb : public ACombatItem
 {
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+	
 	ASprayBomb();
+	void UseCombatItem() override;
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -51,6 +50,11 @@ private:
 
 	float SlowDuration = 3.0f;
 
+	UPROPERTY(EditAnywhere, Category = "SprayBomb")
+	float BombRange = 1000.0f;
 
+	void ThrowGrenade();
+
+	FVector GetCursorLocation();
 
 };

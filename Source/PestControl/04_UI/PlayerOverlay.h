@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "04_UI/PeCoUserWidget.h"
+#include "PeCoGameplayTags.h"
 #include "21_Data/PeCoDataTypes.h"
 
 #include "PlayerOverlay.generated.h"
@@ -35,10 +36,10 @@ public:
 	UPeCoUserWidget* ExpBar;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowInventoryWidget(EItemType ItemType);
+	void ShowInventoryWidget(FGameplayTag InventoryTypeTag);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void HideInventoryWidget(EItemType ItemType);
+	void HideInventoryWidget(FGameplayTag InventoryTypeTag);
 
 	// UFUNCTION(BlueprintImplementableEvent)
 	// void EquipItem(EItemType ItemType);

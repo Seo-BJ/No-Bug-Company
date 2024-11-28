@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "PeCoGameplayTags.h"
 #include "21_Data/PeCoDataTypes.h"
 
 #include "EquipmentComponent.generated.h"
@@ -15,20 +16,17 @@ struct FEquipmentInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
-	ESlotType CurrentSlot;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
-	ESlotType AcceptableSlotType;
+	FGameplayTag SlotTypeTag;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InventorySystem|Equipment")
 	AActor* ItemActor = nullptr;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemEquip, AActor*, Item, ESlotType, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemEquip, AActor*, Item, FGameplayTag, SlotTag);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUnEquip, AActor*, Item, ESlotType, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUnEquip, AActor*, Item, FGameplayTag, SlotTag);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUsedInSlot, AActor*, Item, ESlotType, Slot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUsedInSlot, AActor*, Item, FGameplayTag, SlotTag);
 
 class UPeCoItemComponent;
 
@@ -47,16 +45,16 @@ public:
 	TArray<FEquipmentInfo> EquipmentList;
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
-	UPARAM(DisplayName = "Success") bool UseItemInSlot(const ESlotType SlotType);
+	UPARAM(DisplayName = "Success") bool UseItemInSlot(const FGameplayTag SlotTag);
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
-	UPARAM(DisplayName = "Success") bool EquipItemInSlot(const ESlotType SlotType, AActor* ItemActor, UPARAM(DisplayName = "PreviousItem") AActor*& OutPreviousItem, UPARAM(DisplayName = "NewItem") AActor*& OutNewItem);
+	UPARAM(DisplayName = "Success") bool EquipItemInSlot(const FGameplayTag SlotTag, AActor* ItemActor, UPARAM(DisplayName = "PreviousItem") AActor*& OutPreviousItem, UPARAM(DisplayName = "NewItem") AActor*& OutNewItem);
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
-	UPARAM(DisplayName = "Success") bool UnEquipItemFromSlot(const ESlotType SlotType,UPARAM(DisplayName = "ItemUnequipped") AActor*& OutItemUnequipped);
+	UPARAM(DisplayName = "Success") bool UnEquipItemFromSlot(const FGameplayTag SlotTag, UPARAM(DisplayName = "ItemUnequipped") AActor*& OutItemUnequipped);
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Equipment")
-	UPARAM(DisplayName = "Success") bool GetItemInSlot(const ESlotType SlotType, UPARAM(DisplayName = "Item") AActor*& OutItem);
+	UPARAM(DisplayName = "Success") bool GetItemInSlot(const FGameplayTag SlotTag, UPARAM(DisplayName = "Item") AActor*& OutItem);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "InventorySystem|Equipment")
 	UPARAM(DisplayName = "Has Items") bool GetAllItems(UPARAM(DisplayName = "Items") TArray<AActor*>& OutItems);

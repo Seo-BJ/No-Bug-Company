@@ -11,10 +11,8 @@ AStickyTrap::AStickyTrap()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-
     TrapMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TrapMesh"));
-    TrapMesh->SetupAttachment(RootComponent);
+    RootComponent = TrapMesh;
 
     DetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("DetectionBox"));
     DetectionBox->SetupAttachment(TrapMesh);
@@ -23,6 +21,10 @@ AStickyTrap::AStickyTrap()
     DetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AStickyTrap::OnEnemyOverlapped);
 
     bIsTrapActive = false;
+}
+
+void AStickyTrap::UseCombatItem()
+{
 }
 
 void AStickyTrap::BeginPlay()

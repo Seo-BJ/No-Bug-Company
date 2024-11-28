@@ -5,6 +5,7 @@
 
 namespace PeCoGameplayTags
 {
+	UE_DEFINE_GAMEPLAY_TAG(Item, "Item");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption, "Item.Consumption");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat, "Item.Combat");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material, "Item.Material");
@@ -13,11 +14,11 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Speed, "Item.Consumption.Speed");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Power, "Item.Consumption.Power");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Adrenaline, "Item.Consumption.Adrenaline");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_AntiSpray, "Item.Consumption.AntiSpray");
 	
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Mine, "Item.Combat.Mine");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Adhesive, "Item.Combat.Adhesive");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_Grenade, "Item.Combat.Grenade");
-	UE_DEFINE_GAMEPLAY_TAG(Item_Combat_AntiSpray, "Item.Combat.AntiSpray");
 
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material_MechanicalComponent, "Item.Material.MechanicalComponent");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material_BiologicalSample, "Item.Material.BiologicalSample");
