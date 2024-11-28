@@ -43,12 +43,8 @@ public:
 
 	void InitPlayerStat();
 
-	UFUNCTION(BlueprintCallable)
-	int32  GetStatUpgradeData(FGameplayTag StatTag);
-
 	void UpgradeStat(FGameplayTag StatTag);
 
-	UFUNCTION(BlueprintCallable)
 	FGameplayTagContainer GetRandomStat(const int NumberOfRewards);
 
 	void AddHealth(float Amount, AController* InstigatorController, AActor* DamageCauser);
@@ -115,19 +111,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetKillCount(int32 KillCountAmount);
-
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> WidgetDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> PlayerInitStatDataTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCurveTable> StatUpgradeCurveTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCurveTable> LevelUpCurveTable;
 
 	// 레벨업을 처리하는 함수
 	UFUNCTION(BlueprintCallable)

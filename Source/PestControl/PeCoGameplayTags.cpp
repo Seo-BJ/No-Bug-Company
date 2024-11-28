@@ -34,6 +34,7 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_RoachShooter, "Weapon.Projectile.RoachShooter");
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_WebRevolver, "Weapon.Projectile.WebRevolver");
 
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat, "PlayerStat");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");
@@ -68,5 +69,13 @@ namespace PeCoGameplayTags
 		}
 
 		return RandomTags;
+	}
+	PESTCONTROL_API FGameplayTagContainer GetChildTags(const FGameplayTag& ParentTag)
+	{
+		// GameplayTagsManager를 통해 태그 검색
+		const UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
+
+		// 자식 태그 검색
+		return TagManager.RequestGameplayTagChildrenInDictionary(ParentTag);
 	}
 }

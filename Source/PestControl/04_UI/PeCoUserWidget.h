@@ -8,6 +8,7 @@
 
 
 class UPlayerStatPresenterComponent;
+class UStoreComponent;
 /**
  * 
  */
@@ -21,7 +22,10 @@ class PESTCONTROL_API UPeCoUserWidget : public UUserWidget
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UPlayerStatPresenterComponent* GetStatPresenter();
+	UPlayerStatPresenterComponent* GetStatPresenter();	
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UStoreComponent* GetStore();
 
 
 };

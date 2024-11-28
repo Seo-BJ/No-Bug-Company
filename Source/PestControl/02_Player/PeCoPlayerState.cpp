@@ -4,12 +4,14 @@
 #include "PeCoPlayerState.h"
 
 #include "00_GameModes/PeCoGameMode.h"
+#include "00_GameModes/Components/StoreComponent.h"
 #include "01_Character/PeCoPlayerCharacter.h"
 
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PlayerStats.h"
 #include "02_Player/Components/PlayerStatPresenterComponent.h"
 #include "04_UI/PeCoHUD.h"
+#include "20_System/PeCoGameInstance.h"
 #include "21_Data/PeCoDataRow.h"
 
 #include "Kismet/GameplayStatics.h"
@@ -147,7 +149,14 @@ void APeCoPlayerState::SetKillCount(int32 KillCountAmount)
 
 void APeCoPlayerState::InitPlayerStat()
 {
-	if (!PlayerInitStatDataTable)
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (!IsValid(GameInstance))
+	{
+		return;
+	}
+	UDataTable* InitStatDataTable = GameInstance->PlayerInitStatDataTable;
+	FPeCoStatData TargetStat;
+	if (!InitStatDataTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("플레이어 스탯 데이터 테이블 없음."));
 		return;
@@ -156,7 +165,7 @@ void APeCoPlayerState::InitPlayerStat()
 	PlayerStatPresenterComponent->BindCallbacksToDependencies();
 	// To Do:행 이름 변경
 	FName RowName = FName("0");
-	FPlayerStatData* RowData = PlayerInitStatDataTable->FindRow<FPlayerStatData>(RowName, TEXT("Read Player Init Stat"), true); // Warn if not found
+	FPlayerStatData* RowData = InitStatDataTable->FindRow<FPlayerStatData>(RowName, TEXT("Read Player Init Stat"), true); // Warn if not found
 	if (RowData)
 	{
 		InitMaxHealth(RowData->MaxHealth);
@@ -178,77 +187,59 @@ void APeCoPlayerState::InitPlayerStat()
 	}
 }
 
-int32 APeCoPlayerState::GetStatUpgradeData(FGameplayTag StatTag)
-{
-	FPeCoStatData TargetStat;
-	if (!StatUpgradeCurveTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("플레이어 스탯 데이터 테이블 없음."));
-		return -1;
-	}
-	for (const auto Stat : CharacterStats)
-	{
-		if (Stat.GetStatTag() == StatTag)
-		{
-			TargetStat = Stat;
-			break;
-		}
-	}
-	if (&TargetStat != nullptr)
-	{
-		FName RowName = StatTag.GetTagName();
-		FRealCurve* StatCurve = StatUpgradeCurveTable->FindCurve(RowName, TEXT(""));
-		if (!StatCurve)
-		{
-			UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
-			return -1;
-		}
-		int32 TargetStatLevel = TargetStat.GetStatLevel() + 1;
-		float RewardValue = StatCurve->Eval(TargetStatLevel);
 
-		return  RewardValue;
-	}
-	return -1;
-}
 
 void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 {
-	int Value = GetStatUpgradeData(StatTag);
+	AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this);
+	if (!IsValid(GameMode))
+	{
+		return;
+	}
+	APeCoGameMode* PeCoGameMode = CastChecked<APeCoGameMode>(GameMode);
+	UStoreComponent* StoreComponent = PeCoGameMode->FindComponentByClass<UStoreComponent>();
+	if (!IsValid(StoreComponent))
+	{
+		return;
+	}
+
+	float UpgradeAmount = StoreComponent->GetStatUpgradeData(StatTag, Cast<APeCoPlayerController>(GetOwningController()));
+
 	if (StatTag == PeCoGameplayTags::PlayerStat_MaxHealth)
 	{
-		MaxHealth.AddAdditiveBonus(Value);
+		MaxHealth.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_MoveSpeed)
 	{
-		MoveSpeed.AddAdditiveBonus(Value);
+		MoveSpeed.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_AttackPower)
 	{
-		AttackPower.AddAdditiveBonus(Value);
+		AttackPower.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_AttackSpeed)
 	{
-		AttackSpeed.AddAdditiveBonus(Value);
+		AttackSpeed.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_DamageResistance)
 	{
-		DamageResistance.AddAdditiveBonus(Value);
+		DamageResistance.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_CriticalChance)
 	{
-		CriticalChance.AddAdditiveBonus(Value);
+		CriticalChance.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_CriticalDamage)
 	{
-		CriticalDamage.AddAdditiveBonus(Value);
+		CriticalDamage.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_Range)
 	{
-		Range.AddAdditiveBonus(Value);
+		Range.AddAdditiveBonus(UpgradeAmount);
 	}
 	else if (StatTag == PeCoGameplayTags::PlayerStat_SkillCoolTime)
 	{
-		SkillCoolTime.AddAdditiveBonus(Value);
+		SkillCoolTime.AddAdditiveBonus(UpgradeAmount);
 	}
 }
 
@@ -267,8 +258,15 @@ FGameplayTagContainer APeCoPlayerState::GetRandomStat(const int NumberOfRewards)
 
 void APeCoPlayerState::CheckLevelUp()
 {
-    if (!LevelUpCurveTable)
-    {
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (!IsValid(GameInstance))
+	{
+		return;
+	}
+	UCurveTable* LevelUpCurveTable = GameInstance->LevelUpCurveTable;
+	FPeCoStatData TargetStat;
+	if (!LevelUpCurveTable)
+	{
         UE_LOG(LogTemp, Error, TEXT("레벨 업 커브 테이블 없음"));
         return;
     }
@@ -307,15 +305,19 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 		OnLevelChanged.Broadcast(Level);
     }
 }
-
-
-
 uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount)
 {
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (!IsValid(GameInstance))
+	{
+		return -1;
+	}
+	UCurveTable* LevelUpCurveTable = GameInstance->LevelUpCurveTable;
+	FPeCoStatData TargetStat;
 	if (!LevelUpCurveTable)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("레벨 업 커브 테이블 없음"));
-		return 0;
+		return -1;
 	}
 	float AccumulatedKillCount = 0.0f; 
 	for (uint32 LevelIndex = 1; LevelIndex < CurrentLevel; ++LevelIndex)
@@ -325,7 +327,7 @@ uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 Cu
 		if (!LevelCurve)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("커브 테이블에서 PlayerLevelUpCurve를 찾지 못함!"));
-			return 0.0f;
+			return -1;
 		}
 		float RequiredKillCountPerLevel = LevelCurve->Eval(LevelIndex);
 		AccumulatedKillCount += RequiredKillCountPerLevel;
@@ -333,22 +335,26 @@ uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 Cu
 	float CurrentLevelExperience = CurrentKillCount - AccumulatedKillCount;
 	return FMath::CeilToInt(CurrentLevelExperience);
 }
-
-
-
 int32 APeCoPlayerState::GetCurrentLevelRequiredKillCount()
 {
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (!IsValid(GameInstance))
+	{
+		return -1;
+	}
+	UCurveTable* LevelUpCurveTable = GameInstance->LevelUpCurveTable;
+	FPeCoStatData TargetStat;
 	if (!LevelUpCurveTable)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("레벨 업 커브 테이블 없음"));
-		return 0;
+		return -1;
 	}
 	FName RowName = FName("PlayerLevelUpCurve");
 	FRealCurve* LevelCurve = LevelUpCurveTable->FindCurve(RowName, TEXT(""));
 	if (!LevelCurve)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("커브 테이블에서 PlayerLevelUpCurve를 찾지 못함!"));
-		return 0.0f;
+		return -1;
 	}
 
 	float CurrentLevelExperience = LevelCurve->Eval(Level);
