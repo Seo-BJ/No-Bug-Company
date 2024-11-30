@@ -26,9 +26,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void SpawnProjectile();
+
 	//~ Weapon initialize
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
 	UDataTable* WeaponDataTable;
+
 	UPROPERTY(EditAnywhere, Category = "Weapon Type")
 	EWeaponType WeaponType;
 
@@ -63,6 +66,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int32 Ammo = 1;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	int32 AmmoCost = 1;
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int32 MaxAmmo = 1;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float ReloadCoolDown = 1.0f;
@@ -75,12 +80,16 @@ public:
 protected:
 	void InitInfo();
 
+	void FireWeapon();
+
 	void DealDamageInSector();
 
 	FVector InitialLocation;
 	FRotator InitialRotation;
 
 	FColor DebugColor;
+
+
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -89,8 +98,6 @@ public:
 
 private:
 
-	void FireWeapon();
-
 	void StartReload();
 
 	void Reload();
@@ -98,14 +105,11 @@ private:
 	FTimerHandle CooldownHandle;
 	FTimerHandle FireTimerHandle;
 
-	void SpawnProjectile();
-
 	void ProjectileFire();
-	void StartProjectileCooldown();
 
 	void ShotgunFire();
 	void StartShotgunCooldown();
 
 	void ConicalFire();
-	void StartConicalCooldown();
+
 };

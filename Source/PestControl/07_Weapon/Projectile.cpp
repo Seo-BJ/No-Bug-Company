@@ -2,6 +2,7 @@
 
 
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "07_Weapon/ProjectileWeapon/WebRevolver.h"
 #include "07_Weapon/ProjectileWeapon/AirGun.h"
 
@@ -65,40 +66,54 @@ UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() cons
 	return ProjectileMovementComponent;
 }
 
+
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+    AActor* MyOwner = GetOwner();
+    if (MyOwner == nullptr)
+    {
+        Destroy();
+        return;
+    }
 
-	AActor* MyOwner = GetOwner();
-	if (MyOwner == nullptr)
-	{
-		Destroy();
-		return;
-	}
+    AController* MyOwnerInstigator = nullptr;
+    APawn* WeaponOwnerPawn = Cast<APawn>(MyOwner->GetOwner());
+    if (WeaponOwnerPawn)
+    {
+        MyOwnerInstigator = WeaponOwnerPawn->GetController();
+    }
 
-	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+    if (OtherActor && OtherActor != this && OtherActor != MyOwner)
+    {
+        APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
+        if (HitEnemy)
+        {
 
-	// Damage to EnemyCharacter
-	if (OtherActor && OtherActor != this && OtherActor != MyOwner)
-	{
-		
-		APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
-		if (HitEnemy)
-		{
-			UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
-			AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);
-			if (WebRevolverWeapon)
-			{
-				WebRevolverWeapon->ApplySlowEffect(HitEnemy);
-			}
+            UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
 
-			AAirGun* AirGunWeapon = Cast<AAirGun>(MyOwner);
-			if (AirGunWeapon)
-			{
-				AirGunWeapon->ApplyStunEffect(HitEnemy);
-			}
-		}
-		Destroy();
+            ALarvaLauncher* LarvaLauncherWeapon = Cast<ALarvaLauncher>(MyOwner);
+            if (LarvaLauncherWeapon)
+            {
+                LarvaLauncherWeapon->ApplyWitherEffect(HitEnemy);
+            }
 
-	}
+            AAirGun* AirGunWeapon = Cast<AAirGun>(MyOwner);
+            if (AirGunWeapon)
+            {
+                AirGunWeapon->ApplyStunEffect(HitEnemy);                
+            }
+
+            AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);
+            if (WebRevolverWeapon)
+            {
+                WebRevolverWeapon->ApplySlowEffect(HitEnemy, WebRevolverWeapon->SlowMultiplier);
+
+                if(WebRevolverWeapon->bIsEvolved)
+                { 
+                    WebRevolverWeapon->SpawnFragmentProjectiles(GetActorLocation(), GetActorRotation());
+                }
+            }
+        }
+        Destroy();
+    }
 }
-

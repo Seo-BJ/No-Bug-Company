@@ -75,19 +75,22 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	WeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Spawn Point"));
 	WeaponSpawnPoint->SetupAttachment(RootComponent);
 
+	SecondWeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SecondWeapon Spawn Point"));
+	SecondWeaponSpawnPoint->SetupAttachment(WeaponSpawnPoint);
+
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
 
-	 bIsCrashInvincible = false;
+	bIsCrashInvincible = false;
 
-	 SetCanBeDamaged(true);
+	SetCanBeDamaged(true);
 
-	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
-	 EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 
@@ -101,6 +104,8 @@ void APeCoPlayerCharacter::BeginPlay()
 	PeCoPlayerController = Cast<APlayerController>(GetController());
 
 	InitializeWeaponClasses();
+
+
 
 	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
 	if (IsValid(GameInstance))
@@ -137,7 +142,7 @@ void APeCoPlayerCharacter::MoveWeaponSpawnPoint(FVector MouseLocation)
 	FVector CharacterLocation = GetActorLocation();
 	FVector DirectionToMouse = (MouseLocation - CharacterLocation).GetSafeNormal();
 
-	FVector TargetLocation = CharacterLocation + DirectionToMouse ;
+	FVector TargetLocation = CharacterLocation + DirectionToMouse;
 
 	FVector FinalLocation = FMath::ClosestPointOnLine(CharacterLocation, TargetLocation, MouseLocation);
 
@@ -151,7 +156,14 @@ void APeCoPlayerCharacter::RotateAim(FVector LookAtTarget)
 	FVector ToTarget = LookAtTarget - WeaponSpawnPoint->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 
-	WeaponSpawnPoint->SetWorldRotation(LookAtRotation);
+	WeaponSpawnPoint->SetWorldRotation(
+		FMath::RInterpTo(
+			WeaponSpawnPoint->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this),
+			10.f
+		)
+	);
 }
 
 void APeCoPlayerCharacter::PostInitializeComponents()
@@ -237,19 +249,17 @@ void APeCoPlayerCharacter::SpawnWeapon(FGameplayTag WeaponTag)
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
 
 	AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
 	if (SpawnedWeapon)
 	{
-		AController* PlayerController = GetController();  // PlayerCharacter의 Controller 가져오기
-		if (PlayerController)
-		{
-			SpawnedWeapon->SetInstigator(this);  // 무기의 InstigatorController 설정
-		}
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
 		SpawnedWeapons.Add(WeaponTag, SpawnedWeapon);
-		
+
 		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponTag.ToString());
+
 	}
 	else
 	{
@@ -261,19 +271,14 @@ void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor
 {
 	if (!bIsCrashInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
 	{
-		// 적 캐릭터로 캐스팅
 		APeCoEnemyCharacter* Enemy = Cast<APeCoEnemyCharacter>(EnemyHitActor);
 		if (Enemy)
 		{
-			float EnemyDamage = Enemy->Damage; // 적의 데미지 가져오기
+			float EnemyDamage = Enemy->Damage; 
 			UGameplayStatics::ApplyDamage(this, EnemyDamage, Enemy->GetController(), Enemy, nullptr);
-
-			// 플레이어가 일정 시간 동안 무적 상태가 되도록 설정
 			BecomeCrashInvincible(CrashInvincibleDuration);
 		}
-		
 		/*UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
-		
 		BecomeCrashInvincible(CrashInvincibleDuration);*/
 	}
 }
@@ -291,4 +296,3 @@ void APeCoPlayerCharacter::EndCrashInvincible()
 	bIsCrashInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }
-

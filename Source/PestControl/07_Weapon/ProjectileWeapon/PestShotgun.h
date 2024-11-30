@@ -21,4 +21,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void EvolvePestShotgun();
+
 };
