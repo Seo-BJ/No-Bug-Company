@@ -11,12 +11,14 @@ AStickyTrap::AStickyTrap()
 {
     PrimaryActorTick.bCanEverTick = false;
 
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    RootComponent = Root;
+
     TrapMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TrapMesh"));
-    RootComponent = TrapMesh;
+    TrapMesh->SetupAttachment(Root);
 
     DetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("DetectionBox"));
     DetectionBox->SetupAttachment(TrapMesh);
-    DetectionBox->SetBoxExtent(FVector(200.f, 200.f, 10.f));
 
     DetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AStickyTrap::OnEnemyOverlapped);
 
