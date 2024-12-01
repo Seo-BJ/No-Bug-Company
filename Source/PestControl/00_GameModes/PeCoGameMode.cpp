@@ -6,7 +6,9 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 #include "TimerManager.h"
+#include "EngineUtils.h"
 
+#include "01_Character/PeCoEnemyCharacter.h"
 #include "21_Data/PeCoDataTypes.h"
 
 APeCoGameMode::APeCoGameMode()
@@ -94,22 +96,14 @@ float APeCoGameMode::CalculateDamage(AController* Attacker, AController* Victim,
 
 void APeCoGameMode::StartNextRound()
 {
-	/*if (EnemySpawnerClass)
-	{
-		FVector SpawnLocation = FVector(2110.f, 1640.f, 100.f); 
-		FRotator SpawnRotation = FRotator::ZeroRotator;
 
-		APeCoEnemySpawner* Spawner = GetWorld()->SpawnActor<APeCoEnemySpawner>(EnemySpawnerClass, SpawnLocation, SpawnRotation);
-		if (Spawner)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Enemy spawner created for new round"));
-		}
-	}*/
-
-
+	StopHealthIncreaseTimers(); // 이전 라운드 타이머 정리
+	
 	// 라운드 증가
 	CurrentRound++;
-
+	
+	StartHealthIncreaseTimers(); // 새로운 라운드 타이머 시작
+	
 	// 라운드가 최대 라운드를 초과했는지 확인
 	if (CurrentRound > MaxRounds)
 	{
@@ -195,4 +189,74 @@ void APeCoGameMode::CheckRoundTimer(float DeltaTime)
 		UE_LOG(LogTemp, Log, TEXT("Time's up for round %d"), CurrentRound);
 		StartNextRound();
 	}
+}
+
+void APeCoGameMode::StartHealthIncreaseTimers()
+{
+	if (CurrentRound == 1)
+	{
+		// 1라운드: 30초마다 라바의 체력을 10% 증가
+		GetWorldTimerManager().SetTimer(
+			HealthIncreaseTimerHandle,
+			[this]() { ApplyHealthIncrease(10.0f, { "Larva" }); },
+			30.0f,
+			true
+		);
+	}
+	else if (CurrentRound == 2)
+	{
+		// 2라운드: 30초마다 라바의 체력을 10% 증가
+		GetWorldTimerManager().SetTimer(
+			HealthIncreaseTimerHandle,
+			[this]() { ApplyHealthIncrease(10.0f, { "Larva" }); },
+			30.0f,
+			true
+		);
+
+		// 2라운드: 1분마다 파리와 모기의 체력을 10% 증가
+		GetWorldTimerManager().SetTimer(
+			FlyingEnemyHealthTimerHandle,
+			[this]() { ApplyHealthIncrease(10.0f, { "Fly", "Mosquito" }); },
+			60.0f,
+			true
+		);
+	}
+	else if (CurrentRound == 3)
+	{
+		// 3라운드: 1분마다 파리와 모기의 체력을 15% 증가
+		GetWorldTimerManager().SetTimer(
+			FlyingEnemyHealthTimerHandle,
+			[this]() { ApplyHealthIncrease(15.0f, { "Fly", "Mosquito" }); },
+			60.0f,
+			true
+		);
+
+		// 3라운드: 1분마다 거미의 체력을 10% 증가
+		GetWorldTimerManager().SetTimer(
+			SpiderHealthTimerHandle,
+			[this]() { ApplyHealthIncrease(10.0f, { "Spider" }); },
+			60.0f,
+			true
+		);
+	}
+}
+
+void APeCoGameMode::ApplyHealthIncrease(float Percentage, TArray<FName> TargetEnemyIDs)
+{
+	if (EnemySpawnerInstance)
+	{
+		for (FName EnemyID : TargetEnemyIDs)
+		{
+			EnemySpawnerInstance->UpdateStatsForHealthIncrease(Percentage, EnemyID);
+		}
+	}
+	
+	
+}
+
+void APeCoGameMode::StopHealthIncreaseTimers()
+{
+	GetWorldTimerManager().ClearTimer(HealthIncreaseTimerHandle);
+	GetWorldTimerManager().ClearTimer(FlyingEnemyHealthTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpiderHealthTimerHandle);
 }

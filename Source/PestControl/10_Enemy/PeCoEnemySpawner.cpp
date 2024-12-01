@@ -87,41 +87,7 @@ TSubclassOf<APeCoEnemyCharacter> APeCoEnemySpawner::GetEnemyClassFromID(const FN
     return nullptr;
 }
 
-/*void APeCoEnemySpawner::SpawnEnemies()
-{
-    if (!GetWorld())
-    {
-        UE_LOG(LogTemp, Error, TEXT("GetWorld() returned nullptr in %s"), *GetName());
-        return;
-    }
-    
-    if (EnemyClass == nullptr)
-    {
-        UE_LOG(LogTemp, Error, TEXT("EnemyClass is not set in %s"), *GetName());
-        return;
-    }
-        
-    // Calculate the spawn location based on the spawner's location
-    FVector SpawnLocation = GetActorLocation();
-    FRotator SpawnRotation = GetActorRotation();
 
-    for (int32 i = 0; i < SpawnCount; ++i)
-    {
-        // Add a slight offset to prevent enemies from spawning on top of each other
-        FVector Offset = FVector(FMath::RandRange(-100, 100), FMath::RandRange(-100, 100), 0);
-        FVector FinalSpawnLocation = SpawnLocation + Offset;
-                
-        APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation); 
-        if (SpawnedEnemy)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Spawned an enemy: %s"), *SpawnedEnemy->GetName());
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("Failed to spawn enemy at location: %s"), *FinalSpawnLocation.ToString());
-        }
-    }
-}*/
 
 void APeCoEnemySpawner::SpawnEnemies()
 {
@@ -153,12 +119,25 @@ void APeCoEnemySpawner::SpawnEnemies()
             if (SpawnedEnemy)
             {
                 SpawnedEnemy->ApplyStatsFromData(Stats);
-                UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s"), *SpawnedEnemy->GetName());
+                UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with health %.2f"), *SpawnedEnemy->GetName(), Stats.Health);
+                //UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s"), *SpawnedEnemy->GetName());
             }
             else
             {
                 UE_LOG(LogTemp, Error, TEXT("Failed to spawn enemy at location %s"), *FinalSpawnLocation.ToString());
             }
+        }
+    }
+}
+
+void APeCoEnemySpawner::UpdateStatsForHealthIncrease(float Percentage, FName TargetEnemyID)
+{
+    for (FEnemyStats& Stats : CurrentRoundStats)
+    {
+        if (Stats.EnemyID == TargetEnemyID)
+        {
+            Stats.Health += Stats.Health * (Percentage / 100.0f);
+            UE_LOG(LogTemp, Log, TEXT("Updated stats: EnemyID %s Health increased to %.2f"), *TargetEnemyID.ToString(), Stats.Health);
         }
     }
 }
