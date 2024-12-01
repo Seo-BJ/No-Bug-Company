@@ -17,6 +17,13 @@ class PESTCONTROL_API ALarvaLauncher : public AWeapon
 public:
 	ALarvaLauncher();
 
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void FirstEvolveLarvaLauncher();
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void SecondEvolveLarvaLauncher();
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,6 +59,7 @@ private:
 	TMap<AActor*, FTimerHandle> WitherTimers; 
 	TMap<AActor*, FTimerHandle> EndWitherTimers;
 
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Evolution")
 	void LarvaLauncherEvolve();
@@ -65,5 +73,4 @@ public:
 	void SecondEvolveLarvaLauncher();
 
 	virtual void Enhencement(int32 EnhencementIndex) override;
-
 };

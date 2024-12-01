@@ -104,7 +104,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
             if (AirGunWeapon)
             {
                 AirGunWeapon->ApplyStunEffect(HitEnemy); 
-
             }
 
             AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);

@@ -28,6 +28,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Evolution")
 	void EvolvePestShotgun();
 
-	virtual void Enhencement(int32 EnhencementIndex) override;
 
+	virtual void Enhencement(int32 EnhencementIndex) override;
 };

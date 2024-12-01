@@ -19,6 +19,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USceneComponent* RootSceneComponent;
 
@@ -30,6 +31,9 @@ protected:
 
 
 private:
+
+	UPROPERTY(EditAnywhere)
+	float Damage = 50.f;
 
 	FVector StartLocation;
 

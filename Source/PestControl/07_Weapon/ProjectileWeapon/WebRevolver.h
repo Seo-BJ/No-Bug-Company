@@ -49,8 +49,8 @@ public:
 
 	bool bIsEvolved = false;
 
-	virtual void Enhencement(int32 EnhencementIndex) override;
 
+	virtual void Enhencement(int32 EnhencementIndex) override;
 
 private:
 

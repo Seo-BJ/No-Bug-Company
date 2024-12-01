@@ -96,6 +96,7 @@ void AWebRevolver::SpawnFragmentProjectiles(const FVector& SpawnLocation, const 
 void AWebRevolver::SpawnProjectile()
 {
     Super::SpawnProjectile();
+
 }
 
 void AWebRevolver::Enhencement(int32 EnhencementIndex)
@@ -103,4 +104,3 @@ void AWebRevolver::Enhencement(int32 EnhencementIndex)
     SlowDuration +=  0.05f;
     SlowMultiplier += 0.05f;
 }
-

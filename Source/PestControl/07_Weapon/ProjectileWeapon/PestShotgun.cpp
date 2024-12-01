@@ -46,6 +46,7 @@ void APestShotgun::EvolvePestShotgun()
     AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(PestShotgunClass, SpawnLocation, SpawnRotation, SpawnParams);
 
     SecondShotgun = SpawnedWeapon;
+
     if (SpawnedWeapon)
     {
         SpawnedWeapon->AttachToComponent(PlayerCharacter->GetSecondWeaponSpawnPoint(), FAttachmentTransformRules::SnapToTargetIncludingScale);
@@ -55,6 +56,7 @@ void APestShotgun::EvolvePestShotgun()
     {
         UE_LOG(LogTemp, Warning, TEXT("Failed to spawn PestShotgun."));
     }
+
 }
 
 void APestShotgun::Enhencement(int32 EnhencementIndex)
@@ -79,3 +81,4 @@ void APestShotgun::Enhencement(int32 EnhencementIndex)
     }
    
 }
+
