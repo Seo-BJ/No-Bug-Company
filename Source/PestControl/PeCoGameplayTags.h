@@ -5,7 +5,7 @@
 
 namespace PeCoGameplayTags
 {
-	// Native (C++) Gameplay Tags ¼±¾ğ ¹× Á¤ÀÇ
+	// Native (C++) Gameplay Tags ì„ ì–¸ ë° ì •ì˜
 
 	PESTCONTROL_API FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count);
 

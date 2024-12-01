@@ -2,6 +2,7 @@
 
 
 #include "07_Weapon/ProjectileWeapon/WebRevolver.h"
+#include "07_Weapon/WeaponSub/FragmentProjectile.h"
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
@@ -11,6 +12,8 @@
 AWebRevolver::AWebRevolver()
 {
     WeaponID = FName(TEXT("WebRevolver"));
+
+    bIsEvolved = false;
 }
 
 void AWebRevolver::BeginPlay()
@@ -19,7 +22,7 @@ void AWebRevolver::BeginPlay()
     WeaponType = EWeaponType::Projectile;
 }
 
-void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter)
+void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter, float SlowRate)
 {
     if (bApplySlowEffect && EnemyCharacter && !EnemyCharacter->bIsSlowed)
     {
@@ -32,27 +35,27 @@ void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter)
 
             if (bIsFlyingEnemy)
             {
-                MovementComponent->MaxFlySpeed *= SlowMultiplier;
+                MovementComponent->MaxFlySpeed *= 1.0f - SlowRate;
             }
             else
             {
-                MovementComponent->MaxWalkSpeed *= SlowMultiplier;
+                MovementComponent->MaxWalkSpeed *= 1.0f - SlowRate;
             }
 
             EnemyCharacter->bIsSlowed = true;
 
             FTimerHandle ResetSpeedHandle;
-            GetWorld()->GetTimerManager().SetTimer(ResetSpeedHandle, FTimerDelegate::CreateLambda([=]() {
-
-                if (bIsFlyingEnemy)
+            GetWorld()->GetTimerManager().SetTimer(ResetSpeedHandle, FTimerDelegate::CreateLambda([=]()
                 {
-                    MovementComponent->MaxFlySpeed = OriginalSpeed;
-                }
-                else
-                {
-                    MovementComponent->MaxWalkSpeed = OriginalSpeed;
-                }
-                EnemyCharacter->ResetSlowStatus();
+                    if (bIsFlyingEnemy)
+                    {
+                        MovementComponent->MaxFlySpeed = OriginalSpeed;
+                    }
+                    else
+                    {
+                        MovementComponent->MaxWalkSpeed = OriginalSpeed;
+                    }
+                    EnemyCharacter->ResetSlowStatus();
                 }), SlowDuration, false);
 
             UE_LOG(LogTemp, Log, TEXT("Applied slow effect to %s: Speed reduced to %f for %f seconds"),
@@ -60,3 +63,44 @@ void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter)
         }
     }
 }
+
+void AWebRevolver::EvolveWebRevolver()
+{
+    bIsEvolved = true;
+}
+
+void AWebRevolver::SpawnFragmentProjectiles(const FVector& SpawnLocation, const FRotator& SpawnRotation)
+{
+
+    if (!FragmentProjectileClass) return;
+
+    const int32 NumberOfFragments = 3;
+    const float SplitAngle = 30.0f;
+    float StartYaw = SpawnRotation.Yaw - (SplitAngle / 2.0f);
+
+    for (int32 i = 0; i < NumberOfFragments; ++i)
+    {
+        FRotator NewRotation = SpawnRotation;
+        NewRotation.Yaw = StartYaw + i * (SplitAngle / (NumberOfFragments - 1));
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
+
+        AProjectile* FragmentProjectile = GetWorld()->SpawnActor<AFragmentProjectile>(FragmentProjectileClass, SpawnLocation, NewRotation, SpawnParams);
+
+        FragmentProjectile->SetDamage(0);
+    }
+}
+
+void AWebRevolver::SpawnProjectile()
+{
+    Super::SpawnProjectile();
+}
+
+void AWebRevolver::Enhencement(int32 EnhencementIndex)
+{
+    SlowDuration +=  0.05f;
+    SlowMultiplier += 0.05f;
+}
+

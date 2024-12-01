@@ -24,7 +24,7 @@ public:
 	APeCoPlayerCharacter();
 
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	virtual void PostInitializeComponents() override;
 
 	void RotateAim(FVector LookAtTarget);
@@ -50,6 +50,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TMap<FGameplayTag, AWeapon*> SpawnedWeapons;
 
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -72,33 +73,39 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* WeaponSpawnPoint;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<class AWeapon> LarvaLauncherClass; 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* SecondWeaponSpawnPoint;
+public:
+	FORCEINLINE USceneComponent* GetSecondWeaponSpawnPoint() { return SecondWeaponSpawnPoint; }
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<class AWeapon> LarvaLauncherClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> WebRevolverClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> PestShotgunClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> RoachShooterClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> AirGunClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> PesticideClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class AWeapon> FlamethrowerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapons")
 	TMap<FGameplayTag, TSubclassOf<AWeapon>> WeaponClassMap;
 
-	//UPROPERTY(VisibleAnywhere, Category = "Weapons")
-	//TMap<FName, AWeapon*> WeaponInstanceMap;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	AWeapon* PlayerWeapon;
 
+private:
 	void SpawnWeapon(FGameplayTag WeaponTag);
 
 	void InitializeWeaponClasses();
@@ -128,5 +135,5 @@ protected:
 	bool bIsCrashInvincible;
 
 	FTimerHandle CrashInvincibilityTimerHandle;
-	//~End of InvincibleState
+	//~End of InvincibleStat
 };

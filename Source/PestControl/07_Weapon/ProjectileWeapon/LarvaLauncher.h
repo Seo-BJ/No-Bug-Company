@@ -20,4 +20,50 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+
+public:
+	void ApplyWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
+
+	void ClearWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
+
+	virtual void SpawnProjectile() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wither Effect")
+	float WitherDuration = 3.0f; 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wither Effect")
+	float WitherDamage = 5.0f; 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wither Effect")
+	float TickInterval = 1.0f;
+
+	bool bIsFirstEvolved = false;
+
+	bool bIsSecondEvolved = false;
+
+	float SecondEvolveDamage = 20.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* EVBulletSpawnPoint;
+
+private:
+	TMap<AActor*, FTimerHandle> WitherTimers; 
+	TMap<AActor*, FTimerHandle> EndWitherTimers;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void LarvaLauncherEvolve();
+
+	int32 CurrentEvolveLevel = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void FirstEvolveLarvaLauncher();
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void SecondEvolveLarvaLauncher();
+
+	virtual void Enhencement(int32 EnhencementIndex) override;
+
 };

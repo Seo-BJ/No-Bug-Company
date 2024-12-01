@@ -74,6 +74,7 @@ public:
 
 private:
 
+	AActor* VarDamageCauser;
 	/*//~Enemy Stats
 	UPROPERTY(EditAnywhere, Category = "EnemyStats")
 	float Health;
@@ -92,7 +93,7 @@ public:
 	void ResetSlowStatus();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
-	bool bIsStunned = false; 
+	bool bIsStun = false; 
 
 	void ResetStunStatus();
 	//~End of Status effect

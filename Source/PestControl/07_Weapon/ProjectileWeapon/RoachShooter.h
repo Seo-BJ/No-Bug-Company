@@ -17,7 +17,22 @@ class PESTCONTROL_API ARoachShooter : public AWeapon
 public:
 	ARoachShooter();	
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* EVBulletSpawnPoint;
+
+	virtual void SpawnProjectile() override;
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void EvolveRoachShooter();
+
+	virtual void Enhencement(int32 EnhencementIndex) override;
+
+private:
+	bool bIsEvolved = false;
 };
