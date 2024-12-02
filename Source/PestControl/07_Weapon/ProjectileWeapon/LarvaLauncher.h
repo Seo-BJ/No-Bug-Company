@@ -66,11 +66,5 @@ public:
 
 	int32 CurrentEvolveLevel = 0;
 
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void FirstEvolveLarvaLauncher();
-
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void SecondEvolveLarvaLauncher();
-
 	virtual void Enhencement(int32 EnhencementIndex) override;
 };

@@ -42,13 +42,10 @@ public:
 
 	bool bIsEvolved = false;
 	
-	virtual void SpawnProjectile() override;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon|Knockback")
 	float KnockbackForce = 1500.0f;
 
 	void ApplyKnockback(APeCoEnemyCharacter* Enemy, const FVector& HitLocation);
-
 	
 	virtual void Enhencement(int32 EnhencementIndex) override;
 };

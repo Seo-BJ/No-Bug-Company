@@ -31,10 +31,6 @@ protected:
 
 
 private:
-
-	UPROPERTY(EditAnywhere)
-	float Damage = 50.f;
-
 	FVector StartLocation;
 
 	UFUNCTION()
@@ -43,6 +39,7 @@ private:
 	//void SpawnFragmentProjectiles(const FVector& SpawnLocation, const FRotator& SpawnRotation);
 
 public:	
+
 	UPROPERTY(EditAnywhere)
 	float Damage = 50.f;
 
