@@ -4,9 +4,12 @@
 #include "PeCoUserWidget.h"
 #include "00_GameModes/PeCoGameMode.h"
 #include "00_GameModes/Components/StoreComponent.h"
+#include "01_Character/Components/EquipmentComponent.h"
+#include "01_Character/Components/InventoryComponent.h"
 #include "02_Player/PeCoPlayerState.h"
 #include "02_Player/Components/PlayerLevelPresenterComponent.h"
 #include "02_Player/Components/PlayerStatPresenterComponent.h"
+#include "20_System/PeCoFunctionLibrary.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -37,4 +40,14 @@ UStoreComponent* UPeCoUserWidget::GetStore()
 		}
 	}
 	return nullptr;
+}
+
+UInventoryComponent* UPeCoUserWidget::GetInventory()
+{
+	return UPeCoFunctionLibrary::GetInventoryComponent(GetOwningPlayer()->GetPawn());
+}
+
+UEquipmentComponent* UPeCoUserWidget::GetEquipment()
+{
+	return UPeCoFunctionLibrary::GetEquipmentComponent(GetOwningPlayer()->GetPawn());
 }

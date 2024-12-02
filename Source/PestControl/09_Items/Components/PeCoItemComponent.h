@@ -28,6 +28,9 @@ public:
 	FGameplayTag ItemTag = FGameplayTag();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InventorySystem|Item|Information")
+	int32 Cost;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InventorySystem|Item|Information")
 	FString Name;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InventorySystem|Item|Information")

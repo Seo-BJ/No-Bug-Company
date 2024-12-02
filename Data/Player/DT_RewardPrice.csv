@@ -1,0 +1,10 @@
+---,GameplayTag,CommonPrice,RarePrice,EpicPrice,LegendaryPrice
+PlayerStat.AttackPower,"(TagName=""PlayerStat.AttackPower"")",5,5,5,5
+PlayerStat.AttackSpeed,"(TagName=""PlayerStat.AttackSpeed"")",5,5,5,5
+PlayerStat.CriticalChance,"(TagName=""PlayerStat.CriticalChance"")",5,5,5,5
+PlayerStat.CriticalDamage,"(TagName=""PlayerStat.CriticalDamage"")",5,5,5,5
+PlayerStat.DamageResistance,"(TagName=""PlayerStat.DamageResistance"")",5,5,5,5
+PlayerStat.MaxHealth,"(TagName=""PlayerStat.MaxHealth"")",5,5,5,5
+PlayerStat.MoveSpeed,"(TagName=""PlayerStat.MoveSpeed"")",5,5,5,5
+PlayerStat.Range,"(TagName=""PlayerStat.Range"")",5,5,5,5
+PlayerStat.SkillCoolTime,"(TagName=""PlayerStat.SkillCoolTime"")",5,5,5,5

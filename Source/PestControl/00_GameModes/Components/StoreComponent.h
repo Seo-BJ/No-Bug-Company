@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PeCoGameplayTags.h"
+#include "21_Data/PeCoDataTypes.h"
 
 #include "StoreComponent.generated.h"
 
@@ -16,8 +17,8 @@ struct FItemData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FGameplayTag ItemTag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	TSubclassOf<AActor> ItemClass;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+    TSoftClassPtr<AActor> ItemClass;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -29,22 +30,39 @@ public:
 
 	UStoreComponent();
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	TMap<FGameplayTag, TSoftClassPtr<AActor>> ItemClassMap;
+
 protected:
 
 	virtual void BeginPlay() override;
 
 public:	
 
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaterialPurchasePrice = 40;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaterialSellingPrice = 20;
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTagContainer GetRandomStatTags(int32 count);
+	FGameplayTagContainer GetRandomRewardTags(int32 Count);
+	UFUNCTION(BlueprintCallable)
+	FGameplayTagContainer GetRandomStatTags(int32 Count);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERewardRarity Rarity);
 
 	UFUNCTION(BlueprintCallable)
 	float  GetStatUpgradeData(FGameplayTag StatTag, APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	bool BuyItemByTag(FGameplayTag ItemTag, FText& OutNote);
+	bool BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User);
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	bool SellItemByTag(FGameplayTag ItemTag, FText& OutNote);
+	bool SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User);
+
+private:
+
+	void OnItemClassLoaded(FGameplayTag ItemTag, AController* User);
 };

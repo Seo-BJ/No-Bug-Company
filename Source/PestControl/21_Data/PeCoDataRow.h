@@ -78,3 +78,24 @@ struct FWidgetInfoData : public FTableRowBase
 
 
 
+USTRUCT(BlueprintType)
+struct FStoreRewardPriceData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag GameplayTag;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 CommonPrice;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 RarePrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 EpicPrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 LegendaryPrice;
+};
+

@@ -156,16 +156,25 @@ bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, co
 		return false;
 	}
 
-	if (ItemComponent->ItemInfo.CurrentQuantity > Quantity)
-	{
-		ItemComponent->ItemInfo.CurrentQuantity -= Quantity;
-	}
-	else
+	ItemComponent->ItemInfo.CurrentQuantity -= Quantity;
+	OnItemUpdated.Broadcast(FiltertedActor);
+
+	if (ItemComponent->ItemInfo.CurrentQuantity <= 0)
 	{
 		FiltertedActor->Destroy();
 	}
 	OutNote = FText::FromString("성공적으로 아이템을 줄임.");
 	return true;
+}
+bool UInventoryComponent::RemoveItemsOfTag(FGameplayTag ItemTag, const int32 Quantity, FText& OutNote)
+{
+	AActor* Item = nullptr;
+	if (GetItemOfTag(ItemTag, Item))
+	{
+		RemoveItemsOfClass(Item->GetClass(), 1, OutNote);
+		return true;
+	}
+	return false;
 }
 
 TArray<AActor*> UInventoryComponent::GetAllItems()
@@ -351,8 +360,9 @@ else
 
  void UInventoryComponent::AddPlayerMoney(const int32 Amount, FText& OutNote)
  {
+	 int32 OldMoney = PlayerMoney;
 	 PlayerMoney += Amount;
-
+	 OnPlayerMoneyChanged.Broadcast(OldMoney, PlayerMoney);
  }
 
  bool UInventoryComponent::HasEnoughMoney(const int32 Quantity, FText& OutNote)
@@ -364,3 +374,20 @@ else
 	 }
 	 return PlayerMoney >= Quantity ? true : false;
  }
+
+
+ void UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
+ {
+	 FText OutNote;
+	 AddItemsOfClass(Class, 1, OutNote);
+	 AddPlayerMoney(-PurchasePrice, OutNote);
+ }
+
+ void UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
+ {
+	 FText OutNote;
+	 RemoveItemsOfTag(ItemTag, 1, OutNote);
+	 AddPlayerMoney(SellingPrice, OutNote);
+
+ }
+

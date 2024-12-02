@@ -9,6 +9,8 @@
 
 class UPlayerStatPresenterComponent;
 class UStoreComponent;
+class UInventoryComponent;
+class UEquipmentComponent;
 /**
  * 
  */
@@ -26,6 +28,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UStoreComponent* GetStore();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UInventoryComponent* GetInventory();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UEquipmentComponent* GetEquipment();
 
 
 };

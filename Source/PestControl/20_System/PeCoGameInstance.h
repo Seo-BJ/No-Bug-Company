@@ -22,7 +22,20 @@ public:
 	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Conical_Pesticide;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> WidgetDataTable;
+	TMap<FGameplayTag, TObjectPtr<UDataTable>> WidgetDataTableMap;
+
+	/*
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> ItemWidgetDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> WeaponWidgetDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> StatWidgetDataTable;
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> StoreDataTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDataTable> PlayerInitStatDataTable;
@@ -32,4 +45,5 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCurveTable> LevelUpCurveTable;
+
 };

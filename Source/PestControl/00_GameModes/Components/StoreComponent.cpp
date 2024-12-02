@@ -5,15 +5,22 @@
 
 #include "00_GameModes/PeCoGameMode.h"
 
+#include "01_Character/Components/InventoryComponent.h"
+#include "01_Character/Components/EquipmentComponent.h"
+
 #include "02_Player/PeCoPlayerState.h"
 #include "02_Player/PlayerStats.h"
-
+#include "02_Player/PeCoPlayerController.h"
+#include "09_Items/Components/PeCoItemComponent.h"
 #include "20_System/PeCoGameInstance.h"
+#include "20_System/PeCoFunctionLibrary.h"
 #include "21_Data/PeCoDataRow.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Engine/CurveTable.h"
 #include "Engine/DataTable.h"
+#include "Engine/StreamableManager.h"
+#include "Engine/AssetManager.h"
 
 
 UStoreComponent::UStoreComponent()
@@ -31,14 +38,55 @@ void UStoreComponent::BeginPlay()
 }
 
 
-FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 count)
+FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
 {
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
 	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
-	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, count);
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Combat));
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Consumption));
+	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
 }
 
+FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count)
+{
+	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
+	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
+	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
+	return RandomTags;
+}
+
+int32 UStoreComponent::GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERewardRarity Rarity)
+{
+	APeCoGameMode* GameMode = CastChecked<APeCoGameMode>(GetOwner());
+	UPeCoGameInstance* GameInstance = CastChecked<UPeCoGameInstance>(GameMode->GetGameInstance());
+	UDataTable* StoreDataTable = GameInstance->StoreDataTable;
+	if (!StoreDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("상점 데이터 테이블 없음."));
+		return -1;
+	}
+	FStoreRewardPriceData* Row = StoreDataTable->FindRow<FStoreRewardPriceData>(RewardTag.GetTagName(), TEXT("Read Reward Price"), false);
+	switch (Rarity)
+	{
+	case ERewardRarity::Common:
+		return Row->CommonPrice;
+		break;
+	case ERewardRarity::Rare:
+		return Row->RarePrice;
+		break;
+	case ERewardRarity::Epic:
+		return Row->EpicPrice;
+		break;
+	case ERewardRarity::Legendary:
+		return Row->LegendaryPrice;
+		break;
+	default:
+		return -1;
+		break;
+	}
+	return -1;
+}
 float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerController* PlayerController)
 {
 	if (!IsValid(PlayerController))
@@ -73,17 +121,77 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 	return  RewardValue;
 }
 
-bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote)
+bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
 {
+	if (!ItemClassMap.Contains(ItemTag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item with tag %s not found in shop!"), *ItemTag.ToString());
+		return false;
+	}
+
+	// 소프트 오브젝트 포인터에서 클래스 로드
+	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
+
+		// 비동기 로드
+	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+	Streamable.RequestAsyncLoad(SoftItemClass.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
+	return true;
+	
+
+	// 클래스가 이미 로드되었으면 바로 아이템 생성
+	//SpawnItem(SoftItemClass.Get(), ItemTag);
 
 
-	return false;
 }
 
-bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote)
+bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
 {
+	if (!IsValid(User))
+	{
+		return false;
+	}
+	APawn* Pawn = User->GetPawn();
+	if (!IsValid(Pawn))
+	{
+		return false;
+	}
+	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
+	if (!IsValid(InventoryComponent))
+	{
+		return false;
+	}
+	InventoryComponent->SellItemInternal(ItemTag, MaterialSellingPrice);
+	return true; 
 
+}
+void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
+{
+	if (!ItemClassMap.Contains(ItemTag)) return;
+	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 
+	if (!SoftItemClass.IsValid())
+	{
+		return;
+	}
+	APawn* Pawn = Cast<APeCoPlayerController>(User)->GetPawn();
+	if (!IsValid(Pawn))
+	{
+		return;
+	}
+	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
+	if (!IsValid(InventoryComponent))
+	{
+		return;
+	}
+	FText OutNote;
+	bool bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
+	if (!bCanBuyItem)
+	{
+		return;
+	}
+	else
+	{
+		InventoryComponent->BuyItemInternal(SoftItemClass.Get(), MaterialPurchasePrice);
+	}
 
-	return false;
 }
