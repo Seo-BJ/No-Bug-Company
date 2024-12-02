@@ -21,13 +21,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void SpawnProjectile() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Evolution")
+	TSubclassOf<AProjectile> EvolvedBulletClass;
+
 public:	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Stun Effect", meta = (AllowPrivateAccess = "true"))
-	float StunDuration = 2.0f; 
+	float StunDuration = 0.1f; 
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Stun Effect", meta = (AllowPrivateAccess = "true"))
 	bool bApplyStunEffect = true;
 
 	void ApplyStunEffect(class APeCoEnemyCharacter* EnemyCharacter);
+
+	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	void EvolveAirGun();
+
+	bool bIsEvolved = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon|Knockback")
+	float KnockbackForce = 1500.0f;
+
+	void ApplyKnockback(APeCoEnemyCharacter* Enemy, const FVector& HitLocation);
+	
+	virtual void Enhencement(int32 EnhencementIndex) override;
 };

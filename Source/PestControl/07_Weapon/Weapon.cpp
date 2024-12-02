@@ -30,6 +30,8 @@ AWeapon::AWeapon()
 
     CurrentLevel = 1;
 
+    EnhencementLevel = 0;
+
 }
 
 // Called when the game starts or when spawned
@@ -102,7 +104,7 @@ void AWeapon::FireWeapon()
     {
     case EWeaponType::Projectile:
         ProjectileFire();
-        Ammo--;
+        Ammo = Ammo - AmmoCost;
         break;
 
     case EWeaponType::Conical:
@@ -148,26 +150,21 @@ void AWeapon::Reload()
 
 void AWeapon::SpawnProjectile()
 {
-    if (!BulletClass)
+    if (!BulletClass || !BulletSpawnPoint)
     {
         return;
     }
 
-    if (!BulletSpawnPoint)
-    {
-        return;
-    }
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = this;
+    SpawnParams.Instigator = Cast<APawn>(GetOwner());
 
     FVector Location = BulletSpawnPoint->GetComponentLocation();
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
-    AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation);
 
-    if (!Projectile)
-    {
-        return;
-    }
+    AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
 
-    float ActualDamage = BaseDamage * DamageMultiplier;
+    float ActualDamage = BaseDamage * DamageMultiplier ;
     if (FMath::RandRange(0.f, 1.f) < CriticalChance)
     {
         ActualDamage *= CriticalDamageMultiplier;
@@ -175,6 +172,13 @@ void AWeapon::SpawnProjectile()
 
     Projectile->SetDamage(ActualDamage);
     Projectile->SetOwner(this);
+
+    //if (Projectile)
+    //{
+    //    UE_LOG(LogTemp, Log, TEXT("Projectile spawned with Owner: %s and Instigator: %s"),
+    //        *Projectile->GetOwner()->GetName(),
+    //        Projectile->GetInstigator() ? *Projectile->GetInstigator()->GetName() : TEXT("None"));
+    //}
 }
 
 void AWeapon::ProjectileFire()
@@ -190,7 +194,6 @@ void AWeapon::ProjectileFire()
     float TotalFireTime = FMath::Max(NumberOfProjectiles * Delay, Delay);
    
 }
-
 
 
 void AWeapon::ShotgunFire()
@@ -253,6 +256,11 @@ void AWeapon::LevelUp()
     {
         UE_LOG(LogTemp, Warning, TEXT("Max level reached! No more leveling up."));
     }
+}
+
+void AWeapon::Enhencement(int32 EnhencementIndex)
+{
+    ++EnhencementLevel;
 }
 
 void AWeapon::InitInfo()

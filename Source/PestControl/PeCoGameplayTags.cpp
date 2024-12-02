@@ -55,17 +55,17 @@ namespace PeCoGameplayTags
 	
 		if (Count <= 0 || TagsArray.Num() == 0)
 		{
-			return RandomTags; // ºó ÄÁÅ×ÀÌ³Ê ¹ÝÈ¯
+			return RandomTags; // ë¹ˆ ì»¨í…Œì´ë„ˆ ë°˜í™˜
 		}
 
-		// Count¿Í AvailableTagsÀÇ Å©±â ºñ±³ ÈÄ ¾ÈÀüÇÏ°Ô Ã³¸®
+		// Countì™€ AvailableTagsì˜ í¬ê¸° ë¹„êµ í›„ ì•ˆì „í•˜ê²Œ ì²˜ë¦¬
 		int32 MaxCount = FMath::Min(Count, TagsArray.Num());
 
 		while (RandomTags.Num() < MaxCount)
 		{
 			int32 RandomIndex = FMath::RandRange(0, TagsArray.Num() - 1);
 			RandomTags.AddTag(TagsArray[RandomIndex]);
-			TagsArray.RemoveAt(RandomIndex); // Áßº¹ ¹æÁö
+			TagsArray.RemoveAt(RandomIndex); // ì¤‘ë³µ ë°©ì§€
 		}
 
 		return RandomTags;

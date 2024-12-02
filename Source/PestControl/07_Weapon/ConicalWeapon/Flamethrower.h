@@ -23,6 +23,11 @@ protected:
 public:
     void ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter);
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wreckage")
+    TSubclassOf<class AWreckage> WreckageClass;
+
+    bool bIsEvolved = false;
+
 private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
     float BurnDamage = 5.0f;
@@ -37,4 +42,18 @@ private:
 
     void ApplyBurnDamage(AActor* Target);
     void StopBurnEffect(AActor* Target);
+
+public: 
+
+    UFUNCTION(BlueprintCallable, Category = "Evolution")
+    void FlamethrowerEvolve();
+
+    void SpawnWreckage(FVector Location);
+
+    float WreckageDuration = 3.0f;
+    float WreckageDamage = 200.0f;
+    float WreckageTickTime = 0.5f;
+
+    virtual void Enhencement(int32 EnhencementIndex) override;
+
 };
