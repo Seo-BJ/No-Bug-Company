@@ -72,3 +72,18 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 
 	return  RewardValue;
 }
+
+bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote)
+{
+
+
+	return false;
+}
+
+bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote)
+{
+
+
+
+	return false;
+}

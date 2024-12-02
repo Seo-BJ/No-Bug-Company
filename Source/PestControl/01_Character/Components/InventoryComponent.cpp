@@ -314,35 +314,53 @@ int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
 	return result;
  }
 
- void UInventoryComponent::SetupInventoryStorageReference()
+void UInventoryComponent::SetupInventoryStorageReference()
 {
-	if (IsValid(InventoryStorage))
+if (IsValid(InventoryStorage))
+{
+	// Storage ref already set up
+	return;
+}
+AActor* InventoryOwner = GetOwner();
+if (!IsValid(InventoryOwner))
+{
+	return;
+}
+bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
+if (bHasPlayerState)
+{
+	// Try to get a ref to the player state.
+	const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
+	if (!IsValid(OwningPawn))
 	{
-		// Storage ref already set up
 		return;
 	}
-	AActor* InventoryOwner = GetOwner();
-	if (!IsValid(InventoryOwner))
+	AActor* PlayerState = OwningPawn->GetPlayerState();
+	if (IsValid(PlayerState))
 	{
-		return;
-	}
-	bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
-	if (bHasPlayerState)
-	{
-		// Try to get a ref to the player state.
-		const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
-		if (!IsValid(OwningPawn))
-		{
-			return;
-		}
-		AActor* PlayerState = OwningPawn->GetPlayerState();
-		if (IsValid(PlayerState))
-		{
-			InventoryStorage = PlayerState;
-		}
-	}
-	else
-	{
-		InventoryStorage = InventoryOwner;
+		InventoryStorage = PlayerState;
 	}
 }
+else
+{
+	InventoryStorage = InventoryOwner;
+}
+}
+
+
+
+ void UInventoryComponent::AddPlayerMoney(const int32 Amount, FText& OutNote)
+ {
+	 PlayerMoney += Amount;
+
+ }
+
+ bool UInventoryComponent::HasEnoughMoney(const int32 Quantity, FText& OutNote)
+ {
+	 if (Quantity <= 0)
+	 {
+		 OutNote = FText::FromString("Quantity는 반드시 0보다 커야함.");
+		 return false;
+	 }
+	 return PlayerMoney >= Quantity ? true : false;
+ }
