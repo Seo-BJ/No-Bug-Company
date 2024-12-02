@@ -37,10 +37,6 @@ public:
 
 	float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
 
-	void StartHealthIncreaseTimers();
-	void ApplyHealthIncrease(float Percentage, TArray<FName> TargetEnemyIDs);
-	void StopHealthIncreaseTimers();
-
 #pragma region Game Time & Timer
 
 	// 1200.f = 1200초 = 20분
@@ -93,10 +89,6 @@ private:
 
 	// 라운드 타이머 핸들
 	FTimerHandle RoundTimerHandle;
-
-	FTimerHandle HealthIncreaseTimerHandle;        // 기본 체력 증가 타이머 핸들
-	FTimerHandle FlyingEnemyHealthTimerHandle;    // 비행 적 체력 증가 타이머 핸들
-	FTimerHandle SpiderHealthTimerHandle;         // 거미 체력 증가 타이머 핸들
 
 	void CheckGameOver();
 	void CheckRoundTimer(float DeltaTime);

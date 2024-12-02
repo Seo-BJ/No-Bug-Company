@@ -33,10 +33,6 @@ public:
 	void EnableMove();
 
 private:
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	USceneComponent* Root;
-
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* TrapMesh;
 

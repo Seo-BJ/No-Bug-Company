@@ -75,19 +75,22 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	WeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Spawn Point"));
 	WeaponSpawnPoint->SetupAttachment(RootComponent);
 
+	SecondWeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SecondWeapon Spawn Point"));
+	SecondWeaponSpawnPoint->SetupAttachment(WeaponSpawnPoint);
+
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	 GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoPlayerCharacter::OnHit);
 
-	 bIsCrashInvincible = false;
+	bIsCrashInvincible = false;
 
-	 SetCanBeDamaged(true);
+	SetCanBeDamaged(true);
 
-	 InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
-	 EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 
@@ -102,6 +105,8 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	InitializeWeaponClasses();
 
+
+
 	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
 	if (IsValid(GameInstance))
 	{
@@ -115,46 +120,33 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 
 	if (PeCoPlayerController && WeaponSpawnPoint)
 	{
-		FVector TargetLocation = GetTargetCursorLocation();
+		FHitResult HitResult;
+		bool bHit = PeCoPlayerController->GetHitResultUnderCursor(
+			ECollisionChannel::ECC_Visibility,
+			true,
+			HitResult
+		);
+
+		FVector TargetLocation = FVector::ZeroVector;
+
+		if (bHit)
+		{
+			TargetLocation = HitResult.ImpactPoint;
+		}
 		MoveWeaponSpawnPoint(TargetLocation);
 	}
 }
-
-FVector APeCoPlayerCharacter::GetTargetCursorLocation()
-{
-	APeCoPlayerController* PlayerController = Cast<APeCoPlayerController>(GetController());
-	if (PlayerController)
-	{
-		float MouseX, MouseY;
-
-		if (PlayerController->GetMousePosition(MouseX, MouseY))
-		{
-			FVector WorldLocation;  
-			FVector WorldDirection;  
-
-			if (PlayerController->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldLocation, WorldDirection))
-			{
-				float Distance = 1000.f; 
-				FVector TargetLocation = WorldLocation + (WorldDirection * Distance);
-				TargetLocation.Z = WeaponSpawnPoint->GetComponentLocation().Z;
-				return TargetLocation;
-			}
-		}
-	}
-	return WeaponSpawnPoint->GetComponentLocation();
-}
-
 
 void APeCoPlayerCharacter::MoveWeaponSpawnPoint(FVector MouseLocation)
 {
 	FVector CharacterLocation = GetActorLocation();
 	FVector DirectionToMouse = (MouseLocation - CharacterLocation).GetSafeNormal();
 
-	const float Radius = 20.0f;
+	FVector TargetLocation = CharacterLocation + DirectionToMouse;
 
-	FVector CirclePoint = CharacterLocation + DirectionToMouse * Radius;
+	FVector FinalLocation = FMath::ClosestPointOnLine(CharacterLocation, TargetLocation, MouseLocation);
 
-	WeaponSpawnPoint->SetWorldLocation(CirclePoint);
+	WeaponSpawnPoint->SetWorldLocation(FinalLocation);
 
 	RotateAim(MouseLocation);
 }
@@ -164,7 +156,14 @@ void APeCoPlayerCharacter::RotateAim(FVector LookAtTarget)
 	FVector ToTarget = LookAtTarget - WeaponSpawnPoint->GetComponentLocation();
 	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
 
-	WeaponSpawnPoint->SetWorldRotation(LookAtRotation);
+	WeaponSpawnPoint->SetWorldRotation(
+		FMath::RInterpTo(
+			WeaponSpawnPoint->GetComponentRotation(),
+			LookAtRotation,
+			UGameplayStatics::GetWorldDeltaSeconds(this),
+			10.f
+		)
+	);
 }
 
 void APeCoPlayerCharacter::PostInitializeComponents()
@@ -250,19 +249,18 @@ void APeCoPlayerCharacter::SpawnWeapon(FGameplayTag WeaponTag)
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
 
 	AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+	PlayerWeapon = SpawnedWeapon;
 	if (SpawnedWeapon)
 	{
-		AController* PlayerController = GetController();  // PlayerCharacter�� Controller ��������
-		if (PlayerController)
-		{
-			SpawnedWeapon->SetInstigator(this);  // ������ InstigatorController ����
-		}
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
 		SpawnedWeapons.Add(WeaponTag, SpawnedWeapon);
-		
+
 		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponTag.ToString());
+
 	}
 	else
 	{
@@ -274,19 +272,14 @@ void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor
 {
 	if (!bIsCrashInvincible && EnemyHitActor && EnemyHitActor != this && EnemyHitActor->IsA(APeCoEnemyCharacter::StaticClass()))
 	{
-		// �� ĳ���ͷ� ĳ����
 		APeCoEnemyCharacter* Enemy = Cast<APeCoEnemyCharacter>(EnemyHitActor);
 		if (Enemy)
 		{
-			float EnemyDamage = Enemy->Damage; // ���� ������ ��������
+			float EnemyDamage = Enemy->Damage; 
 			UGameplayStatics::ApplyDamage(this, EnemyDamage, Enemy->GetController(), Enemy, nullptr);
-
-			// �÷��̾ ���� �ð� ���� ���� ���°� �ǵ��� ����
 			BecomeCrashInvincible(CrashInvincibleDuration);
 		}
-		
 		/*UGameplayStatics::ApplyDamage(this, CrashDamage, Cast<APeCoEnemyCharacter>(EnemyHitActor)->GetController(), EnemyHitActor, nullptr);
-		
 		BecomeCrashInvincible(CrashInvincibleDuration);*/
 	}
 }
@@ -304,4 +297,3 @@ void APeCoPlayerCharacter::EndCrashInvincible()
 	bIsCrashInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
 }
-

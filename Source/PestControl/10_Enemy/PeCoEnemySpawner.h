@@ -42,11 +42,7 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 1;
 
-
-    void SetEnemyStatsTable(UDataTable* NewStatsTable) { EnemyStatsTable = NewStatsTable; }
-    // 적 체력 증가 적용
-    void UpdateStatsForHealthIncrease(float Percentage, FName TargetEnemyID);
-       
+    
 
 protected:
 	// Called when the game starts or when spawned

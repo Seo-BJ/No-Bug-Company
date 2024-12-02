@@ -6,7 +6,7 @@
 #include "00_GameModes/PeCoGameMode.h"
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "02_Player/PeCoPlayerState.h"
-
+#include "07_Weapon/ConicalWeapon/Flamethrower.h"
 #include "Components/CapsuleComponent.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
@@ -19,7 +19,7 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 	// Set up Hit event
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APeCoEnemyCharacter::OnHit);
 
-	// ±âº» EnemyID °ª ¼³Á¤ (ÇÊ¿ä½Ã ÀÚ½Ä Å¬·¡½º¿¡¼­ µ¤¾î¾º¿ò)
+	// ï¿½âº» EnemyID ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ê¿ï¿½ï¿½ ï¿½Ú½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î¾ºï¿½ï¿½)
 	EnemyID = NAME_None;
 
 
@@ -43,6 +43,7 @@ void APeCoEnemyCharacter::Tick(float DeltaTime)
 
 void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	VarDamageCauser = DamageCauser;
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	check(PeCoGameMode);
 	InputDamage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), InputDamage);
@@ -53,6 +54,18 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 
 	if (Health <= 0.f)
 	{
+		//Flamethrower Wreckage
+		if (DamageCauser && DamageCauser->IsA(AFlamethrower::StaticClass()))
+		{
+			AFlamethrower* Flamethrower = Cast<AFlamethrower>(DamageCauser);
+			if (Flamethrower && Flamethrower->bIsEvolved)
+			{
+				Flamethrower->SpawnWreckage(GetActorLocation());
+
+			}
+		}
+		//End of Flamethrower Wreckage
+
 		if (IsValid(InstigatorController))
 		{
 			APeCoPlayerState* PS = InstigatorController->GetPlayerState<APeCoPlayerState>();
@@ -72,6 +85,7 @@ void APeCoEnemyCharacter::CharacterDie()
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
 
+
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
 	Destroy();
@@ -85,6 +99,7 @@ void APeCoEnemyCharacter::ResetSlowStatus()
 
 void APeCoEnemyCharacter::ResetStunStatus()
 {
+	bIsStun = false;
 }
 
 float APeCoEnemyCharacter::GetMaxHealth()
@@ -118,13 +133,13 @@ void APeCoEnemyCharacter::ResetKnockbackFlag()
 
 void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 {
-	// µ¥ÀÌÅÍ Å×ÀÌºí¿¡¼­ °ª Àû¿ë
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	Health = Stats.Health;
 	MaxHealth = Stats.Health;
-	Damage = Stats.Damage; // µ¥¹ÌÁö °ª Ãß°¡ 
+	Damage = Stats.Damage; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ß°ï¿½ 
 	
 
-	// ÀÌµ¿ ¼Óµµ ¼³Á¤
+	// ï¿½Ìµï¿½ ï¿½Óµï¿½ ï¿½ï¿½ï¿½ï¿½
 	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Flying)
 	{
 		GetCharacterMovement()->MaxFlySpeed = Stats.FlySpeed;

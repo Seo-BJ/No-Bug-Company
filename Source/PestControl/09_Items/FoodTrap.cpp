@@ -16,11 +16,10 @@ AFoodTrap::AFoodTrap()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-    RootComponent = Root;
+
 
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-    Mesh->SetupAttachment(Root);
+    RootComponent = Mesh;
 
     DetectionRange = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionRange"));
     DetectionRange->SetupAttachment(Mesh);
