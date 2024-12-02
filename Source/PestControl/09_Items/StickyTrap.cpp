@@ -16,7 +16,7 @@ AStickyTrap::AStickyTrap()
 
     DetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("DetectionBox"));
     DetectionBox->SetupAttachment(TrapMesh);
-    DetectionBox->SetBoxExtent(FVector(200.f, 200.f, 10.f));
+    DetectionBox->SetBoxExtent(FVector(45.f, 45.f, 10.f));
 
     DetectionBox->OnComponentBeginOverlap.AddDynamic(this, &AStickyTrap::OnEnemyOverlapped);
 

@@ -59,6 +59,8 @@ private:
 
 	void InitPlayerCharacter();
 
+	FVector GetTargetCursorLocation();
+
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;
@@ -109,6 +111,7 @@ private:
 	void SpawnWeapon(FGameplayTag WeaponTag);
 
 	void InitializeWeaponClasses();
+
 
 	//~End of Spawn Weapon
 
