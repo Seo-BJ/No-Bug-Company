@@ -120,33 +120,47 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 
 	if (PeCoPlayerController && WeaponSpawnPoint)
 	{
-		FHitResult HitResult;
-		bool bHit = PeCoPlayerController->GetHitResultUnderCursor(
-			ECollisionChannel::ECC_Visibility,
-			true,
-			HitResult
-		);
-
-		FVector TargetLocation = FVector::ZeroVector;
-
-		if (bHit)
-		{
-			TargetLocation = HitResult.ImpactPoint;
-		}
+		FVector TargetLocation = GetTargetCursorLocation();
 		MoveWeaponSpawnPoint(TargetLocation);
 	}
 }
+
+FVector APeCoPlayerCharacter::GetTargetCursorLocation()
+{
+	APeCoPlayerController* PlayerController = Cast<APeCoPlayerController>(GetController());
+	if (PlayerController)
+	{
+		float MouseX, MouseY;
+
+		if (PlayerController->GetMousePosition(MouseX, MouseY))
+		{
+			FVector WorldLocation;
+			FVector WorldDirection;
+
+			if (PlayerController->DeprojectScreenPositionToWorld(MouseX, MouseY, WorldLocation, WorldDirection))
+			{
+				float Distance = 1000.f;
+				FVector TargetLocation = WorldLocation + (WorldDirection * Distance);
+				TargetLocation.Z = WeaponSpawnPoint->GetComponentLocation().Z;
+				return TargetLocation;
+			}
+		}
+
+	}
+	return WeaponSpawnPoint->GetComponentLocation();
+}
+
 
 void APeCoPlayerCharacter::MoveWeaponSpawnPoint(FVector MouseLocation)
 {
 	FVector CharacterLocation = GetActorLocation();
 	FVector DirectionToMouse = (MouseLocation - CharacterLocation).GetSafeNormal();
 
-	FVector TargetLocation = CharacterLocation + DirectionToMouse;
+	const float Radius = 20.0f;
 
-	FVector FinalLocation = FMath::ClosestPointOnLine(CharacterLocation, TargetLocation, MouseLocation);
+	FVector CirclePoint = CharacterLocation + DirectionToMouse * Radius;
 
-	WeaponSpawnPoint->SetWorldLocation(FinalLocation);
+	WeaponSpawnPoint->SetWorldLocation(CirclePoint);
 
 	RotateAim(MouseLocation);
 }

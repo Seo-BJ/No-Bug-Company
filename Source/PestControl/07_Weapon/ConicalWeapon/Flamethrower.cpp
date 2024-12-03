@@ -25,16 +25,13 @@ void AFlamethrower::BeginPlay()
 
 void AFlamethrower::ApplyBurnDamage(AActor* Target)
 {
-
-    if (!IsValid(Target)) 
+    if (!IsValid(Target))
     {
-        UE_LOG(LogTemp, Warning, TEXT("ApplyBurnDamage: Target is invalid or destroyed."));
+        UE_LOG(LogTemp, Warning, TEXT("ApplyBurnDamage: Target is invalid or already destroyed."));
         return;
     }
 
-    // 데미지 적용
     UGameplayStatics::ApplyDamage(Target, BurnDamage, GetInstigatorController(), this, nullptr);
-    UE_LOG(LogTemp, Log, TEXT("Burn Damage applied to %s: %f"), *Target->GetName(), BurnDamage);
 }
 
 void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
@@ -47,11 +44,19 @@ void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
 
     if (!ActiveBurnTimers.Contains(EnemyCharacter))
     {
+        TWeakObjectPtr<APeCoEnemyCharacter> WeakEnemyCharacter = EnemyCharacter;
+
         FTimerHandle BurnTimerHandle;
         GetWorld()->GetTimerManager().SetTimer(BurnTimerHandle, FTimerDelegate::CreateLambda([=]()
             {
-                ApplyBurnDamage(EnemyCharacter);
-
+                if (WeakEnemyCharacter.IsValid())
+                {
+                    ApplyBurnDamage(WeakEnemyCharacter.Get());
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("ApplyBurnEffect: WeakEnemyCharacter is no longer valid during timer callback."));
+                }
             }), BurnTickTime, true);
 
         ActiveBurnTimers.Add(EnemyCharacter, BurnTimerHandle);
@@ -60,11 +65,9 @@ void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
         GetWorld()->GetTimerManager().SetTimer(ResetBurnHandle, FTimerDelegate::CreateLambda([=]()
             {
                 StopBurnEffect(EnemyCharacter);
-
             }), BurnDuration, false);
 
-        UE_LOG(LogTemp, Log, TEXT("Burn effect applied to %s for %f seconds."),
-            *EnemyCharacter->GetName(), BurnDuration);
+        UE_LOG(LogTemp, Log, TEXT("Burn effect applied to %s for %f seconds."), *EnemyCharacter->GetName(), BurnDuration);
     }
 }
 
@@ -82,8 +85,11 @@ void AFlamethrower::StopBurnEffect(AActor* Target)
         ActiveBurnTimers.Remove(Target);
         UE_LOG(LogTemp, Log, TEXT("Burn effect stopped for %s"), *Target->GetName());
     }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("StopBurnEffect: Timer for Target not found."));
+    }
 }
-
 void AFlamethrower::FlamethrowerEvolve()
 {
     bIsEvolved = true;
