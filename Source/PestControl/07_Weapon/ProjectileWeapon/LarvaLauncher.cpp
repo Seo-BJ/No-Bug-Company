@@ -8,40 +8,16 @@
 
 ALarvaLauncher::ALarvaLauncher()
 {
-    WeaponID = FName(TEXT("LarvaLauncher"));
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_LarvaLauncher;
+    WeaponType = EWeaponType::Projectile;
 
     EVBulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Evolution Bullet Spawn Point"));
     EVBulletSpawnPoint->SetupAttachment(WeaponMesh);
 
-    bIsFirstEvolved = false;
-    CurrentEvolveLevel = 0;
 }
-
-void ALarvaLauncher::LarvaLauncherEvolve()
-{
-    if( CurrentEvolveLevel < 2)
-    {
-        if (CurrentEvolveLevel == 0)
-        {
-            FirstEvolveLarvaLauncher();
-            CurrentEvolveLevel = CurrentEvolveLevel + 1;
-        }
-        else
-        {
-            SecondEvolveLarvaLauncher();
-        }
-    }
-    else
-    {
-        return;
-    }
-
-}
-
 void ALarvaLauncher::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Projectile;
 }
 
 void ALarvaLauncher::ApplyWitherEffect(APeCoEnemyCharacter* EnemyCharacter)
@@ -142,6 +118,40 @@ void ALarvaLauncher::SpawnProjectile()
     }
 }
 
+
+
+bool ALarvaLauncher::EnhancementWeapon(int32 EnhancementIndex)
+{
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
+    WitherDamage += 5;
+    return true;
+}
+
+bool ALarvaLauncher::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    LarvaLauncherEvolve();
+    return true;
+}
+
+void ALarvaLauncher::LarvaLauncherEvolve()
+{
+    if (EvolveLevel < 2)
+    {
+        if (EvolveLevel == 0)
+        {
+            FirstEvolveLarvaLauncher();
+        }
+        else
+        {
+            SecondEvolveLarvaLauncher();
+        }
+    }
+    else
+    {
+        return;
+    }
+}
 void ALarvaLauncher::FirstEvolveLarvaLauncher()
 {
     bIsFirstEvolved = true;
@@ -157,7 +167,7 @@ void ALarvaLauncher::FirstEvolveLarvaLauncher()
 
 void ALarvaLauncher::SecondEvolveLarvaLauncher()
 {
-    if(bIsFirstEvolved)
+    if (bIsFirstEvolved)
     {
         BaseDamage = BaseDamage + SecondEvolveDamage;
     }
@@ -165,9 +175,4 @@ void ALarvaLauncher::SecondEvolveLarvaLauncher()
     {
         return;
     }
-}
-
-void ALarvaLauncher::Enhencement(int32 EnhencementIndex)
-{
-    WitherDamage += 5;
 }

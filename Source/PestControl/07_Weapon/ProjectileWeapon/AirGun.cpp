@@ -11,13 +11,13 @@
 
 AAirGun::AAirGun()
 {
-    WeaponID = FName(TEXT("AirGun"));
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_AirGun;
+    WeaponType = EWeaponType::Projectile;
 }
 
 void AAirGun::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Projectile;
 }
 
 void AAirGun::ApplyStunEffect(APeCoEnemyCharacter* EnemyCharacter)
@@ -62,10 +62,6 @@ void AAirGun::ApplyStunEffect(APeCoEnemyCharacter* EnemyCharacter)
     }
 }
 
-void AAirGun::EvolveAirGun()
-{
-    bIsEvolved = true;
-}
 
 void AAirGun::SpawnProjectile()
 {
@@ -74,7 +70,7 @@ void AAirGun::SpawnProjectile()
         return;
     }
 
-    TSubclassOf<AProjectile> ProjectileClass = bIsEvolved ? EvolvedBulletClass : BulletClass;
+    TSubclassOf<AProjectile> ProjectileClass = HasWeaponEvolved() ? EvolvedBulletClass : BulletClass;
     if (!ProjectileClass)
     {
         UE_LOG(LogTemp, Warning, TEXT("ProjectileClass is null."));
@@ -126,7 +122,21 @@ void AAirGun::ApplyKnockback(APeCoEnemyCharacter* Enemy, const FVector& HitLocat
         *Enemy->GetName(), *KnockbackVector.ToString());
 }
 
-void AAirGun::Enhencement(int32 EnhencementIndex)
+
+bool AAirGun::EnhancementWeapon(int32 EnhancementIndex)
 {
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
     StunDuration += 0.05f;
+    return true;
+}
+
+bool AAirGun::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    EvolveAirGun();
+    return true;
+}
+void AAirGun::EvolveAirGun()
+{
+
 }

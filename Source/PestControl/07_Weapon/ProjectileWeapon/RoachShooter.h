@@ -15,24 +15,21 @@ class PESTCONTROL_API ARoachShooter : public AWeapon
 	GENERATED_BODY()
 
 public:
+
 	ARoachShooter();	
 
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* EVBulletSpawnPoint;
-
 	virtual void SpawnProjectile() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void EvolveRoachShooter();
+protected:
 
-	virtual void Enhencement(int32 EnhencementIndex) override;
+	virtual void BeginPlay() override;
 
 private:
-	bool bIsEvolved = false;
+
+	virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
+	virtual bool EvolveWeapon(int32 EvolveIndex) override;
+	void EvolveRoachShooter();
+
 };

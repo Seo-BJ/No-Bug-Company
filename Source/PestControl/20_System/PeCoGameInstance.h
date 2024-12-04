@@ -24,16 +24,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TObjectPtr<UDataTable>> WidgetDataTableMap;
 
-	/*
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> ItemWidgetDataTable;
+	TMap<FGameplayTag, UDataTable*> WeaponEnhancemenMaterialDataTableMap;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> WeaponWidgetDataTable;
+	TMap<FGameplayTag, UDataTable*> WeaponEvolveMaterialDataTableMap;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> StatWidgetDataTable;
-	*/
+	UDataTable* WeaponInitInfoDataTable;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDataTable> StoreDataTable;
 

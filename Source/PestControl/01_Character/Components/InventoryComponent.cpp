@@ -123,7 +123,7 @@ bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, co
 	}
 
 	FText Note;
-	const bool bHasEnoughItems = HasEnoughItems(Class, Quantity, Note);
+	const bool bHasEnoughItems = HasEnoughItemsOfItem(Class, Quantity, Note);
 	if (!bHasEnoughItems)
 	{
 		// Failed to remove items
@@ -210,7 +210,6 @@ TArray<AActor*> UInventoryComponent::GetAllItems()
 	}
 	return Items;
 }
-
 bool UInventoryComponent::GetItemOfClass(const TSubclassOf<AActor> Class, AActor*& OutActor)
 {
 	TArray<AActor*> TargetArray = GetAllItems();
@@ -273,9 +272,7 @@ bool UInventoryComponent::GetAlItemsOfTag(const FGameplayTag ItemTag, TArray<AAc
 	return false;
 }
 
-
-
-bool UInventoryComponent::HasEnoughItems(const TSubclassOf<AActor> Item, const int32 Quantity, UPARAM(DisplayName = "Note") FText& OutNote)
+bool UInventoryComponent::HasEnoughItemsOfItem(const TSubclassOf<AActor> Item, const int32 Quantity, UPARAM(DisplayName = "Note") FText& OutNote)
 {
 	if (Quantity <= 0)
 	{
@@ -307,6 +304,39 @@ bool UInventoryComponent::HasEnoughItems(const TSubclassOf<AActor> Item, const i
 	OutNote = FText::FromString("실패. 아이템이 부족함.");
 	return false;
 }
+bool UInventoryComponent::HasEnoughItemsOfTag(const FGameplayTag GameplayTag, const int32 Quantity, FText& OutNote)
+{
+	if (Quantity <= 0)
+	{
+		OutNote = FText::FromString("Quantity는 반드시 0보다 커야함.");
+		return false;
+	}
+
+	int32 QuantityMissing = Quantity;
+
+	AActor* FilteredActor;
+	if (!GetItemOfTag(GameplayTag, FilteredActor))
+	{
+		OutNote = FText::FromString("Has enough 확인 실패: 해당 Class로 아이템을 찾을 수 없음.");
+		return false;
+	}
+
+	const UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
+	if (!ensure(IsValid(ItemComponent)))
+	{
+		OutNote = FText::FromString("해당 Item에 ItemComponent가 존재하지 않음.");
+		return false;
+	}
+
+	if (QuantityMissing <= ItemComponent->ItemInfo.CurrentQuantity)
+	{
+		OutNote = FText::FromString("성공. 충분한 아이템을 가지고 있음.");
+		return true;
+	}
+	OutNote = FText::FromString("실패. 아이템이 부족함.");
+	return false;
+}
+
 int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
 {
 	int32 result = 0;
@@ -322,6 +352,8 @@ int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
 	}
 	return result;
  }
+
+
 
 void UInventoryComponent::SetupInventoryStorageReference()
 {
@@ -356,7 +388,21 @@ else
 }
 }
 
+bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialMap)
+{
+	for (const TPair<FGameplayTag, int32>& Material : MaterialMap)
+	{
+		FGameplayTag ItemTag = Material.Key;      // 현재 재료의 태그
+		int32 Quantity = Material.Value;          // 현재 재료의 필요 수량
+		FText OutNote;                            // 오류 메시지나 추가 정보를 받기 위한 변수
 
+		if (!HasEnoughItemsOfTag(ItemTag, Quantity, OutNote))
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
  void UInventoryComponent::AddPlayerMoney(const int32 Amount, FText& OutNote)
  {
@@ -364,7 +410,6 @@ else
 	 PlayerMoney += Amount;
 	 OnPlayerMoneyChanged.Broadcast(OldMoney, PlayerMoney);
  }
-
  bool UInventoryComponent::HasEnoughMoney(const int32 Quantity, FText& OutNote)
  {
 	 if (Quantity <= 0)
@@ -375,14 +420,12 @@ else
 	 return PlayerMoney >= Quantity ? true : false;
  }
 
-
  void UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
  {
 	 FText OutNote;
 	 AddItemsOfClass(Class, 1, OutNote);
 	 AddPlayerMoney(-PurchasePrice, OutNote);
  }
-
  void UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
  {
 	 FText OutNote;

@@ -11,9 +11,7 @@
 
 AWebRevolver::AWebRevolver()
 {
-    WeaponID = FName(TEXT("WebRevolver"));
-
-    bIsEvolved = false;
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_WebRevolver;
 }
 
 void AWebRevolver::BeginPlay()
@@ -64,10 +62,7 @@ void AWebRevolver::ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter, float Sl
     }
 }
 
-void AWebRevolver::EvolveWebRevolver()
-{
-    bIsEvolved = true;
-}
+
 
 void AWebRevolver::SpawnFragmentProjectiles(const FVector& SpawnLocation, const FRotator& SpawnRotation)
 {
@@ -96,11 +91,23 @@ void AWebRevolver::SpawnFragmentProjectiles(const FVector& SpawnLocation, const 
 void AWebRevolver::SpawnProjectile()
 {
     Super::SpawnProjectile();
-
 }
 
-void AWebRevolver::Enhencement(int32 EnhencementIndex)
+bool AWebRevolver::EnhancementWeapon(int32 EnhancementIndex)
 {
-    SlowDuration +=  0.05f;
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
+    SlowDuration += 0.05f;
     SlowMultiplier += 0.05f;
+    return false;
+}
+
+bool AWebRevolver::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    EvolveWebRevolver();
+    return false;
+}
+
+void AWebRevolver::EvolveWebRevolver()
+{
 }

@@ -10,15 +10,14 @@
 
 AFlamethrower::AFlamethrower()
 {
-    WeaponID = FName(TEXT("Flamethrower"));
-
-    bIsEvolved = false;
+    WeaponTag = PeCoGameplayTags::Weapon_Conical_Flamethrower;
+    WeaponType = EWeaponType::Conical;
 }
 
 void AFlamethrower::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Conical;
+
     DebugColor = FColor::Red;
 }
 
@@ -36,6 +35,7 @@ void AFlamethrower::ApplyBurnDamage(AActor* Target)
 
 void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
 {
+    if (EvolveLevel <= 0) return;
     if (!IsValid(EnemyCharacter))
     {
         UE_LOG(LogTemp, Warning, TEXT("ApplyBurnEffect: EnemyCharacter is invalid or already destroyed."));
@@ -90,10 +90,7 @@ void AFlamethrower::StopBurnEffect(AActor* Target)
         UE_LOG(LogTemp, Warning, TEXT("StopBurnEffect: Timer for Target not found."));
     }
 }
-void AFlamethrower::FlamethrowerEvolve()
-{
-    bIsEvolved = true;
-}
+
 
 void AFlamethrower::SpawnWreckage(FVector Location)
 {
@@ -122,14 +119,22 @@ void AFlamethrower::SpawnWreckage(FVector Location)
     }
 }
 
-void AFlamethrower::Enhencement(int32 EnhencementIndex)
+
+bool AFlamethrower::EnhancementWeapon(int32 EnhancementIndex)
 {
-    if(EnhencementIndex == 0)
-    {
-        BurnDamage += 3;
-    }
-    if (EnhencementIndex == 1)
-    {
-        FireAngle += 5;
-    }
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
+    FireAngle += 5;
+    return true;
+}
+
+bool AFlamethrower::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+
+    FlamethrowerEvolve();
+    return true;
+}
+void AFlamethrower::FlamethrowerEvolve()
+{
+
 }

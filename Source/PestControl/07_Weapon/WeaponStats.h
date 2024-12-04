@@ -11,10 +11,7 @@ struct FWeaponStats : public FTableRowBase
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    FName WeaponID;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    int32 Level;
+    FGameplayTag WeaponTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     float BaseDamage;
@@ -47,10 +44,4 @@ struct FWeaponStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     float ReloadCoolDown;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    int32 MaxLevel;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    FGameplayTag WeaponTag;
 };

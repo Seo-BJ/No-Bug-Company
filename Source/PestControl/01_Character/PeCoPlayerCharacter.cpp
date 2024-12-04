@@ -270,9 +270,6 @@ void APeCoPlayerCharacter::SpawnWeapon(FGameplayTag WeaponTag)
 	if (SpawnedWeapon)
 	{
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-
-		SpawnedWeapons.Add(WeaponTag, SpawnedWeapon);
-
 		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponTag.ToString());
 
 	}

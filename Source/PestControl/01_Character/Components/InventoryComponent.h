@@ -46,10 +46,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool RemoveItemsOfTag(FGameplayTag ItemTag, const int32 Quantity, FText& OutNote);
 
+
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Found") bool GetItemOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
-	// Find Item By Tag
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Found") bool GetItemOfTag(const FGameplayTag ItemTag, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
@@ -60,13 +60,31 @@ public:
 	UPARAM(DisplayName = "Items") TArray<AActor*> GetAllItems();
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	UPARAM(DisplayName = "Success") bool HasEnoughItems(const TSubclassOf<AActor> Item, const int32 Quantity, FText& OutNote);
+	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfItem(const TSubclassOf<AActor> Class);
+
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfItem(const TSubclassOf<AActor> Class);
+	UPARAM(DisplayName = "Success") bool HasEnoughItemsOfItem(const TSubclassOf<AActor> Item, const int32 Quantity, FText& OutNote);
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Success") bool HasEnoughItemsOfTag(const FGameplayTag GameplayTag, const int32 Quantity, FText& OutNote);
+
+
+
 
 	void SetupInventoryStorageReference();
 
+	//~Material Check
+
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	bool HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialMap);
+
+
+
+
+	//~End of Material Check
+
+	//~Player Money
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	void AddPlayerMoney(const int32 Amount, FText& OutNote);
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
@@ -74,6 +92,7 @@ public:
 
 	void BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice);
 	void SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice);
+	//~End of Player Moneny
 
 protected:
 	virtual void BeginPlay() override;
