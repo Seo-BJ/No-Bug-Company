@@ -51,7 +51,7 @@ public:
     void SpawnWreckage(FVector Location);
 
     float WreckageDuration = 3.0f;
-    float WreckageDamage = 200.0f;
+    float WreckageDamage = 20.0f;
     float WreckageTickTime = 0.5f;
 
     virtual void Enhencement(int32 EnhencementIndex) override;
