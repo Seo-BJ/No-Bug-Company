@@ -10,32 +10,12 @@ enum class ETeam : uint8
 	ET_Neutral UMETA(DisplayName = "Neutral"),
 };
 
-UENUM(BlueprintType)
-enum class EItemType : uint8
-{
-	EItemType_Consumtion UMETA(DisplayName = "Consumable"),
-	EItemType_Combat UMETA(DisplayName = "Combat"),
-};
 
 UENUM(BlueprintType)
-enum class EPlayerItem : uint8
+enum class ERewardRarity : uint8
 {
-	EPlayerItem_Health UMETA(DisplayName = "HealthItem"),
-	EPlayerItem_Speed UMETA(DisplayName = "SpeedItem"),
-	EPlayerItem_Power UMETA(DisplayName = "PowerItem"),
-	EPlayerItem_Adrenaline UMETA(DisplayName = "AdrenalineItem"),
-	EPlayerItem_Mine UMETA(DisplayName = "MineItem"),
-	EPlayerItem_Adhesive UMETA(DisplayName = "AdhesiveItem"),
-	EPlayerItem_Grenade UMETA(DisplayName = "GrenadeItem"),
-	EPlayerItem_AntiSpray UMETA(DisplayName = "AntiSprayItem"),
+	Common UMETA(DisplayName = "Common"),
+	Rare UMETA(DisplayName = "Rare"),
+	Epic UMETA(DisplayName = "Epic"),
+	Legendary UMETA(DisplayName = "Legendary"),
 };
-
-UENUM(BlueprintType)
-enum class ESlotType : uint8
-{
-	ESlotType_Weapon UMETA(DisplayName = "WeaponSlot"),
-	ESlotType_Skill UMETA(DisplayName = "SkillSlot"),
-	ESlotType_Consumption UMETA(DisplayName = "ConsumptionItemSlot"),
-	ESlotType_Combat UMETA(DisplayName = "CombatItemSlot"),
-};
-

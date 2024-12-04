@@ -8,6 +8,7 @@ namespace PeCoGameplayTags
 	// Native (C++) Gameplay Tags 선언 및 정의
 
 	PESTCONTROL_API FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count);
+	PESTCONTROL_API FGameplayTagContainer GetChildTags(const FGameplayTag& ParentTag);
 
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Item);
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Item_Consumption);
@@ -38,6 +39,7 @@ namespace PeCoGameplayTags
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Weapon_Projectile_RoachShooter);
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Weapon_Projectile_WebRevolver);
 
+	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(PlayerStat);
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(PlayerStat_Health);
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(PlayerStat_MaxHealth);
 	PESTCONTROL_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(PlayerStat_MoveSpeed);

@@ -156,16 +156,25 @@ bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, co
 		return false;
 	}
 
-	if (ItemComponent->ItemInfo.CurrentQuantity > Quantity)
-	{
-		ItemComponent->ItemInfo.CurrentQuantity -= Quantity;
-	}
-	else
+	ItemComponent->ItemInfo.CurrentQuantity -= Quantity;
+	OnItemUpdated.Broadcast(FiltertedActor);
+
+	if (ItemComponent->ItemInfo.CurrentQuantity <= 0)
 	{
 		FiltertedActor->Destroy();
 	}
 	OutNote = FText::FromString("성공적으로 아이템을 줄임.");
 	return true;
+}
+bool UInventoryComponent::RemoveItemsOfTag(FGameplayTag ItemTag, const int32 Quantity, FText& OutNote)
+{
+	AActor* Item = nullptr;
+	if (GetItemOfTag(ItemTag, Item))
+	{
+		RemoveItemsOfClass(Item->GetClass(), 1, OutNote);
+		return true;
+	}
+	return false;
 }
 
 TArray<AActor*> UInventoryComponent::GetAllItems()
@@ -314,35 +323,71 @@ int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
 	return result;
  }
 
- void UInventoryComponent::SetupInventoryStorageReference()
+void UInventoryComponent::SetupInventoryStorageReference()
 {
-	if (IsValid(InventoryStorage))
+if (IsValid(InventoryStorage))
+{
+	// Storage ref already set up
+	return;
+}
+AActor* InventoryOwner = GetOwner();
+if (!IsValid(InventoryOwner))
+{
+	return;
+}
+bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
+if (bHasPlayerState)
+{
+	// Try to get a ref to the player state.
+	const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
+	if (!IsValid(OwningPawn))
 	{
-		// Storage ref already set up
 		return;
 	}
-	AActor* InventoryOwner = GetOwner();
-	if (!IsValid(InventoryOwner))
+	AActor* PlayerState = OwningPawn->GetPlayerState();
+	if (IsValid(PlayerState))
 	{
-		return;
-	}
-	bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
-	if (bHasPlayerState)
-	{
-		// Try to get a ref to the player state.
-		const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
-		if (!IsValid(OwningPawn))
-		{
-			return;
-		}
-		AActor* PlayerState = OwningPawn->GetPlayerState();
-		if (IsValid(PlayerState))
-		{
-			InventoryStorage = PlayerState;
-		}
-	}
-	else
-	{
-		InventoryStorage = InventoryOwner;
+		InventoryStorage = PlayerState;
 	}
 }
+else
+{
+	InventoryStorage = InventoryOwner;
+}
+}
+
+
+
+ void UInventoryComponent::AddPlayerMoney(const int32 Amount, FText& OutNote)
+ {
+	 int32 OldMoney = PlayerMoney;
+	 PlayerMoney += Amount;
+	 OnPlayerMoneyChanged.Broadcast(OldMoney, PlayerMoney);
+ }
+
+ bool UInventoryComponent::HasEnoughMoney(const int32 Quantity, FText& OutNote)
+ {
+	 if (Quantity <= 0)
+	 {
+		 OutNote = FText::FromString("Quantity는 반드시 0보다 커야함.");
+		 return false;
+	 }
+	 return PlayerMoney >= Quantity ? true : false;
+ }
+
+
+ void UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
+ {
+	 FText OutNote;
+	 AddItemsOfClass(Class, 1, OutNote);
+	 AddPlayerMoney(-PurchasePrice, OutNote);
+ }
+
+ void UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
+ {
+	 FText OutNote;
+	 RemoveItemsOfTag(ItemTag, 1, OutNote);
+	 AddPlayerMoney(SellingPrice, OutNote);
+
+ }
+

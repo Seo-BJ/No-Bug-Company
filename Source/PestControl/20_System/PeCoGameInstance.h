@@ -18,7 +18,32 @@ class PESTCONTROL_API UPeCoGameInstance : public UGameInstance
 
 public:
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Conical_Pesticide;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TMap<FGameplayTag, TObjectPtr<UDataTable>> WidgetDataTableMap;
+
+	/*
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> ItemWidgetDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> WeaponWidgetDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> StatWidgetDataTable;
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> StoreDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> PlayerInitStatDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCurveTable> StatUpgradeCurveTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCurveTable> LevelUpCurveTable;
+
 };

@@ -34,6 +34,7 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_RoachShooter, "Weapon.Projectile.RoachShooter");
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_WebRevolver, "Weapon.Projectile.WebRevolver");
 
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat, "PlayerStat");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");
@@ -51,7 +52,7 @@ namespace PeCoGameplayTags
 		TArray<FGameplayTag> TagsArray;
 		TargetTagContainer.GetGameplayTagArray(TagsArray);
 		FGameplayTagContainer RandomTags;
-
+	
 		if (Count <= 0 || TagsArray.Num() == 0)
 		{
 			return RandomTags; // ë¹ˆ ì»¨í…Œì´ë„ˆ ë°˜í™˜
@@ -68,5 +69,13 @@ namespace PeCoGameplayTags
 		}
 
 		return RandomTags;
+	}
+	PESTCONTROL_API FGameplayTagContainer GetChildTags(const FGameplayTag& ParentTag)
+	{
+		// GameplayTagsManager¸¦ ÅëÇØ ÅÂ±× °Ë»ö
+		const UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
+
+		// ÀÚ½Ä ÅÂ±× °Ë»ö
+		return TagManager.RequestGameplayTagChildrenInDictionary(ParentTag);
 	}
 }

@@ -12,6 +12,7 @@
  * 
  */
 class APeCoEnemySpawner;
+class UStoreComponent;
 
 UCLASS()
 class PESTCONTROL_API APeCoGameMode : public AGameMode
@@ -36,6 +37,9 @@ public:
 
 
 	float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStoreComponent> StoreComponent;
 
 #pragma region Game Time & Timer
 
