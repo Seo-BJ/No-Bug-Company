@@ -8,9 +8,8 @@
 
 ARoachShooter::ARoachShooter()
 {
-    WeaponID = FName(TEXT("RoachShooter"));
-
-    bIsEvolved = false;
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_RoachShooter;
+    WeaponType = EWeaponType::Projectile;
 
     EVBulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Evolution Bullet Spawn Point"));
     EVBulletSpawnPoint->SetupAttachment(WeaponMesh);
@@ -19,8 +18,6 @@ ARoachShooter::ARoachShooter()
 void ARoachShooter::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Projectile;
-   
 
 }
 
@@ -28,7 +25,7 @@ void ARoachShooter::SpawnProjectile()
 {
     Super::SpawnProjectile();
 
-    if (bIsEvolved && EVBulletSpawnPoint && BulletClass)
+    if (HasWeaponEvolved() && EVBulletSpawnPoint && BulletClass)
     {
         FActorSpawnParameters SpawnParams;
         SpawnParams.Owner = this;
@@ -53,8 +50,6 @@ void ARoachShooter::SpawnProjectile()
 
 void ARoachShooter::EvolveRoachShooter()
 {
-    bIsEvolved = true;
-
     if (BulletSpawnPoint && EVBulletSpawnPoint)
     {
         FVector Offset(0.f, 50.f, 0.f);
@@ -88,7 +83,17 @@ void ARoachShooter::EvolveRoachShooter()
     }
 }
 
-void ARoachShooter::Enhencement(int32 EnhencementIndex)
+bool ARoachShooter::EnhancementWeapon(int32 EnhancementIndex)
 {
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
     Ammo += 10;
+    return true;
+}
+
+bool ARoachShooter::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    EvolveRoachShooter();
+    return true;
+
 }

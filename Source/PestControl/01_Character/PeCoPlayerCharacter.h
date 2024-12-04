@@ -47,9 +47,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
-	TMap<FGameplayTag, AWeapon*> SpawnedWeapons;
-
 
 protected:
 

@@ -58,7 +58,7 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 		if (DamageCauser && DamageCauser->IsA(AFlamethrower::StaticClass()))
 		{
 			AFlamethrower* Flamethrower = Cast<AFlamethrower>(DamageCauser);
-			if (Flamethrower && Flamethrower->bIsEvolved)
+			if (Flamethrower && Flamethrower->HasWeaponEvolved())
 			{
 				Flamethrower->SpawnWreckage(GetActorLocation());
 

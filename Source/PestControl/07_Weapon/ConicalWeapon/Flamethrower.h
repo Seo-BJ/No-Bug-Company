@@ -13,20 +13,19 @@ UCLASS()
 class PESTCONTROL_API AFlamethrower : public AWeapon
 {
     GENERATED_BODY()
+
 public:
 
     AFlamethrower();
-
-protected:
-    virtual void BeginPlay() override;
-
-public:
     void ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter);
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wreckage")
     TSubclassOf<class AWreckage> WreckageClass;
 
-    bool bIsEvolved = false;
+    void SpawnWreckage(FVector Location);
+
+protected:
+    virtual void BeginPlay() override;
 
 private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
@@ -43,17 +42,15 @@ private:
     void ApplyBurnDamage(AActor* Target);
     void StopBurnEffect(AActor* Target);
 
-public: 
+private: 
 
-    UFUNCTION(BlueprintCallable, Category = "Evolution")
-    void FlamethrowerEvolve();
-
-    void SpawnWreckage(FVector Location);
+   
 
     float WreckageDuration = 3.0f;
     float WreckageDamage = 20.0f;
     float WreckageTickTime = 0.5f;
 
-    virtual void Enhencement(int32 EnhencementIndex) override;
-
+    virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
+    virtual bool EvolveWeapon(int32 EvolveIndex) override;
+    void FlamethrowerEvolve();
 };

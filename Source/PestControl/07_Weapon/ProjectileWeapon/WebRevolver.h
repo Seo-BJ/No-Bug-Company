@@ -15,13 +15,8 @@ class PESTCONTROL_API AWebRevolver : public AWeapon
 	GENERATED_BODY()
 
 public:
+
 	AWebRevolver();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
 
 	void ApplySlowEffect(APeCoEnemyCharacter* EnemyCharacter, float SlowRate);
 
@@ -40,20 +35,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Slow Effect", meta = (AllowPrivateAccess = "true"))
 	bool bApplySlowEffect = true;
 
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void EvolveWebRevolver();
 
 	void SpawnFragmentProjectiles(const FVector& SpawnLocation, const FRotator& SpawnRotation);
 
 	virtual void SpawnProjectile() override;
 
-	bool bIsEvolved = false;
+protected:
 
-
-	virtual void Enhencement(int32 EnhencementIndex) override;
+	virtual void BeginPlay() override;
 
 private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AProjectile> FragmentProjectileClass;
+
+	virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
+	virtual bool EvolveWeapon(int32 EvolveIndex) override;
+	void EvolveWebRevolver();
 };

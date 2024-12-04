@@ -99,3 +99,12 @@ struct FStoreRewardPriceData : public FTableRowBase
 	int32 LegendaryPrice;
 };
 
+USTRUCT(BlueprintType)
+struct FWeaponEnhancementMaterialsData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	TMap<FGameplayTag, int32> RequiredMaterials; 
+};
+

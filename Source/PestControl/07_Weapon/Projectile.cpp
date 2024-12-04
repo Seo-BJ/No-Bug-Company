@@ -111,7 +111,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
             {
                 WebRevolverWeapon->ApplySlowEffect(HitEnemy, WebRevolverWeapon->SlowMultiplier);
 
-                if(WebRevolverWeapon->bIsEvolved)
+                if(WebRevolverWeapon->HasWeaponEvolved())
                 { 
                     WebRevolverWeapon->SpawnFragmentProjectiles(GetActorLocation(), GetActorRotation());
                 }

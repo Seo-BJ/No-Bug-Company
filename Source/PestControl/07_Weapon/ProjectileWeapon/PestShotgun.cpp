@@ -10,14 +10,37 @@
 
 APestShotgun::APestShotgun()
 {
-	WeaponID = FName(TEXT("PestShotgun"));
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_PestShotgun;
+    WeaponType = EWeaponType::Shotgun;
 }
 
 void APestShotgun::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	WeaponType = EWeaponType::Shotgun;
+bool APestShotgun::EnhancementWeapon(int32 EnhancementIndex)
+{
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
+    if (EnhancementIndex == 0)
+    {
+        if (this)
+        {
+            this->NumberOfProjectiles++;
+        }
+        if (SecondShotgun)
+        {
+            SecondShotgun->NumberOfProjectiles++;
+        }
+    }
+    return true;
+}
+
+bool APestShotgun::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    EvolvePestShotgun();
+    return true;
 }
 
 void APestShotgun::EvolvePestShotgun()
@@ -40,7 +63,7 @@ void APestShotgun::EvolvePestShotgun()
     SpawnParams.Owner = PlayerCharacter;
     SpawnParams.Instigator = PlayerCharacter;
 
-    FVector SpawnLocation = PlayerCharacter->GetSecondWeaponSpawnPoint() ->GetComponentLocation();
+    FVector SpawnLocation = PlayerCharacter->GetSecondWeaponSpawnPoint()->GetComponentLocation();
     FRotator SpawnRotation = PlayerCharacter->GetSecondWeaponSpawnPoint()->GetComponentRotation();
 
     AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(PestShotgunClass, SpawnLocation, SpawnRotation, SpawnParams);
@@ -58,27 +81,3 @@ void APestShotgun::EvolvePestShotgun()
     }
 
 }
-
-void APestShotgun::Enhencement(int32 EnhencementIndex)
-{
-    if (EnhencementIndex == 0)
-    {
-        if(this)
-        {
-        this -> NumberOfProjectiles++ ;
-        }
-    }
-    if (EnhencementIndex == 0)
-    {
-        if (SecondShotgun)
-        {
-            SecondShotgun->NumberOfProjectiles++;
-        }
-    }
-    else
-    {
-        return;
-    }
-   
-}
-

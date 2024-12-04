@@ -4,9 +4,11 @@
 
 #include"01_Character/PeCoEnemyCharacter.h"
 #include"07_Weapon/WeaponType.h"
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponStats.h"
+#include "PeCoGameplayTags.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -32,27 +34,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
 	UDataTable* WeaponDataTable;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Type")
-	EWeaponType WeaponType;
-
-	FName WeaponID;
-
-	int32 CurrentLevel;
-
-	void LoadWeaponStats(int32 Level);
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float CriticalChance = 0.05f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float CriticalDamageMultiplier = 1.5f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float DamageMultiplier = 1.0f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float BaseDamage = 10.0f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float Cooldown = 0.4;
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	float Delay = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* Root;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
@@ -61,6 +42,41 @@ public:
 	USceneComponent* BulletSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
 	TSubclassOf<class AProjectile> BulletClass;
+
+private:
+	void InitWeaponData();
+
+
+
+
+
+public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag WeaponTag;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Type")
+	EWeaponType WeaponType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 EnhancementLevel = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 EvolveLevel = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CriticalChance = 0.05f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CriticalDamageMultiplier = 1.5f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DamageMultiplier = 1.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BaseDamage = 10.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Cooldown = 0.4;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Delay = 0.f;
+
 	UPROPERTY(EditAnywhere, Category = "Projectile Stats")
 	int NumberOfProjectiles = 1;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
@@ -76,27 +92,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
 	float RangeRadius = 30;
 
-protected:
-	void InitInfo();
+
 
 	void FireWeapon();
-
 	void DealDamageInSector();
-
-	FVector InitialLocation;
-	FRotator InitialRotation;
 
 	FColor DebugColor;
 
+	UFUNCTION(BlueprintCallable)
+	bool CanEnhancementWeapon();
+	UFUNCTION(BlueprintCallable)
+	bool CanEvolveWeapon();
 
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void LevelUp();
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Enhencement(int32 EnhencementIndex);
-
-	int32 EnhencementLevel = 0;
+	UFUNCTION(BlueprintCallable)
+	virtual bool EnhancementWeapon(int32 EnhancementIndex);
+	UFUNCTION(BlueprintCallable)
+	virtual bool EvolveWeapon(int32 EvolveIndex);
 
 private:
 
@@ -113,5 +124,10 @@ private:
 	void StartShotgunCooldown();
 
 	void ConicalFire();
+
+
+public:
+
+	bool HasWeaponEvolved() { return EvolveLevel > 0 ? true : false; }
 
 };

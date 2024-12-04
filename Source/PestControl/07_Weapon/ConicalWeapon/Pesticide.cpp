@@ -8,13 +8,14 @@
 
 APesticide::APesticide()
 {
-    WeaponID = FName(TEXT("Pesticide"));
-  }
+    WeaponTag == PeCoGameplayTags::Weapon_Conical_Pesticide;
+    WeaponType = EWeaponType::Conical;
+}
 
 void APesticide::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Conical;
+
 
     DebugColor = FColor::Green;
 }
