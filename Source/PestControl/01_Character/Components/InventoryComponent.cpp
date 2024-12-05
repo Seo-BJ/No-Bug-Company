@@ -337,21 +337,37 @@ bool UInventoryComponent::HasEnoughItemsOfTag(const FGameplayTag GameplayTag, co
 	return false;
 }
 
-int32 UInventoryComponent::GetQuantityOfItem(const TSubclassOf<AActor> Class)
+int32 UInventoryComponent::GetQuantityOfClass(const TSubclassOf<AActor> ItemClass)
 {
-	int32 result = 0;
 	AActor* FilteredActor;
-	if (GetItemOfClass(Class, FilteredActor))
+	if (GetItemOfClass(ItemClass, FilteredActor))
 	{
 		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
 		if (!ensure(IsValid(ItemComponent)))
 		{
 			return 0;
 		}
-		result += ItemComponent->ItemInfo.CurrentQuantity;
+		return ItemComponent->ItemInfo.CurrentQuantity;
 	}
-	return result;
+	return 0;
  }
+int32 UInventoryComponent::GetQuantityOfTag(const FGameplayTag ItemTag)
+{
+	AActor* FilteredActor;
+	if (GetItemOfTag(ItemTag, FilteredActor))
+	{
+		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
+		if (!ensure(IsValid(ItemComponent)))
+		{
+			return 0;
+		}
+		return ItemComponent->ItemInfo.CurrentQuantity;
+	}
+	return 0;
+}
+
+
+
 
 
 
@@ -423,14 +439,18 @@ bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialM
  void UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
  {
 	 FText OutNote;
-	 AddItemsOfClass(Class, 1, OutNote);
-	 AddPlayerMoney(-PurchasePrice, OutNote);
+	 if (AddItemsOfClass(Class, 1, OutNote))
+	 {
+		 AddPlayerMoney(-PurchasePrice, OutNote);
+	 }
+
  }
  void UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
  {
 	 FText OutNote;
-	 RemoveItemsOfTag(ItemTag, 1, OutNote);
-	 AddPlayerMoney(SellingPrice, OutNote);
-
+	 if (RemoveItemsOfTag(ItemTag, 1, OutNote))
+	 {
+		 AddPlayerMoney(SellingPrice, OutNote);
+	 }
  }
 

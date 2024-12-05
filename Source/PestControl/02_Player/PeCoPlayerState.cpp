@@ -11,8 +11,11 @@
 #include "02_Player/PlayerStats.h"
 #include "02_Player/Components/PlayerStatPresenterComponent.h"
 #include "04_UI/PeCoHUD.h"
+#include "07_Weapon/Weapon.h"
 #include "20_System/PeCoGameInstance.h"
+#include "20_System/PeCoFunctionLibrary.h"
 #include "21_Data/PeCoDataRow.h"
+
 
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
@@ -29,12 +32,7 @@ APeCoPlayerState::APeCoPlayerState()
 	CharacterStats.Add(Health);
 	CharacterStats.Add( MaxHealth);
 	CharacterStats.Add( MoveSpeed);
-	CharacterStats.Add( AttackPower);
-	CharacterStats.Add( AttackSpeed);
 	CharacterStats.Add(DamageResistance);
-	CharacterStats.Add( CriticalChance);
-	CharacterStats.Add( CriticalDamage);
-	CharacterStats.Add(Range);
 	CharacterStats.Add(SkillCoolTime);
 
 }
@@ -171,12 +169,7 @@ void APeCoPlayerState::InitPlayerStat()
 		InitMaxHealth(RowData->MaxHealth);
 		InitHealth(RowData->MaxHealth);
 		InitMoveSpeed(RowData->MoveSpeed);
-		InitAttackPower(RowData->AttackPower);
-		InitAttackSpeed(RowData->AttackSpeed);
 		InitDamageResistance(RowData->DamageResistance);
-		InitCriticalChance(RowData->CriticalChance);
-		InitCriticalDamage(RowData->CriticalDamage);
-		InitRange(RowData->Range);
 		InitSkillCoolTime(RowData->SkillCoolTime);
 
 		PlayerStatPresenterComponent->BroadcastInitialValues();
@@ -202,59 +195,43 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 	{
 		return;
 	}
-
+	APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
+	if (!IsValid(PeCoPlayerController))
+	{
+		return;
+	}
+	APeCoPlayerCharacter* PlayerCharacter = PeCoPlayerController->GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter))
+	{
+		return;
+	}
+	
 	float UpgradeAmount = StoreComponent->GetStatUpgradeData(StatTag, Cast<APeCoPlayerController>(GetOwningController()));
 
-	if (StatTag == PeCoGameplayTags::PlayerStat_MaxHealth)
+	if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_Health)) return;
+	if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MaxHealth))
 	{
 		MaxHealth.AddAdditiveBonus(UpgradeAmount);
 	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_MoveSpeed)
+	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MoveSpeed))
 	{
 		MoveSpeed.AddAdditiveBonus(UpgradeAmount);
 	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_AttackPower)
-	{
-		AttackPower.AddAdditiveBonus(UpgradeAmount);
-	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_AttackSpeed)
-	{
-		AttackSpeed.AddAdditiveBonus(UpgradeAmount);
-	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_DamageResistance)
+	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_DamageResistance))
 	{
 		DamageResistance.AddAdditiveBonus(UpgradeAmount);
 	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_CriticalChance)
-	{
-		CriticalChance.AddAdditiveBonus(UpgradeAmount);
-	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_CriticalDamage)
-	{
-		CriticalDamage.AddAdditiveBonus(UpgradeAmount);
-	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_Range)
-	{
-		Range.AddAdditiveBonus(UpgradeAmount);
-	}
-	else if (StatTag == PeCoGameplayTags::PlayerStat_SkillCoolTime)
+	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_SkillCoolTime))
 	{
 		SkillCoolTime.AddAdditiveBonus(UpgradeAmount);
 	}
+	else
+	{
+		PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, UpgradeAmount);
+	}
 }
 
-FGameplayTagContainer APeCoPlayerState::GetRandomStat(const int NumberOfRewards)
-{
-	FGameplayTagContainer TagContainer;
-	for (auto Stat : CharacterStats)
-	{
-		if (!(Stat.GetStatTag().MatchesTagExact(PeCoGameplayTags::PlayerStat_Health)))
-		{
-			TagContainer.AddTag(Stat.GetStatTag());
-		}
-	}
-	return PeCoGameplayTags::GetRandomTags(TagContainer, NumberOfRewards);
-}
+
 
 void APeCoPlayerState::CheckLevelUp()
 {
@@ -296,14 +273,92 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 	{
 		UE_LOG(LogTemp, Error, TEXT("New Level은 기존 Level 보다 커야함!"));
 	}
-    Level = NewLevel;
+	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+	if (!IsValid(GameInstance))
+	{
+		return;
+	}
 	APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
-	if (IsValid(PeCoPlayerController))
-    {
-        PeCoPlayerController->SetPause(true);
-		PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
-		OnLevelChanged.Broadcast(Level);
-    }
+	if (!IsValid(PeCoPlayerController))
+	{
+		return;
+	}
+	APeCoPlayerCharacter* PeCoPlayerChracter = PeCoPlayerController->GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PeCoPlayerChracter))
+	{
+		return;
+	}
+	UDataTable* InitStatDataTable = GameInstance->SupplyDataTable;
+	FPeCoStatData TargetStat;
+	if (!InitStatDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블 없음."));
+		return;
+	}
+
+	Level = NewLevel;
+	TMap<FGameplayTag, int32> SupplyResult;
+	TArray<FSupplyData*> AllRows;
+	InitStatDataTable->GetAllRows<FSupplyData>(TEXT("Read Supply Data"), AllRows);
+	FSupplyData* TargetRow = nullptr;
+	for (auto Row : AllRows)
+	{
+		if (Row->LastLevel >= Level)
+		{
+			TargetRow = Row;
+			break;
+		}
+	}
+	if (TargetRow)
+	{
+
+		for (auto SupplyProbability : TargetRow->SupplyMap)
+		{
+			if (SupplyProbability.Probablities.Num() != SupplyProbability.Amounts.Num())
+			{
+				UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블 입력 오류."));
+				return;
+			}
+			int32 ItemAmount = 0;
+			int32 TotalProbability = 0;
+			for (auto Probability : SupplyProbability.Probablities)
+			{
+				TotalProbability += Probability;
+			}
+			for (int32 i = 0; i < SupplyProbability.Probablities.Num(); i++)
+			{
+				int32 RandomInt = FMath::RandRange(1, 100);
+				int32 ProbabilitySum = 0;
+				if (RandomInt > TotalProbability)
+				{
+					break;
+				}
+
+				if (RandomInt <= ProbabilitySum + SupplyProbability.Probablities[i])
+				{
+					ItemAmount = SupplyProbability.Amounts[i];
+				}
+				else
+				{
+					ProbabilitySum += SupplyProbability.Probablities[i];
+					continue;
+				}
+			}
+	
+			UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(PeCoPlayerChracter);
+			if (IsValid(InventoryComponent))
+			{
+				FText OutNote;
+				InventoryComponent->AddItemsOfClass(SupplyProbability.SupplyActorClass, ItemAmount, OutNote);
+				SupplyResult.Add(SupplyProbability.ItemTag, ItemAmount);
+			}
+		}	
+	}
+	PeCoPlayerController->ShowSupplyResultWidget(SupplyResult);
+    PeCoPlayerController->SetPause(true);
+	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
+	OnLevelChanged.Broadcast(Level);
+    
 }
 uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount)
 {
@@ -371,33 +426,17 @@ FPeCoStatData APeCoPlayerState::GetStatByTag(FGameplayTag Tag)
 	{
 		return MoveSpeed;
 	}
-	else if (Tag == PeCoGameplayTags::PlayerStat_AttackPower)
-	{
-		return AttackPower;
-	}
-	else if (Tag == PeCoGameplayTags::PlayerStat_AttackSpeed)
-	{
-		return AttackSpeed;
-	}
 	else if (Tag == PeCoGameplayTags::PlayerStat_DamageResistance)
 	{
 		return DamageResistance;
 	}
-	else if (Tag == PeCoGameplayTags::PlayerStat_CriticalChance)
-	{
-		return CriticalChance;
-	}
-	else if (Tag == PeCoGameplayTags::PlayerStat_CriticalDamage)
-	{
-		return CriticalDamage;
-	}
-	else if (Tag == PeCoGameplayTags::PlayerStat_Range)
-	{
-		return Range;
-	}
 	else if (Tag == PeCoGameplayTags::PlayerStat_SkillCoolTime)
 	{
 		return SkillCoolTime;
+	}
+	else if (Tag == PeCoGameplayTags::PlayerStat_Health)
+	{
+		return Health;
 	}
 	return FPeCoStatData();
 }

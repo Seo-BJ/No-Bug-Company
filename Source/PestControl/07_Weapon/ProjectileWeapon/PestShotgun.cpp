@@ -26,11 +26,11 @@ bool APestShotgun::EnhancementWeapon(int32 EnhancementIndex)
     {
         if (this)
         {
-            this->NumberOfProjectiles++;
+            this->AddProjectile(1);
         }
         if (SecondShotgun)
         {
-            SecondShotgun->NumberOfProjectiles++;
+            SecondShotgun->AddProjectile(1);
         }
     }
     return true;

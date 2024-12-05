@@ -39,13 +39,17 @@ public:
 
 	void HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser);
 	
-	//~Character Stats
+	//~ICombatInterface
 
+	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
+	virtual void CharacterDie() override;
+
+	//~End of ICombatInterface
+
+	//~Character Stats
 	void InitPlayerStat();
 
 	void UpgradeStat(FGameplayTag StatTag);
-
-	FGameplayTagContainer GetRandomStat(const int NumberOfRewards);
 
 	void AddHealth(float Amount, AController* InstigatorController, AActor* DamageCauser);
 
@@ -58,18 +62,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData MoveSpeed = FPeCoStatData(PeCoGameplayTags::PlayerStat_MoveSpeed);
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
-	FPeCoStatData AttackPower = FPeCoStatData(PeCoGameplayTags::PlayerStat_AttackPower);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
-	FPeCoStatData AttackSpeed = FPeCoStatData(PeCoGameplayTags::PlayerStat_AttackSpeed);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData DamageResistance = FPeCoStatData(PeCoGameplayTags::PlayerStat_DamageResistance);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
-	FPeCoStatData CriticalChance = FPeCoStatData(PeCoGameplayTags::PlayerStat_CriticalChance);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
-	FPeCoStatData CriticalDamage = FPeCoStatData(PeCoGameplayTags::PlayerStat_CriticalDamage);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
-	FPeCoStatData Range = FPeCoStatData(PeCoGameplayTags::PlayerStat_Range);
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
+
 	FPeCoStatData SkillCoolTime = FPeCoStatData(PeCoGameplayTags::PlayerStat_SkillCoolTime);
 
 	UFUNCTION(BlueprintCallable)
@@ -78,22 +72,10 @@ public:
 	CHARACTERSTAT_ACCESSORS(Health);
 	CHARACTERSTAT_ACCESSORS(MaxHealth);
 	CHARACTERSTAT_ACCESSORS(MoveSpeed);
-	CHARACTERSTAT_ACCESSORS(AttackPower);
-	CHARACTERSTAT_ACCESSORS(AttackSpeed);
 	CHARACTERSTAT_ACCESSORS(DamageResistance);
-	CHARACTERSTAT_ACCESSORS(CriticalChance);
-	CHARACTERSTAT_ACCESSORS(CriticalDamage);
-	CHARACTERSTAT_ACCESSORS(Range);
 	CHARACTERSTAT_ACCESSORS(SkillCoolTime);
 
 	//~End of Character Stats
-	
-	//~ICombatInterface
-	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
-	virtual void CharacterDie() override;
-	//~End of ICombatInterface
-
-
 
 	//~Player Level, Exp System
 
@@ -120,10 +102,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HandleLevelUp(int32 NewLevel);
 
-
-
-	//~End of Player Stats
-
 	uint32 GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount);
 
 	//~End of Player Level, Exp System
@@ -138,7 +116,6 @@ protected:
 private:
 
 	int Level = 1;
-
 	int32 KillCount = 0;
 
 public:

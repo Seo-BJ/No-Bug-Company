@@ -5,12 +5,15 @@
 
 #include "00_GameModes/PeCoGameMode.h"
 
+#include "01_Character/PeCoPlayerCharacter.h"
 #include "01_Character/Components/InventoryComponent.h"
 #include "01_Character/Components/EquipmentComponent.h"
 
 #include "02_Player/PeCoPlayerState.h"
 #include "02_Player/PlayerStats.h"
 #include "02_Player/PeCoPlayerController.h"
+
+#include "07_Weapon/Weapon.h"
 #include "09_Items/Components/PeCoItemComponent.h"
 #include "20_System/PeCoGameInstance.h"
 #include "20_System/PeCoFunctionLibrary.h"
@@ -98,27 +101,50 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 	{
 		return -1;
 	}
+	APeCoPlayerCharacter* PlayerCharacter = PlayerState->GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter))
+	{
+		return -1;
+	}
+
 	APeCoGameMode* GameMode = CastChecked<APeCoGameMode>(GetOwner());
 	UPeCoGameInstance* GameInstance = CastChecked<UPeCoGameInstance>(GameMode->GetGameInstance());
-
 	UCurveTable* UpgradeCurveTable = GameInstance->StatUpgradeCurveTable;
 	if (!UpgradeCurveTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("플레이어 스탯 데이터 테이블 없음."));
 		return -1;
 	}
-	FPeCoStatData TargetStat = PlayerState->GetStatByTag(StatTag);
-	FName RowName = StatTag.GetTagName();
-	FRealCurve* StatCurve = UpgradeCurveTable->FindCurve(RowName, TEXT(""));
-	if (!StatCurve)
+	int32 OriginStatLevel = 0;
+	if (StatTag.MatchesTag(PeCoGameplayTags::PlayerStat))
 	{
-		UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
-		return -1;
+		FPeCoStatData TargetStat = PlayerState->GetStatByTag(StatTag);
+		FName RowName = StatTag.GetTagName();
+		FRealCurve* StatCurve = UpgradeCurveTable->FindCurve(RowName, TEXT(""));
+		if (!StatCurve)
+		{
+			UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
+			return -1;
+		}
+		OriginStatLevel = TargetStat.GetStatLevel();
+		int32 TargetStatLevel = OriginStatLevel + 1;
+		return StatCurve->Eval(TargetStatLevel);
 	}
-	int32 TargetStatLevel = TargetStat.GetStatLevel() + 1;
-	float RewardValue = StatCurve->Eval(TargetStatLevel);
-
-	return  RewardValue;
+	else if (StatTag.MatchesTag(PeCoGameplayTags::WeaponStat))
+	{
+		FName RowName = StatTag.GetTagName();
+		FRealCurve* StatCurve = UpgradeCurveTable->FindCurve(RowName, TEXT(""));
+		if (!StatCurve)
+		{
+			UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
+			return -1;
+		}
+		OriginStatLevel = *PlayerCharacter->PlayerWeapon->WeaponStatLevelMap.Find(StatTag);
+		int32 TargetStatLevel = OriginStatLevel + 1;
+		return StatCurve->Eval(TargetStatLevel);
+		 
+	}
+	return -1;
 }
 
 bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
@@ -143,7 +169,6 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 
 
 }
-
 bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
 {
 	if (!IsValid(User))

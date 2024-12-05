@@ -105,15 +105,12 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	InitializeWeaponClasses();
 
-
-
 	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
 	if (IsValid(GameInstance))
 	{
 		SpawnWeapon(GameInstance->SelectedWeaponTag);
 	}
 }
-
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -124,6 +121,36 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 		MoveWeaponSpawnPoint(TargetLocation);
 	}
 }
+void APeCoPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	InitPlayerCharacter();
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
+	if (PeCoPlayerState)
+	{
+		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
+	}
+}
+
+void APeCoPlayerCharacter::InitPlayerCharacter()
+{
+	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
+	check(PeCoPS);
+	PeCoPS->InitPlayerStat();
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
+	}
+
+	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
+	check(PeCOPC);
+
+	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
+	check(PeCoHUD);
+	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
+
+}
+
 
 FVector APeCoPlayerCharacter::GetTargetCursorLocation()
 {
@@ -198,41 +225,6 @@ ETeam APeCoPlayerCharacter::GetTeam()
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
 	check(PeCoPlayerState);
 	return PeCoPlayerState->Team;
-}
-
-
-void APeCoPlayerCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	InitPlayerCharacter();
-	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
-	if (PeCoPlayerState)
-	{
-		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerState is nullptr in APeCoPlayerCharacter PossessedBy!"));
-	}
-
-}
-
-void APeCoPlayerCharacter::InitPlayerCharacter()
-{
-	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
-	check(PeCoPS);
-	PeCoPS->InitPlayerStat();
-	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
-	}
-
-	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
-	check(PeCOPC);
-
-	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
-	check(PeCoHUD);
-	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
 }
 
 void APeCoPlayerCharacter::InitializeWeaponClasses()
