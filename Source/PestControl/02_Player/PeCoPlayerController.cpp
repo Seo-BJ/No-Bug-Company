@@ -281,7 +281,7 @@ void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 	}
 }
 
-void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
+void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
 {
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	if (PeCoHUD && PeCoHUD->GetDamageTextComponnet())
@@ -291,6 +291,19 @@ void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* T
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
+	}
+}
+
+void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap)
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowSupply(SupplyResultMap);
+		}
 	}
 }
 

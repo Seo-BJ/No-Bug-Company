@@ -107,11 +107,8 @@ void ALarvaLauncher::SpawnProjectile()
 
         AProjectile* EVProjectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, EVLocation, EVRotation, SpawnParams);
        
-        float ActualDamage = BaseDamage * DamageMultiplier;
-        if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-        {
-            ActualDamage *= CriticalDamageMultiplier;
-        }
+        float ActualDamage = 0.f;
+        GetCriticalDamage(ActualDamage);
 
         EVProjectile->SetDamage(ActualDamage);
         EVProjectile->SetOwner(this);

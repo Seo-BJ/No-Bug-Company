@@ -17,20 +17,17 @@ class PESTCONTROL_API AWeapon : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+
 	AWeapon();
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
+
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void SpawnProjectile();
-
-	//~ Weapon initialize
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Data")
 	UDataTable* WeaponDataTable;
 
@@ -43,42 +40,44 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
 	TSubclassOf<class AProjectile> BulletClass;
 
-private:
-	void InitWeaponData();
+	virtual void SpawnProjectile();
 
+	void UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount);
 
+	TMap<FGameplayTag, int32> WeaponStatLevelMap; // 스텟별 업그레이드 단계 (업그레이드 가능한 스텟만 존재)
 
+	UFUNCTION(BlueprintCallable)
+	float GetStatValueByTag(FGameplayTag StatTag);
 
+protected:
 
-public:
+	//~Weapon Stats
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTag WeaponTag;
-
+	FGameplayTag WeaponTag; // 각 무기별 GameplayTag
 	UPROPERTY(EditAnywhere, Category = "Weapon Type")
-	EWeaponType WeaponType;
+	EWeaponType WeaponType; // 무기별 Type
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 EnhancementLevel = 0;
+	float CriticalChance = 0.05f; // 업그레이드 가능
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CriticalDamageMultiplier = 1.5f;  // 업그레이드 가능
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 EvolveLevel = 0;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CriticalChance = 0.05f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CriticalDamageMultiplier = 1.5f;
+	float BaseDamage = 10.0f;  // 업그레이드 가능
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DamageMultiplier = 1.0f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float BaseDamage = 10.0f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float Cooldown = 0.4;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float Delay = 0.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Delay = 0.f; // 발사체 간격
 	UPROPERTY(EditAnywhere, Category = "Projectile Stats")
-	int NumberOfProjectiles = 1;
+	int NumberOfProjectiles = 1; // 발사체 수
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Cooldown = 0.4f;  // 업그레이드 가능
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CooldownMultiplier = 1.f;
+
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int32 Ammo = 1;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
@@ -87,17 +86,28 @@ public:
 	int32 MaxAmmo = 1;
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float ReloadCoolDown = 1.0f;
+
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
 	float FireAngle = 30;
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float RangeRadius = 30;
+	float RangeRadius = 30; // 업그레이드 가능
 
-
+	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
+	float Range = 1300; // 업그레이드 가능
+	//~End of Weapon Stats
 
 	void FireWeapon();
 	void DealDamageInSector();
 
 	FColor DebugColor;
+
+	//~ Weapon Upgrade
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 EnhancementLevel = 0; // 강화 단계
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 EvolveLevel = 0; // 진화 단계
 
 	UFUNCTION(BlueprintCallable)
 	bool CanEnhancementWeapon();
@@ -108,6 +118,8 @@ public:
 	virtual bool EnhancementWeapon(int32 EnhancementIndex);
 	UFUNCTION(BlueprintCallable)
 	virtual bool EvolveWeapon(int32 EvolveIndex);
+
+	//~End of Weapon Upgrade
 
 private:
 
@@ -125,12 +137,29 @@ private:
 
 	void ConicalFire();
 
+	void InitWeaponData();
 
 public:
 
 	bool HasWeaponEvolved() { return EvolveLevel > 0 ? true : false; }
+	// 무기 스텟 관련 Get 함수들
+
+	UFUNCTION(BlueprintCallable)
+	float GetActualDamage() { return BaseDamage * DamageMultiplier; }
+	UFUNCTION(BlueprintCallable)
+	bool GetCriticalDamage(float& OutDamage);
+	UFUNCTION(BlueprintCallable)
+	float GetActualCoolDown() { return Cooldown / CooldownMultiplier; }
+	UFUNCTION(BlueprintCallable)
+	float GetAttackSpeedPerSecond() { return 1 / GetActualCoolDown(); }
+	UFUNCTION(BlueprintCallable)
+	int32 GetMaxAmmo() { return MaxAmmo; }
+	UFUNCTION(BlueprintCallable)
+	float GetReloadCoolDown() { return ReloadCoolDown; }
+	UFUNCTION(BlueprintCallable)
+	int GetNumberOfProjectiles() { return NumberOfProjectiles; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	class UNiagaraSystem* NiagaraTraceEffect;
-
+	void AddProjectile(int32 Amount) { NumberOfProjectiles += Amount; }
 };
