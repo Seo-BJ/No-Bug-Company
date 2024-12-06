@@ -37,6 +37,9 @@ public:
 	TObjectPtr<UDataTable> StoreDataTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> SupplyDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDataTable> PlayerInitStatDataTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table", meta = (AllowPrivateAccess = "true"))

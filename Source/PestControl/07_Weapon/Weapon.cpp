@@ -29,13 +29,20 @@ AWeapon::AWeapon()
 
     BulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Bullet Spawn Point"));
     BulletSpawnPoint->SetupAttachment(WeaponMesh);
+
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackPower, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Damage, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackSpeed, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 1);
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
     InitWeaponData();
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, true);
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), true);
 }
 void AWeapon::Tick(float DeltaTime)
 {
@@ -79,7 +86,19 @@ void AWeapon::InitWeaponData()
     RangeRadius = RowData->RangeRadius;
 }
 
-
+bool AWeapon::GetCriticalDamage(float& OutDamage)
+{
+    if (FMath::RandRange(0.f, 1.f) <= CriticalChance)
+    {
+        OutDamage = GetActualDamage() * CriticalDamageMultiplier;
+        return true;
+    }
+    else
+    {
+        OutDamage = GetActualDamage();
+        return false;
+    }
+}
 
 void AWeapon::FireWeapon()
 {
@@ -113,7 +132,7 @@ void AWeapon::FireWeapon()
 
     if (Ammo > 0)
     {
-        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
     }
     else
     {
@@ -131,7 +150,7 @@ void AWeapon::Reload()
 {
     Ammo = MaxAmmo;
     // UE_LOG(LogTemp, Log, TEXT("Reload complete. Ammo refilled to %d"), Ammo);
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
 }
 
 
@@ -151,11 +170,8 @@ void AWeapon::SpawnProjectile()
 
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
 
-    float ActualDamage = BaseDamage * DamageMultiplier ;
-    if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-    {
-        ActualDamage *= CriticalDamageMultiplier;
-    }
+    float ActualDamage = 0.f;
+    GetCriticalDamage(ActualDamage);
 
     Projectile->SetDamage(ActualDamage);
     Projectile->SetOwner(this);
@@ -203,11 +219,8 @@ void AWeapon::ShotgunFire()
                 MovementComponent->Velocity = NewDirection * MovementComponent->InitialSpeed;
             }
 
-            float ActualDamage = BaseDamage * DamageMultiplier;
-            if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-            {
-                ActualDamage *= CriticalDamageMultiplier;
-            }
+            float ActualDamage = 0.f;
+            GetCriticalDamage(ActualDamage);
 
             Projectile->SetDamage(ActualDamage);
             Projectile->SetOwner(this);
@@ -216,7 +229,7 @@ void AWeapon::ShotgunFire()
 }
 void AWeapon::StartShotgunCooldown()
 {
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ShotgunFire, Cooldown, false);
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ShotgunFire, GetActualCoolDown(), false);
 }
 
 void AWeapon::ConicalFire()
@@ -237,7 +250,7 @@ void AWeapon::ConicalFire()
     //    }
     //}
 
-    for (int32 i = 1; i < Cooldown / Delay + 1 ; i++)
+    for (int32 i = 1; i < GetActualCoolDown() / Delay + 1 ; i++)
     {
         FTimerHandle TempHandle;
         float DelayTime = FMath::Max(i * Delay, Delay);
@@ -296,11 +309,8 @@ void AWeapon::DealDamageInSector()
                     APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OverlappedActor);
                     if (EnemyCharacter)
                     {
-                        float ActualDamage = BaseDamage * DamageMultiplier;
-                        if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-                        {
-                            ActualDamage *= CriticalDamageMultiplier;
-                        }
+                        float ActualDamage = 0.f;
+                        GetCriticalDamage(ActualDamage);
 
                         UGameplayStatics::ApplyDamage(EnemyCharacter, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 
@@ -322,6 +332,64 @@ void AWeapon::DealDamageInSector()
 }
 
 
+
+
+void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
+{
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackPower)) //피해량
+    {
+        DamageMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //공격력
+    {
+        BaseDamage += UpgradeAmount;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackSpeed))
+    {
+        CooldownMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+    {
+        CriticalChance += UpgradeAmount/100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalDamage))
+    {
+        CriticalDamageMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
+    {
+        // ToDo: Range Stat 리팩토링
+    }
+}
+
+float AWeapon::GetStatValueByTag(FGameplayTag StatTag)
+{
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage) || StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //피해량
+    {
+        return GetActualDamage();
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackSpeed))
+    {
+        return GetAttackSpeedPerSecond();
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+    {
+        return CriticalChance;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalDamage))
+    {
+        return GetActualDamage() * CriticalDamageMultiplier;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
+    {
+        return Range;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_MaxAmmo))
+    {
+        return MaxAmmo;
+    }
+    return -1;
+}
 
 
 bool AWeapon::CanEnhancementWeapon()

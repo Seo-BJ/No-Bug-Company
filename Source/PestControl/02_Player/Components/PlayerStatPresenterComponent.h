@@ -62,22 +62,7 @@ public:
 	FPresenterStatChanged OnMoveSpeedChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
-	FPresenterStatChanged OnAttackPowerChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
-	FPresenterStatChanged OnAttackSpeedChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
 	FPresenterStatChanged OnDamageResistanceChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
-	FPresenterStatChanged OnCriticalChanceChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
-	FPresenterStatChanged OnCriticalDamageChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
-	FPresenterStatChanged OnRangeChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
 	FPresenterStatChanged OnSkillCoolTimeChanged;

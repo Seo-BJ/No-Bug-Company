@@ -60,7 +60,9 @@ public:
 	UPARAM(DisplayName = "Items") TArray<AActor*> GetAllItems();
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
-	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfItem(const TSubclassOf<AActor> Class);
+	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfClass(const TSubclassOf<AActor> ItemClass);
+	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
+	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfTag(const FGameplayTag ItemTag);
 
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
@@ -69,9 +71,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool HasEnoughItemsOfTag(const FGameplayTag GameplayTag, const int32 Quantity, FText& OutNote);
 
-
-
-
 	void SetupInventoryStorageReference();
 
 	//~Material Check
@@ -79,12 +78,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	bool HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialMap);
 
-
-
-
 	//~End of Material Check
 
 	//~Player Money
+
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	void AddPlayerMoney(const int32 Amount, FText& OutNote);
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
@@ -92,6 +89,7 @@ public:
 
 	void BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice);
 	void SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice);
+
 	//~End of Player Moneny
 
 protected:

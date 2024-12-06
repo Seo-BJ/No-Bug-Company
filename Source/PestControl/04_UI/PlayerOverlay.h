@@ -10,7 +10,6 @@
 #include "PlayerOverlay.generated.h"
 
 
-class PlayerOverlay;
 class UGameTimerWidget;
 class UPeCoProgressBar;
 class UWeaponItemSlot;
@@ -41,6 +40,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideInventoryWidget(FGameplayTag InventoryTypeTag);
 
-	// UFUNCTION(BlueprintImplementableEvent)
-	// void EquipItem(EItemType ItemType);
+	//UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSupply(const TMap<FGameplayTag, int32>& SupplyResultMap);
+
 };
+	

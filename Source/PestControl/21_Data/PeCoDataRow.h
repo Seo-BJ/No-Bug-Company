@@ -104,7 +104,34 @@ struct FWeaponEnhancementMaterialsData : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FGameplayTag, int32> RequiredMaterials; 
 };
 
+USTRUCT(BlueprintType)
+struct FSupplyProbablity
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	TSubclassOf<AActor> SupplyActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	FGameplayTag ItemTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	TArray<int32> Probablities;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	TArray<int32> Amounts;
+};
+USTRUCT(BlueprintType)
+struct FSupplyData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")	
+	int32 LastLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	TArray<FSupplyProbablity> SupplyMap;
+};

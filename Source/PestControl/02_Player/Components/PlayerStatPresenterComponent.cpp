@@ -40,12 +40,7 @@ void UPlayerStatPresenterComponent::BroadcastInitialValues()
 		OnHealthChanged.Broadcast(0, PlayerState->GetHealth());
 		OnMaxHealthChanged.Broadcast(0, PlayerState->GetMaxHealth());
 		OnMoveSpeedChanged.Broadcast(0, PlayerState->GetMoveSpeed());
-		OnAttackPowerChanged.Broadcast(0, PlayerState->GetAttackPower());
-		OnAttackSpeedChanged.Broadcast(0, PlayerState->GetAttackSpeed());
 		OnDamageResistanceChanged.Broadcast(0, PlayerState->GetDamageResistance());
-		OnCriticalChanceChanged.Broadcast(0, PlayerState->GetCriticalChance());
-		OnCriticalDamageChanged.Broadcast(0, PlayerState->GetCriticalDamage());
-		OnRangeChanged.Broadcast(0, PlayerState->GetRange());
 		OnSkillCoolTimeChanged.Broadcast(0, PlayerState->GetSkillCoolTime());
 	}
 }
@@ -72,40 +67,10 @@ void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
 				OnMoveSpeedChanged.Broadcast(OldValue, NewValue);
 			}
 		);
-		PlayerState->AttackPower.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnAttackPowerChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->AttackSpeed.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnAttackSpeedChanged.Broadcast(OldValue, NewValue);
-			}
-		);
 		PlayerState->DamageResistance.OnStatChanged.AddLambda(
 			[this](const float OldValue, const float NewValue)
 			{
 				OnDamageResistanceChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->CriticalChance.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnCriticalChanceChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->CriticalDamage.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnCriticalDamageChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->Range.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnRangeChanged.Broadcast(OldValue, NewValue);
 			}
 		);
 		PlayerState->SkillCoolTime.OnStatChanged.AddLambda(

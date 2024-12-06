@@ -38,14 +38,18 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackPower, "PlayerStat.AttackPower");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackSpeed, "PlayerStat.AttackSpeed");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_DamageResistance, "PlayerStat.DamageResistance");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalChance, "PlayerStat.CriticalChance");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalDamage, "PlayerStat.CriticalDamage");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Range, "PlayerStat.Range");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_SkillCoolTime, "PlayerStat.SkillCoolTime");
 
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat, "WeaponStat");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Damage, "WeaponStat.Damage");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_AttackPower, "WeaponStat.AttackPower");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_AttackSpeed, "WeaponStat.AttackSpeed");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_CriticalChance, "WeaponStat.CriticalChance");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_CriticalDamage, "WeaponStat.CriticalDamage");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Range, "WeaponStat.Range");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_MaxAmmo, "WeaponStat.MaxAmmo");
+	
 
 	FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count)
 	{
@@ -55,17 +59,16 @@ namespace PeCoGameplayTags
 	
 		if (Count <= 0 || TagsArray.Num() == 0)
 		{
-			return RandomTags; // 빈 컨테이너 반환
+			return RandomTags;
 		}
 
-		// Count와 AvailableTags의 크기 비교 후 안전하게 처리
 		int32 MaxCount = FMath::Min(Count, TagsArray.Num());
 
 		while (RandomTags.Num() < MaxCount)
 		{
 			int32 RandomIndex = FMath::RandRange(0, TagsArray.Num() - 1);
 			RandomTags.AddTag(TagsArray[RandomIndex]);
-			TagsArray.RemoveAt(RandomIndex); // 중복 방지
+			TagsArray.RemoveAt(RandomIndex); 
 		}
 
 		return RandomTags;

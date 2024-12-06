@@ -22,7 +22,7 @@ void ICombatInterface::ShowFloatingText(AActor* DamagedActor, AController* Insti
 			// Enemy가 데미지를 받은 경우
 			if (APeCoPlayerController* PC = Cast<APeCoPlayerController>(InstigatorController))
 			{
-				PC->ShowDamageText(Damage, Cast<APeCoCharacter>(DamagedActor), bCriticalHit, bBlockedHit);
+				PC->ShowDamageTextWidget(Damage, Cast<APeCoCharacter>(DamagedActor), bCriticalHit, bBlockedHit);
 			}
 		}
 		else if (GetTeam() == ETeam::ET_Player)
@@ -30,7 +30,7 @@ void ICombatInterface::ShowFloatingText(AActor* DamagedActor, AController* Insti
 			// 플레이어가 데미지를 받은 경우
 			if (APeCoPlayerController* PC = Cast<APeCoPlayerController>(Cast<APeCoCharacter>(DamagedActor)->GetController()))
 			{
-				PC->ShowDamageText(Damage, Cast<APeCoCharacter>(DamagedActor), bCriticalHit, bBlockedHit);
+				PC->ShowDamageTextWidget(Damage, Cast<APeCoCharacter>(DamagedActor), bCriticalHit, bBlockedHit);
 			}
 		}
 	}
