@@ -6,12 +6,19 @@
 
 #include "01_Character/PeCoEnemyCharacter.h" 
 #include "01_Character/Components/InventoryComponent.h"
+
 #include "04_UI/PeCoHUD.h"
+
 #include "07_Weapon/Projectile.h"
 #include "07_Weapon/ConicalWeapon/Flamethrower.h" 
+
 #include "20_System/PeCoGameInstance.h"
 #include "20_System/PeCoFunctionLibrary.h"
+
 #include "21_Data/PeCoDataRow.h"
+
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -59,7 +66,7 @@ void AWeapon::InitWeaponData()
     UDataTable* WeaponMaterialDataTable = GameInstance->WeaponInitInfoDataTable;
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("¹«±â °­È­ Àç·á µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½."));
+        UE_LOG(LogTemp, Error, TEXT("è‡¾ë‹¿ë¦° åª›Â•Â™Â” ÂÑ‰ÂŒ Âê³—ÂëŒ„Â„ Â…ÂŒÂëŒ€Â” Â—Â†ÂÂŒ."));
         return;
     }
     FName RowName = WeaponTag.GetTagName();
@@ -169,12 +176,26 @@ void AWeapon::SpawnProjectile()
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
 
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
+    if(Projectile)
+    { 
+        if (NiagaraTraceEffect)
+        {
+            FVector EffectScale = FVector(0.5f); // ÂëŒ„Â™ÂŠ ÂÑˆë¦° è­°ê³—Âˆ, ï§Â„Â™Â”Â‹Âœ ï§Âåª›Â€
 
-    float ActualDamage = 0.f;
-    GetCriticalDamage(ActualDamage);
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                NiagaraTraceEffect,
+                Location,
+                Rotation,
+                EffectScale
+            );
+        }
 
-    Projectile->SetDamage(ActualDamage);
-    Projectile->SetOwner(this);
+        float ActualDamage = 0.f;
+        GetCriticalDamage(ActualDamage);
+        Projectile->SetDamage(ActualDamage);
+        Projectile->SetOwner(this);
+    }
 }
 void AWeapon::ProjectileFire()
 {
@@ -208,6 +229,19 @@ void AWeapon::ShotgunFire()
         NewRotation.Yaw = StartYaw + i * AngleIncrement;
 
         AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, SpawnLocation, NewRotation);
+
+        if (NiagaraTraceEffect)
+        {
+            FVector EffectScale = FVector(0.5f); // ÂëŒ„Â™ÂŠ ÂÑˆë¦° è­°ê³—Âˆ, ï§Â„Â™Â”Â‹Âœ ï§Âåª›Â€
+
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                NiagaraTraceEffect,
+                SpawnLocation,
+                BaseRotation,
+                EffectScale
+            );
+        }
 
         if (Projectile)
         {
@@ -336,11 +370,11 @@ void AWeapon::DealDamageInSector()
 
 void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
 {
-    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackPower)) //ÇÇÇØ·®
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackPower)) //í”¼í•´ëŸ‰
     {
         DamageMultiplier += UpgradeAmount / 100;
     }
-    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //°ø°İ·Â
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //ê³µê²©ë ¥
     {
         BaseDamage += UpgradeAmount;
     }
@@ -358,13 +392,13 @@ void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
     }
     else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
     {
-        // ToDo: Range Stat ¸®ÆÑÅä¸µ
+        // ToDo: Range Stat ë¦¬íŒ©í† ë§
     }
 }
 
 float AWeapon::GetStatValueByTag(FGameplayTag StatTag)
 {
-    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage) || StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //ÇÇÇØ·®
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage) || StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //í”¼í•´ëŸ‰
     {
         return GetActualDamage();
     }
@@ -402,7 +436,7 @@ bool AWeapon::CanEnhancementWeapon()
     UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("¹«±â °­È­ Àç·á µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½."));
+        UE_LOG(LogTemp, Error, TEXT("è‡¾ë‹¿ë¦° åª›Â•Â™Â” ÂÑ‰ÂŒ Âê³—ÂëŒ„Â„ Â…ÂŒÂëŒ€Â” Â—Â†ÂÂŒ."));
         return false;
     }
     AActor* OwnerCharacter = GetOwner();
@@ -437,7 +471,7 @@ bool AWeapon::CanEvolveWeapon()
     UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("¹«±â °­È­ Àç·á µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½."));
+        UE_LOG(LogTemp, Error, TEXT("è‡¾ë‹¿ë¦° åª›Â•Â™Â” ÂÑ‰ÂŒ Âê³—ÂëŒ„Â„ Â…ÂŒÂëŒ€Â” Â—Â†ÂÂŒ."));
         return false;
     }
     AActor* OwnerCharacter = GetOwner();

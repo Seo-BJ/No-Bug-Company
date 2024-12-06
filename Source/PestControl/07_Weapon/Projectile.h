@@ -29,6 +29,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	class UNiagaraSystem* NiagaraImpactEffect;
 
 private:
 	FVector StartLocation;
@@ -37,6 +39,7 @@ private:
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	//void SpawnFragmentProjectiles(const FVector& SpawnLocation, const FRotator& SpawnRotation);
+
 
 public:	
 

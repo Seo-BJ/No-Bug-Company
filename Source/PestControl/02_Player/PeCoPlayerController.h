@@ -100,9 +100,6 @@ private:
 	UInPutActionDataAsset* InputActions;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
-	float DashVelocity = 4000.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Dash")
 	float DashCooldown = 2.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
@@ -111,6 +108,9 @@ private:
 	bool bCanDash = true;
 	FTimerHandle DashTimer;
 	FVector DashDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Dash")
+	bool bIsDashing = false;
 
 	// ~End of Player Movement
 

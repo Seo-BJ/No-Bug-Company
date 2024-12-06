@@ -44,7 +44,7 @@ public:
 
 	void UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount);
 
-	TMap<FGameplayTag, int32> WeaponStatLevelMap; // ½ºÅÝº° ¾÷±×·¹ÀÌµå ´Ü°è (¾÷±×·¹ÀÌµå °¡´ÉÇÑ ½ºÅÝ¸¸ Á¸Àç)
+	TMap<FGameplayTag, int32> WeaponStatLevelMap; // ìŠ¤í…Ÿë³„ ì—…ê·¸ë ˆì´ë“œ ë‹¨ê³„ (ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥í•œ ìŠ¤í…Ÿë§Œ ì¡´ìž¬)
 
 	UFUNCTION(BlueprintCallable)
 	float GetStatValueByTag(FGameplayTag StatTag);
@@ -54,27 +54,27 @@ protected:
 	//~Weapon Stats
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTag WeaponTag; // °¢ ¹«±âº° GameplayTag
+	FGameplayTag WeaponTag; // ê° ë¬´ê¸°ë³„ GameplayTag
 	UPROPERTY(EditAnywhere, Category = "Weapon Type")
-	EWeaponType WeaponType; // ¹«±âº° Type
+	EWeaponType WeaponType; // ë¬´ê¸°ë³„ Type
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CriticalChance = 0.05f; // ¾÷±×·¹ÀÌµå °¡´É
+	float CriticalChance = 0.05f; // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CriticalDamageMultiplier = 1.5f;  // ¾÷±×·¹ÀÌµå °¡´É
+	float CriticalDamageMultiplier = 1.5f;  // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float BaseDamage = 10.0f;  // ¾÷±×·¹ÀÌµå °¡´É
+	float BaseDamage = 10.0f;  // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DamageMultiplier = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float Delay = 0.f; // ¹ß»çÃ¼ °£°Ý
+	float Delay = 0.f; // ë°œì‚¬ì²´ ê°„ê²©
 	UPROPERTY(EditAnywhere, Category = "Projectile Stats")
-	int NumberOfProjectiles = 1; // ¹ß»çÃ¼ ¼ö
+	int NumberOfProjectiles = 1; // ë°œì‚¬ì²´ ìˆ˜
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float Cooldown = 0.4f;  // ¾÷±×·¹ÀÌµå °¡´É
+	float Cooldown = 0.4f;  // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float CooldownMultiplier = 1.f;
 
@@ -90,10 +90,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
 	float FireAngle = 30;
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float RangeRadius = 30; // ¾÷±×·¹ÀÌµå °¡´É
+	float RangeRadius = 30; // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 
 	UPROPERTY(EditAnywhere, Category = "FanShaped Stats")
-	float Range = 1300; // ¾÷±×·¹ÀÌµå °¡´É
+	float Range = 1300; // ì—…ê·¸ë ˆì´ë“œ ê°€ëŠ¥
 	//~End of Weapon Stats
 
 	void FireWeapon();
@@ -104,10 +104,10 @@ protected:
 	//~ Weapon Upgrade
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 EnhancementLevel = 0; // °­È­ ´Ü°è
+	int32 EnhancementLevel = 0; // ê°•í™” ë‹¨ê³„
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 EvolveLevel = 0; // ÁøÈ­ ´Ü°è
+	int32 EvolveLevel = 0; // ì§„í™” ë‹¨ê³„
 
 	UFUNCTION(BlueprintCallable)
 	bool CanEnhancementWeapon();
@@ -142,7 +142,7 @@ private:
 public:
 
 	bool HasWeaponEvolved() { return EvolveLevel > 0 ? true : false; }
-	// ¹«±â ½ºÅÝ °ü·Ã Get ÇÔ¼öµé
+	// ë¬´ê¸° ìŠ¤í…Ÿ ê´€ë ¨ Get í•¨ìˆ˜ë“¤
 
 	UFUNCTION(BlueprintCallable)
 	float GetActualDamage() { return BaseDamage * DamageMultiplier; }
@@ -159,5 +159,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetNumberOfProjectiles() { return NumberOfProjectiles; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	class UNiagaraSystem* NiagaraTraceEffect;
 	void AddProjectile(int32 Amount) { NumberOfProjectiles += Amount; }
 };

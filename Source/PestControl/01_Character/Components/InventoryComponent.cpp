@@ -30,14 +30,14 @@ bool UInventoryComponent::AddItemsOfClass(const TSubclassOf<AActor> Class, const
 	AActor* InventoryManagerOwner = GetOwner();
 	if (!IsValid(InventoryManagerOwner))
 	{
-		OutNote = FText::FromString("¾ÆÀÌÅÛÀÇ Owner°¡ À¯È¿ÇÏÁö ¾ÊÀ½");
+		OutNote = FText::FromString("ì•„ì´í…œì˜ Ownerê°€ ìœ íš¨í•˜ì§€ ì•ŠìŒ");
 		return false;
 	}
 
 	if (Quantity <= 0)
 	{
 		// Failed to add item to inventory
-		OutNote = FText::FromString("Quantity´Â ¹İµå½Ã 0º¸´Ù Ä¿¾ßÇÔ.");
+		OutNote = FText::FromString("QuantityëŠ” ë°˜ë“œì‹œ 0ë³´ë‹¤ ì»¤ì•¼í•¨.");
 		return false;
 	}
 
@@ -45,31 +45,31 @@ bool UInventoryComponent::AddItemsOfClass(const TSubclassOf<AActor> Class, const
 	AActor* FiteredActor;
 	const bool bAlreadyHasItem = GetItemOfClass(Class, FiteredActor);
 
-	// ÀÌ¹Ì ÇØ´ç ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´Â °æ¿ì
+	// ì´ë¯¸ í•´ë‹¹ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆëŠ” ê²½ìš°
 	if (bAlreadyHasItem)
 	{
 		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FiteredActor);
 		if (!IsValid(ItemComponent))
 		{
-			OutNote = FText::FromString("ÇØ´ç Item¿¡ ItemComponent°¡ Á¸ÀçÇÏÁö ¾ÊÀ½.");
+			OutNote = FText::FromString("í•´ë‹¹ Itemì— ItemComponentê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.");
 			return false;
 		}
 
 		if (!ItemComponent->ItemInfo.bStackable)
 		{
 			// Failed to add item to inventory
-			OutNote = FText::FromString("ÇØ´ç ¾ÆÀÌÅÛÀº 1°³¸¸ °¡Áú ¼ö ÀÖÀ½.");
+			OutNote = FText::FromString("í•´ë‹¹ ì•„ì´í…œì€ 1ê°œë§Œ ê°€ì§ˆ ìˆ˜ ìˆìŒ.");
 			return false;
 		}
 
 		ItemComponent->ItemInfo.CurrentQuantity += Quantity;
-		OutNote = FText::FromString("¾ÆÀÌÅÛ °³¼ö Áõ°¡.");
+		OutNote = FText::FromString("ì•„ì´í…œ ê°œìˆ˜ ì¦ê°€.");
 		OnItemUpdated.Broadcast(FiteredActor);
 
 		return true;
 	}
 
-	// ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖÁö ¾Ê´Â °æ¿ì
+	// ì•„ì´í…œì„ ê°€ì§€ê³  ìˆì§€ ì•ŠëŠ” ê²½ìš°
 	UWorld* World = GetWorld();
 	if (!ensure(IsValid(World)))
 	{
@@ -107,7 +107,7 @@ bool UInventoryComponent::AddItemsOfClass(const TSubclassOf<AActor> Class, const
 		false);
 	NewItemActor->AttachToActor(InventoryStorage, AttachmentRules, NAME_None);
 
-	// ÀüÃ¼ Quantity¸¦ »õ ¾ÆÀÌÅÛ¿¡ ¼³Á¤
+	// ì „ì²´ Quantityë¥¼ ìƒˆ ì•„ì´í…œì— ì„¤ì •
 	NewItemComponent->ItemInfo.CurrentQuantity = Quantity;
 	OnItemUpdated.Broadcast(NewItemActor);
 
@@ -127,25 +127,25 @@ bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, co
 	if (!bHasEnoughItems)
 	{
 		// Failed to remove items
-		OutNote = FText::FromString("Á¦°ÅÇÒ ¸¸Å­ ÃæºĞÇÑ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("ì œê±°í•  ë§Œí¼ ì¶©ë¶„í•œ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆì§€ ì•ŠìŒ.");
 		return false;
 	}
 
 	AActor* FiltertedActor;
 	if (!GetItemOfClass(Class, FiltertedActor))
 	{
-		OutNote = FText::FromString("Á¦°ÅÇÏ·Á´Â ClassÀÇ ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("ì œê±°í•˜ë ¤ëŠ” Classì˜ ì•„ì´í…œì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.");
 		return false;
 	}
 	if (!IsValid(FiltertedActor))
 	{
-		OutNote = FText::FromString("Á¦°ÅÇÏ·Á´Â ¾ÆÀÌÅÛÀÌ À¯È¿ÇÏÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("ì œê±°í•˜ë ¤ëŠ” ì•„ì´í…œì´ ìœ íš¨í•˜ì§€ ì•ŠìŒ.");
 		return false;
 	}
 	UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FiltertedActor);
 	if (!IsValid(ItemComponent))
 	{
-		OutNote = FText::FromString("Á¦°ÅÇÏ·Á´Â ¾ÆÀÌÅÛ¿¡ ItemComponent°¡ À¯È¿ÇÏÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("ì œê±°í•˜ë ¤ëŠ” ì•„ì´í…œì— ItemComponentê°€ ìœ íš¨í•˜ì§€ ì•ŠìŒ.");
 		return false;
 	}
 
@@ -163,7 +163,7 @@ bool UInventoryComponent::RemoveItemsOfClass(const TSubclassOf<AActor> Class, co
 	{
 		FiltertedActor->Destroy();
 	}
-	OutNote = FText::FromString("¼º°øÀûÀ¸·Î ¾ÆÀÌÅÛÀ» ÁÙÀÓ.");
+	OutNote = FText::FromString("ì„±ê³µì ìœ¼ë¡œ ì•„ì´í…œì„ ì¤„ì„.");
 	return true;
 }
 bool UInventoryComponent::RemoveItemsOfTag(FGameplayTag ItemTag, const int32 Quantity, FText& OutNote)
@@ -276,7 +276,7 @@ bool UInventoryComponent::HasEnoughItemsOfItem(const TSubclassOf<AActor> Item, c
 {
 	if (Quantity <= 0)
 	{
-		OutNote = FText::FromString("Quantity´Â ¹İµå½Ã 0º¸´Ù Ä¿¾ßÇÔ.");
+		OutNote = FText::FromString("QuantityëŠ” ë°˜ë“œì‹œ 0ë³´ë‹¤ ì»¤ì•¼í•¨.");
 		return false;
 	}
 
@@ -285,30 +285,30 @@ bool UInventoryComponent::HasEnoughItemsOfItem(const TSubclassOf<AActor> Item, c
 	AActor* FilteredActor;
 	if (!GetItemOfClass(Item, FilteredActor))
 	{
-		OutNote = FText::FromString("Has enough È®ÀÎ ½ÇÆĞ: ÇØ´ç Class·Î ¾ÆÀÌÅÛÀ» Ã£À» ¼ö ¾øÀ½.");
+		OutNote = FText::FromString("Has enough í™•ì¸ ì‹¤íŒ¨: í•´ë‹¹ Classë¡œ ì•„ì´í…œì„ ì°¾ì„ ìˆ˜ ì—†ìŒ.");
 		return false;
 	}
 
 	const UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
 	if (!ensure(IsValid(ItemComponent)))
 	{
-		OutNote = FText::FromString("ÇØ´ç Item¿¡ ItemComponent°¡ Á¸ÀçÇÏÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("í•´ë‹¹ Itemì— ItemComponentê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.");
 		return false;
 	}
 
 	if (QuantityMissing <= ItemComponent->ItemInfo.CurrentQuantity)
 	{
-		OutNote = FText::FromString("¼º°ø. ÃæºĞÇÑ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖÀ½.");
+		OutNote = FText::FromString("ì„±ê³µ. ì¶©ë¶„í•œ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆìŒ.");
 		return true;
 	}
-	OutNote = FText::FromString("½ÇÆĞ. ¾ÆÀÌÅÛÀÌ ºÎÁ·ÇÔ.");
+	OutNote = FText::FromString("ì‹¤íŒ¨. ì•„ì´í…œì´ ë¶€ì¡±í•¨.");
 	return false;
 }
 bool UInventoryComponent::HasEnoughItemsOfTag(const FGameplayTag GameplayTag, const int32 Quantity, FText& OutNote)
 {
 	if (Quantity <= 0)
 	{
-		OutNote = FText::FromString("Quantity´Â ¹İµå½Ã 0º¸´Ù Ä¿¾ßÇÔ.");
+		OutNote = FText::FromString("QuantityëŠ” ë°˜ë“œì‹œ 0ë³´ë‹¤ ì»¤ì•¼í•¨.");
 		return false;
 	}
 
@@ -317,23 +317,23 @@ bool UInventoryComponent::HasEnoughItemsOfTag(const FGameplayTag GameplayTag, co
 	AActor* FilteredActor;
 	if (!GetItemOfTag(GameplayTag, FilteredActor))
 	{
-		OutNote = FText::FromString("Has enough È®ÀÎ ½ÇÆĞ: ÇØ´ç Class·Î ¾ÆÀÌÅÛÀ» Ã£À» ¼ö ¾øÀ½.");
+		OutNote = FText::FromString("Has enough í™•ì¸ ì‹¤íŒ¨: í•´ë‹¹ Classë¡œ ì•„ì´í…œì„ ì°¾ì„ ìˆ˜ ì—†ìŒ.");
 		return false;
 	}
 
 	const UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(FilteredActor);
 	if (!ensure(IsValid(ItemComponent)))
 	{
-		OutNote = FText::FromString("ÇØ´ç Item¿¡ ItemComponent°¡ Á¸ÀçÇÏÁö ¾ÊÀ½.");
+		OutNote = FText::FromString("í•´ë‹¹ Itemì— ItemComponentê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.");
 		return false;
 	}
 
 	if (QuantityMissing <= ItemComponent->ItemInfo.CurrentQuantity)
 	{
-		OutNote = FText::FromString("¼º°ø. ÃæºĞÇÑ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖÀ½.");
+		OutNote = FText::FromString("ì„±ê³µ. ì¶©ë¶„í•œ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆìŒ.");
 		return true;
 	}
-	OutNote = FText::FromString("½ÇÆĞ. ¾ÆÀÌÅÛÀÌ ºÎÁ·ÇÔ.");
+	OutNote = FText::FromString("ì‹¤íŒ¨. ì•„ì´í…œì´ ë¶€ì¡±í•¨.");
 	return false;
 }
 
@@ -408,9 +408,9 @@ bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialM
 {
 	for (const TPair<FGameplayTag, int32>& Material : MaterialMap)
 	{
-		FGameplayTag ItemTag = Material.Key;      // ÇöÀç Àç·áÀÇ ÅÂ±×
-		int32 Quantity = Material.Value;          // ÇöÀç Àç·áÀÇ ÇÊ¿ä ¼ö·®
-		FText OutNote;                            // ¿À·ù ¸Ş½ÃÁö³ª Ãß°¡ Á¤º¸¸¦ ¹Ş±â À§ÇÑ º¯¼ö
+		FGameplayTag ItemTag = Material.Key;      // í˜„ì¬ ì¬ë£Œì˜ íƒœê·¸
+		int32 Quantity = Material.Value;          // í˜„ì¬ ì¬ë£Œì˜ í•„ìš” ìˆ˜ëŸ‰
+		FText OutNote;                            // ì˜¤ë¥˜ ë©”ì‹œì§€ë‚˜ ì¶”ê°€ ì •ë³´ë¥¼ ë°›ê¸° ìœ„í•œ ë³€ìˆ˜
 
 		if (!HasEnoughItemsOfTag(ItemTag, Quantity, OutNote))
 		{
@@ -430,7 +430,7 @@ bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialM
  {
 	 if (Quantity <= 0)
 	 {
-		 OutNote = FText::FromString("Quantity´Â ¹İµå½Ã 0º¸´Ù Ä¿¾ßÇÔ.");
+		 OutNote = FText::FromString("QuantityëŠ” ë°˜ë“œì‹œ 0ë³´ë‹¤ ì»¤ì•¼í•¨.");
 		 return false;
 	 }
 	 return PlayerMoney >= Quantity ? true : false;
