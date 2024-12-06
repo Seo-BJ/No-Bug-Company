@@ -38,21 +38,7 @@ public:
 	int32 MoveSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AttackPower;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AttackSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 DamageResistance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CriticalChance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CriticalDamage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 SkillCoolTime;

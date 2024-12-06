@@ -66,7 +66,7 @@ void AWeapon::InitWeaponData()
     UDataTable* WeaponMaterialDataTable = GameInstance->WeaponInitInfoDataTable;
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("臾닿린 媛 щ 곗댄 대 ."));
+        UE_LOG(LogTemp, Error, TEXT("Weapon Material Data Table 없음."));
         return;
     }
     FName RowName = WeaponTag.GetTagName();
@@ -180,7 +180,7 @@ void AWeapon::SpawnProjectile()
     { 
         if (NiagaraTraceEffect)
         {
-            FVector EffectScale = FVector(0.5f); // 댄 ш린 議곗, 吏 利媛
+            FVector EffectScale = FVector(0.5f); 
 
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                 GetWorld(),
@@ -232,7 +232,7 @@ void AWeapon::ShotgunFire()
 
         if (NiagaraTraceEffect)
         {
-            FVector EffectScale = FVector(0.5f); // 댄 ш린 議곗, 吏 利媛
+            FVector EffectScale = FVector(0.5f); 
 
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                 GetWorld(),
@@ -436,7 +436,7 @@ bool AWeapon::CanEnhancementWeapon()
     UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("臾닿린 媛 щ 곗댄 대 ."));
+        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
         return false;
     }
     AActor* OwnerCharacter = GetOwner();
@@ -471,7 +471,7 @@ bool AWeapon::CanEvolveWeapon()
     UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
     if (!IsValid(WeaponMaterialDataTable))
     {
-        UE_LOG(LogTemp, Error, TEXT("臾닿린 媛 щ 곗댄 대 ."));
+        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
         return false;
     }
     AActor* OwnerCharacter = GetOwner();
