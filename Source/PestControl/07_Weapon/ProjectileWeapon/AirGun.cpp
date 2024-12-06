@@ -6,6 +6,9 @@
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -87,6 +90,19 @@ void AAirGun::SpawnProjectile()
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation, SpawnParams);
     if (Projectile)
     {
+        if (NiagaraTraceEffect)
+        {
+            FVector EffectScale = FVector(0.5f); // 이펙트 크기 조절, 진화시 증가
+
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                NiagaraTraceEffect,
+                Location,
+                Rotation,
+                EffectScale
+            );
+        }
+
         float ActualDamage = BaseDamage * DamageMultiplier;
         if (FMath::RandRange(0.f, 1.f) < CriticalChance)
         {

@@ -27,6 +27,8 @@
 
 #include "20_System/PeCoGameInstance.h"
 
+#include "Animation/AnimInstance.h"
+
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -307,4 +309,16 @@ void APeCoPlayerCharacter::EndCrashInvincible()
 {
 	bIsCrashInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
+}
+
+void APeCoPlayerCharacter::PlayRollAnimation()
+{
+	if (RollForwardMontage) // RollForwardMontage는 Anim Montage 에셋입니다.
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && !AnimInstance->Montage_IsPlaying(RollForwardMontage))
+		{
+			AnimInstance->Montage_Play(RollForwardMontage);
+		}
+	}
 }

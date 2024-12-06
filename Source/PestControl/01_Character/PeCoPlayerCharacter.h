@@ -130,6 +130,11 @@ public:
 
 	void EndCrashInvincible();
 
+	void PlayRollAnimation();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage* RollForwardMontage;
+
 	FORCEINLINE FVector GetWeaponSpawnPointLocation() { return WeaponSpawnPoint->GetComponentLocation(); }
 protected:
 	bool bIsCrashInvincible;

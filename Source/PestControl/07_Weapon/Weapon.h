@@ -130,4 +130,7 @@ public:
 
 	bool HasWeaponEvolved() { return EvolveLevel > 0 ? true : false; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	class UNiagaraSystem* NiagaraTraceEffect;
+
 };

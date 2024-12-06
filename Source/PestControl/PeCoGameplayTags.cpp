@@ -72,10 +72,10 @@ namespace PeCoGameplayTags
 	}
 	PESTCONTROL_API FGameplayTagContainer GetChildTags(const FGameplayTag& ParentTag)
 	{
-		// GameplayTagsManager¸¦ ÅëÇØ ÅÂ±× °Ë»ö
+		// GameplayTagsManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Â±ï¿½ ï¿½Ë»ï¿½
 		const UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
 
-		// ÀÚ½Ä ÅÂ±× °Ë»ö
+		// ï¿½Ú½ï¿½ ï¿½Â±ï¿½ ï¿½Ë»ï¿½
 		return TagManager.RequestGameplayTagChildrenInDictionary(ParentTag);
 	}
 }

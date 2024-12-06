@@ -23,11 +23,11 @@ AFoodTrap::AFoodTrap()
 
     DetectionRange = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionRange"));
     DetectionRange->SetupAttachment(Mesh);
-    DetectionRange->SetSphereRadius(200.f); 
+    DetectionRange->SetSphereRadius(10.f); 
 
     ExplodeRange = CreateDefaultSubobject<USphereComponent>(TEXT("ExplodeRange"));
     ExplodeRange->SetupAttachment(Mesh);
-    ExplodeRange->SetSphereRadius(400.f);
+    ExplodeRange->SetSphereRadius(20.f);
 
     ExplodeDelay = 3.0f;
     

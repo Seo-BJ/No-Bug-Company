@@ -14,6 +14,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "Kismet/GameplayStatics.h"
 
 
@@ -23,11 +26,11 @@ AProjectile::AProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
-    SetRootComponent(RootSceneComponent);
+    //RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
+    SetRootComponent(ProjectileMesh);
 
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
-    ProjectileMesh -> SetupAttachment(RootSceneComponent);
+    //ProjectileMesh -> SetupAttachment(RootSceneComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 	ProjectileMovementComponent->MaxSpeed = 1300.f;
@@ -117,6 +120,20 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
                 }
             }
         }
-        Destroy();
+        ProjectileMesh->SetVisibility(false);
+ 
+        if (NiagaraImpactEffect)
+        {
+            FVector EffectScale = FVector(0.3f); // 이펙트 크기를 50%로 축소
+
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                NiagaraImpactEffect,
+                GetActorLocation(),
+                GetActorRotation(),
+                EffectScale
+            );
+        }
+        SetLifeSpan(0.2f); 
     }
 }
