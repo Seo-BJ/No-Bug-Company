@@ -91,6 +91,7 @@ void AWeapon::InitWeaponData()
     ReloadCoolDown = RowData->ReloadCoolDown;
     FireAngle = RowData->FireAngle;
     RangeRadius = RowData->RangeRadius;
+    Range = RowData->Range;
 }
 
 bool AWeapon::GetCriticalDamage(float& OutDamage)
@@ -149,12 +150,15 @@ void AWeapon::FireWeapon()
 
 void AWeapon::StartReload()
 {
+    bIsReloading = true;
+
     // UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::Reload, ReloadCoolDown, false);
 }
 
 void AWeapon::Reload()
 {
+    bIsReloading = false;
     Ammo = MaxAmmo;
     // UE_LOG(LogTemp, Log, TEXT("Reload complete. Ammo refilled to %d"), Ammo);
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
@@ -176,23 +180,12 @@ void AWeapon::SpawnProjectile()
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
 
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
+   
     if(Projectile)
     { 
-        if (NiagaraTraceEffect)
-        {
-            FVector EffectScale = FVector(0.5f); 
-
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                GetWorld(),
-                NiagaraTraceEffect,
-                Location,
-                Rotation,
-                EffectScale
-            );
-        }
-
         float ActualDamage = 0.f;
         GetCriticalDamage(ActualDamage);
+
         Projectile->SetDamage(ActualDamage);
         Projectile->SetOwner(this);
     }
@@ -229,19 +222,6 @@ void AWeapon::ShotgunFire()
         NewRotation.Yaw = StartYaw + i * AngleIncrement;
 
         AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, SpawnLocation, NewRotation);
-
-        if (NiagaraTraceEffect)
-        {
-            FVector EffectScale = FVector(0.5f); 
-
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                GetWorld(),
-                NiagaraTraceEffect,
-                SpawnLocation,
-                BaseRotation,
-                EffectScale
-            );
-        }
 
         if (Projectile)
         {
@@ -392,7 +372,7 @@ void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
     }
     else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
     {
-        // ToDo: Range Stat 리팩토링
+        Range += UpgradeAmount;
     }
 }
 

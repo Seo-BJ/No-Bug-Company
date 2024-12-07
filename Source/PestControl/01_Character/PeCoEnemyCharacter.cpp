@@ -7,7 +7,9 @@
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "02_Player/PeCoPlayerState.h"
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
+#include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
@@ -148,6 +150,58 @@ void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = Stats.WalkSpeed;
 	}
+}
 
-	
+void APeCoEnemyCharacter::ApplyTickDamage(float TickInterval, float DamagePerTick, float Duration, AActor* DamageCauser, AController* InstInstigator)
+{
+	if (!GetWorld() || TickInterval <= 0.0f || Duration <= 0.0f)
+	{
+		return;
+	}
+
+	int32 TotalTicks = FMath::CeilToInt(Duration / TickInterval);
+	int32 CurrentTick = 0;
+
+	FTimerHandle TickDamageTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		TickDamageTimerHandle,
+		FTimerDelegate::CreateWeakLambda(this, [=]() mutable
+			{
+				if (CurrentTick >= TotalTicks)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(TickDamageTimerHandle);
+					return;
+				}
+
+				UGameplayStatics::ApplyDamage(
+					this,
+					DamagePerTick,
+					InstInstigator,
+					DamageCauser,
+					UDamageType::StaticClass()
+				);
+
+				UE_LOG(LogTemp, Warning, TEXT("틱 데미지: %s에게 %f 데미지 적용 (Tick: %d/%d)"),
+					*GetName(), DamagePerTick, CurrentTick + 1, TotalTicks);
+
+				++CurrentTick;
+
+			}),
+		TickInterval,
+		true 
+	);
+
+	ALarvaLauncher* LarvaLauncherWeapon = Cast<ALarvaLauncher>(DamageCauser);
+	if (LarvaLauncherWeapon)
+	{
+		bIsWithered = false;
+	}
+
+	AFlamethrower* FlamethrowerWeapon = Cast<AFlamethrower>(DamageCauser);
+	if (LarvaLauncherWeapon)
+	{
+		bIsBurned = false;
+	}
+
 }

@@ -75,7 +75,7 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	WeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Spawn Point"));
-	WeaponSpawnPoint->SetupAttachment(RootComponent);
+	//WeaponSpawnPoint->SetupAttachment(RootComponent);
 
 	SecondWeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SecondWeapon Spawn Point"));
 	SecondWeaponSpawnPoint->SetupAttachment(WeaponSpawnPoint);

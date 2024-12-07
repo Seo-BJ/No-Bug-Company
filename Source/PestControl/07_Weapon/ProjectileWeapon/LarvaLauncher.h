@@ -19,8 +19,6 @@ public:
 
 	void ApplyWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
 
-	void ClearWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
-
 	virtual void SpawnProjectile() override;
 
 protected:

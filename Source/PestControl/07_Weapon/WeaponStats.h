@@ -39,6 +39,10 @@ struct FWeaponStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     float RangeRadius;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    float Range;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     int32 Ammo;
 

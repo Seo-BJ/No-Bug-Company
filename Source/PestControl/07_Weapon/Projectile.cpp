@@ -2,6 +2,7 @@
 
 
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/Weapon.h"
 #include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "07_Weapon/ProjectileWeapon/WebRevolver.h"
 #include "07_Weapon/ProjectileWeapon/AirGun.h"
@@ -27,9 +28,8 @@ AProjectile::AProjectile()
 	PrimaryActorTick.bCanEverTick = true;
 
     //RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
-    SetRootComponent(ProjectileMesh);
-
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
+    SetRootComponent(ProjectileMesh);
     //ProjectileMesh -> SetupAttachment(RootSceneComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
@@ -43,8 +43,27 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	StartLocation = GetActorLocation();
+    AWeapon* OwnerWeapon = Cast<AWeapon>(GetOwner());
+    if (OwnerWeapon)
+    {
+        MaxDistance = OwnerWeapon->GetRange();
+    }
 
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+    
+    if (NiagaraTraceEffect)
+    {
+        FVector SpawnLocation = GetActorLocation();
+        FRotator SpawnRotation = GetActorRotation();
+
+        ActiveTraceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            NiagaraTraceEffect,
+            SpawnLocation,
+            SpawnRotation,
+            TraceEffectScale
+        );
+    }
 }
 
 
@@ -71,6 +90,7 @@ UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() cons
 {
 	return ProjectileMovementComponent;
 }
+
 
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -121,19 +141,26 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
             }
         }
         ProjectileMesh->SetVisibility(false);
+        ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  
         if (NiagaraImpactEffect)
         {
-            FVector EffectScale = FVector(0.3f); // 이펙트 크기를 50%로 축소
-
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                 GetWorld(),
                 NiagaraImpactEffect,
                 GetActorLocation(),
                 GetActorRotation(),
-                EffectScale
+                ImpactEffectScale
             );
         }
+
         SetLifeSpan(0.2f); 
+
+        if (ActiveTraceEffect)
+        {
+            ActiveTraceEffect->DestroyComponent();
+        }
+
+        //Destroy();
     }
 }

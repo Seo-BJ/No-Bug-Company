@@ -22,75 +22,24 @@ void ALarvaLauncher::BeginPlay()
 
 void ALarvaLauncher::ApplyWitherEffect(APeCoEnemyCharacter* EnemyCharacter)
 {
-    if (!EnemyCharacter || !GetWorld())
-    {
-        return;
-    }
-
-    if (WitherTimers.Contains(EnemyCharacter))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("%s는 이미 Wither 상태입니다."), *EnemyCharacter->GetName());
-        return;
-    }
-
-    FTimerHandle WitherTimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(WitherTimerHandle, FTimerDelegate::CreateLambda([=]()
-        {
-            if (IsValid(EnemyCharacter))
-            {
-                UGameplayStatics::ApplyDamage(
-                    EnemyCharacter,
-                    WitherDamage,
-                    GetInstigatorController(),
-                    this,
-                    UDamageType::StaticClass()
-                );
-
-                UE_LOG(LogTemp, Warning, TEXT("Withered 상태: %s에게 %f 데미지 적용"), *EnemyCharacter->GetName(), WitherDamage);
-            }
-            else
-            {
-                ClearWitherEffect(EnemyCharacter);
-            }
-        }), TickInterval, true);
-
-    WitherTimers.Add(EnemyCharacter, WitherTimerHandle);
-
-    FTimerHandle EndWitherHandle;
-    GetWorld()->GetTimerManager().SetTimer(EndWitherHandle, FTimerDelegate::CreateLambda([=]()
-        {
-            ClearWitherEffect(EnemyCharacter);
-
-            UE_LOG(LogTemp, Warning, TEXT("%s Withered 상태 해제"), *EnemyCharacter->GetName());
-        }), WitherDuration, false);
-
-    EndWitherTimers.Add(EnemyCharacter, EndWitherHandle);
-}
-
-void ALarvaLauncher::ClearWitherEffect(APeCoEnemyCharacter* EnemyCharacter)
-{
     if (!EnemyCharacter)
     {
         return;
     }
 
-    if (WitherTimers.Contains(EnemyCharacter))
+    if (!EnemyCharacter->bIsWithered)
     {
-        FTimerHandle& TimerHandle = WitherTimers[EnemyCharacter];
-        GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-        WitherTimers.Remove(EnemyCharacter);
-    }
+        EnemyCharacter->bIsWithered = true;
 
-    if (EndWitherTimers.Contains(EnemyCharacter))
-    {
-        FTimerHandle& TimerHandle = EndWitherTimers[EnemyCharacter];
-        GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-        EndWitherTimers.Remove(EnemyCharacter);
-    }
+        AController* InstigatorController = nullptr;
 
-    UE_LOG(LogTemp, Log, TEXT("%s의 Wither 상태가 종료되었습니다."), *EnemyCharacter->GetName());
+        if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
+        {
+            InstigatorController = OwnerPawn->GetController();
+        }
+        EnemyCharacter->ApplyTickDamage(TickInterval, WitherDamage, WitherDuration, this, InstigatorController);
+    };
 }
-
 
 void ALarvaLauncher::SpawnProjectile()
 {
