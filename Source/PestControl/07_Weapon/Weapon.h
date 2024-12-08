@@ -122,12 +122,15 @@ protected:
 	//~End of Weapon Upgrade
 
 private:
+	void InitWeaponData();
 
 	void StartReload();
 
 	void Reload();
 
-	FTimerHandle CooldownHandle;
+protected:
+	bool bIsReloading = false;
+
 	FTimerHandle FireTimerHandle;
 
 	void ProjectileFire();
@@ -135,9 +138,8 @@ private:
 	void ShotgunFire();
 	void StartShotgunCooldown();
 
-	void ConicalFire();
-
-	void InitWeaponData();
+	FTimerHandle CooldownHandle;
+	virtual void ConicalFire();
 
 public:
 
@@ -158,8 +160,7 @@ public:
 	float GetReloadCoolDown() { return ReloadCoolDown; }
 	UFUNCTION(BlueprintCallable)
 	int GetNumberOfProjectiles() { return NumberOfProjectiles; }
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
-	class UNiagaraSystem* NiagaraTraceEffect;
+	UFUNCTION(BlueprintCallable)
+	float GetRange() { return Range; }
 	void AddProjectile(int32 Amount) { NumberOfProjectiles += Amount; }
 };

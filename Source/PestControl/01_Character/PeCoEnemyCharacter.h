@@ -72,6 +72,8 @@ public:
 	// ������ ���̺����� ���� �� ����
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
 
+	
+
 private:
 
 	AActor* VarDamageCauser;
@@ -96,6 +98,12 @@ public:
 	bool bIsStun = false; 
 
 	void ResetStunStatus();
+
+	bool bIsWithered = false;
+
+	bool bIsBurned = false;
+
+	void ApplyTickDamage(float TickInterval, float DamagePerTick, float Duration, AActor* DamageCauser, AController* InstInstigator);
 	//~End of Status effect
 
 	float GetMaxHealth();

@@ -22,10 +22,18 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wreckage")
     TSubclassOf<class AWreckage> WreckageClass;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+    UParticleSystemComponent* FlamethrowerParticle;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+    FVector ParticleScale = FVector(1.0f, 1.0f, 1.0f);
+
     void SpawnWreckage(FVector Location);
 
 protected:
     virtual void BeginPlay() override;
+
+    virtual void Tick(float DeltaTime) override;
 
 private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
@@ -35,16 +43,11 @@ private:
     float BurnDuration = 3.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burn Effect", meta = (AllowPrivateAccess = "true"))
-    float BurnTickTime = 0.5f;
+    float BurnTickInterval = 0.5f;
 
     TMap<AActor*, FTimerHandle> ActiveBurnTimers;
 
     void ApplyBurnDamage(AActor* Target);
-    void StopBurnEffect(AActor* Target);
-
-private: 
-
-   
 
     float WreckageDuration = 3.0f;
     float WreckageDamage = 20.0f;
@@ -53,4 +56,20 @@ private:
     virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
     virtual bool EvolveWeapon(int32 EvolveIndex) override;
     void FlamethrowerEvolve();
+
+    virtual void ConicalFire() override;
+
+//public:
+    //~Particle Effect Parameter
+    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flamethrower|Particle")
+    //float MaxParticleLifetime;
+
+    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flamethrower|Particle")
+    //FVector MaxParticleInitialVelocity;
+
+    //UFUNCTION(BlueprintCallable, Category = "Flamethrower|Particle")
+    //void SetMaxParticleLifetime();
+
+    //UFUNCTION(BlueprintCallable, Category = "Flamethrower|Particle")
+    //void SetMaxParticleInitialVelocity();
 };
