@@ -51,7 +51,14 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Range, "WeaponStat.Range");
 	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_MaxAmmo, "WeaponStat.MaxAmmo");
 
-	
+	UE_DEFINE_GAMEPLAY_TAG(Enemy, "Enemy");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider, "Enemy.Spider.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider_Normal, "Enemy.Spider.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider_Boss, "Enemy.Spider.Boss");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Mosquito, "Enemy.Mosquito");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Mosquito_Normal, "Enemy.Mosquito.Normal");
+
+
 	FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count)
 	{
 		TArray<FGameplayTag> TagsArray;

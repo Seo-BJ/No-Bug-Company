@@ -99,15 +99,15 @@ struct FSupplyProbablity
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> SupplyActorClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag ItemTag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> Probablities;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> Amounts;
 };
 USTRUCT(BlueprintType)
@@ -115,9 +115,24 @@ struct FSupplyData : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)	
 	int32 LastLevel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSupplyProbablity> SupplyMap;
+};
+
+USTRUCT(BlueprintType)
+struct FEnemyDropData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag ItemTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftClassPtr<AActor> Item;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DropRate; 
 };

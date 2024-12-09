@@ -53,7 +53,6 @@ FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
 	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
 }
-
 FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count)
 {
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
@@ -165,16 +164,17 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	// 소프트 오브젝트 포인터에서 클래스 로드
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 
-		// 비동기 로드
-	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-	Streamable.RequestAsyncLoad(SoftItemClass.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
-	return true;
-	
-
-	// 클래스가 이미 로드되었으면 바로 아이템 생성
-	//SpawnItem(SoftItemClass.Get(), ItemTag);
-
-
+	if (IsValid(SoftItemClass.Get()))
+	{
+		OnItemClassLoaded(ItemTag, User);
+		return true;
+	}
+	else
+	{
+		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+		Streamable.RequestAsyncLoad(SoftItemClass.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
+		return true;
+	}
 }
 bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
 {
@@ -201,7 +201,7 @@ void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
 	if (!ItemClassMap.Contains(ItemTag)) return;
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 
-	if (!SoftItemClass.IsValid())
+	if (!IsValid(SoftItemClass.Get()))
 	{
 		return;
 	}
