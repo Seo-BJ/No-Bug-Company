@@ -109,7 +109,7 @@ void UPlayerStatPresenterComponent::MultiplyHealth(float Percent, AActor* Causer
 }
 
 #pragma region Speed Buff
-void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
+void UPlayerStatPresenterComponent::BuffSpeed(float Percent, float BuffTime)
 {
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
 	if (PeCoPlayerState)
@@ -119,9 +119,9 @@ void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCro
 			PlayerCharcater->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UPlayerStatPresenterComponent::ResetSpeeds, BuffTime);
 			if (PlayerCharcater->GetCharacterMovement())
 			{
-				SetInitialSpeeds(PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed, PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched);
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = BuffBaseSpeed;
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = BuffCrouchSpeed;
+				
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = (1 + (Percent/100))* PeCoPlayerState->GetMoveSpeed();
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = (1 + (Percent / 100)) * PeCoPlayerState->GetMoveSpeed();
 			}
 		}
 	}
@@ -133,16 +133,12 @@ void UPlayerStatPresenterComponent::ResetSpeeds()
 	{
 		if (APeCoPlayerCharacter* PlayerCharcater = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
 		{
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = InitialBaseSpeed;
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = InitialCrouchSpeed;
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = PeCoPlayerState->GetMoveSpeed();
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = PeCoPlayerState->GetMoveSpeed();
 		}
 	}
 }
-void UPlayerStatPresenterComponent::SetInitialSpeeds(float BaseSpeed, float CrouchSpeed)
-{
-	InitialBaseSpeed = BaseSpeed;
-	InitialCrouchSpeed = CrouchSpeed;
-}
+
 #pragma endregion
 
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
