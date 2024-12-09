@@ -37,12 +37,12 @@ AWeapon::AWeapon()
     BulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Bullet Spawn Point"));
     BulletSpawnPoint->SetupAttachment(WeaponMesh);
 
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackPower, 1);
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Damage, 1);
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackSpeed, 1);
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 1);
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 1);
-    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 1);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackPower, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Damage, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackSpeed, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 0);
 }
 
 void AWeapon::BeginPlay()
@@ -55,6 +55,7 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+
 
 void AWeapon::InitWeaponData()
 {
@@ -134,10 +135,9 @@ void AWeapon::FireWeapon()
         break;
 
     default:
-       // UE_LOG(LogTemp, Warning, TEXT("Unknown weapon type"));
         break;
     }
-
+    OnFire.Broadcast(Ammo, MaxAmmo);
     if (Ammo > 0)
     {
         GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
@@ -151,8 +151,7 @@ void AWeapon::FireWeapon()
 void AWeapon::StartReload()
 {
     bIsReloading = true;
-
-    // UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
+    OnStartReload.Broadcast(ReloadCoolDown);
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::Reload, ReloadCoolDown, false);
 }
 
@@ -374,6 +373,8 @@ void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
     {
         Range += UpgradeAmount;
     }
+    int32* Level = WeaponStatLevelMap.Find(StatTag);
+    *Level += 1;
 }
 
 float AWeapon::GetStatValueByTag(FGameplayTag StatTag)
@@ -402,23 +403,15 @@ float AWeapon::GetStatValueByTag(FGameplayTag StatTag)
     {
         return MaxAmmo;
     }
+
     return -1;
 }
 
 
+
+
 bool AWeapon::CanEnhancementWeapon()
 {
-    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
-    if (!IsValid(GameInstance))
-    {
-        return false;
-    }
-    UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
-    if (!IsValid(WeaponMaterialDataTable))
-    {
-        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
-        return false;
-    }
     AActor* OwnerCharacter = GetOwner();
     if (!IsValid(OwnerCharacter))
     {
@@ -429,31 +422,13 @@ bool AWeapon::CanEnhancementWeapon()
     {
         return false;
     }
-    FName RowName = FName(*FString::FromInt(EnhancementLevel+1));
-    FWeaponEnhancementMaterialsData* RowData = WeaponMaterialDataTable->FindRow<FWeaponEnhancementMaterialsData>(
-        RowName,
-        TEXT("Read Weapon Enhancement Materials"), 
-        true
-    ); 
-
-    return InventoryComponent->HasEnoughMaterials(RowData->RequiredMaterials);
+     
+    return InventoryComponent->HasEnoughMaterials(GetWeaponMaterialData(EnhancementLevel, true));
 }
-
 bool AWeapon::CanEvolveWeapon()
 {
     if (EnhancementLevel <= 4) return false;
 
-    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
-    if (!IsValid(GameInstance))
-    {
-        return false;
-    }
-    UDataTable* WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
-    if (!IsValid(WeaponMaterialDataTable))
-    {
-        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
-        return false;
-    }
     AActor* OwnerCharacter = GetOwner();
     if (!IsValid(OwnerCharacter))
     {
@@ -464,15 +439,8 @@ bool AWeapon::CanEvolveWeapon()
     {
         return false;
     }
-    FName RowName = FName(*FString::FromInt(EvolveLevel+1));
-    FWeaponEnhancementMaterialsData* RowData = WeaponMaterialDataTable->FindRow<FWeaponEnhancementMaterialsData>(
-        RowName,
-        TEXT("Read Weapon Enhancement Materials"),
-        true
-    );
 
-    return InventoryComponent->HasEnoughMaterials(RowData->RequiredMaterials);
-
+    return InventoryComponent->HasEnoughMaterials(GetWeaponMaterialData(EvolveLevel, false));
 }
 
 bool AWeapon::EnhancementWeapon(int32 EnhancementIndex)
@@ -485,7 +453,6 @@ bool AWeapon::EnhancementWeapon(int32 EnhancementIndex)
     return true;
 
 }
-
 bool AWeapon::EvolveWeapon(int32 EvolveIndex)
 {
     if (!CanEvolveWeapon())
@@ -494,4 +461,39 @@ bool AWeapon::EvolveWeapon(int32 EvolveIndex)
     }
     EvolveLevel += 1;
     return true;
+}
+
+TMap<FGameplayTag, int32> AWeapon::GetWeaponMaterialData(int32 CurrentLevel, bool bEnhancement)
+{
+    TMap<FGameplayTag, int32> MaterialMap;
+    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+    if (!IsValid(GameInstance))
+    {
+        return MaterialMap;
+    }
+    // to do bIsEnhancement 쓰기.
+    UDataTable* WeaponMaterialDataTable =* GameInstance->WeaponEvolveMaterialDataTableMap.Find(WeaponTag);
+    if (!IsValid(WeaponMaterialDataTable))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
+        return MaterialMap;
+    }
+    AActor* OwnerCharacter = GetOwner();
+    if (!IsValid(OwnerCharacter))
+    {
+        return MaterialMap;
+    }
+    UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(OwnerCharacter);
+    if (!IsValid(InventoryComponent))
+    {
+        return MaterialMap;
+    }
+    FName RowName = FName(*FString::FromInt(CurrentLevel + 1));
+    FWeaponEnhancementMaterialsData* RowData = WeaponMaterialDataTable->FindRow<FWeaponEnhancementMaterialsData>(
+        RowName,
+        TEXT("Read Weapon Enhancement Materials"),
+        true
+    );
+    MaterialMap = RowData->RequiredMaterials;
+    return MaterialMap;
 }
