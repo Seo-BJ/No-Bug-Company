@@ -38,11 +38,9 @@ public:
 	void MultiplyHealth(float Percent, AActor* CauserActor = nullptr);
 
 	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
-	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
+	void BuffSpeed(float Percent, float BuffTime);
 	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
 	void ResetSpeeds();
-	UFUNCTION(BlueprintCallable, Category = "BuffSystem|Speed")
-	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
 
 	UFUNCTION(BlueprintCallable)
 	void UpgradeStat(FGameplayTag StatTag);
