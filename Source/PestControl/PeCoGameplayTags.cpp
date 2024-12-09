@@ -9,8 +9,9 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption, "Item.Consumption");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat, "Item.Combat");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material, "Item.Material");
-	
-	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Health, "Item.Consumption.Health");
+
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_EnergyDrink, "Item.Consumption.EnergyDrink");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_FirstAidKit, "Item.Consumption.FirstAidKit");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Speed, "Item.Consumption.Speed");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Power, "Item.Consumption.Power");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Adrenaline, "Item.Consumption.Adrenaline");
@@ -49,8 +50,8 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_CriticalDamage, "WeaponStat.CriticalDamage");
 	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Range, "WeaponStat.Range");
 	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_MaxAmmo, "WeaponStat.MaxAmmo");
-	
 
+	
 	FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count)
 	{
 		TArray<FGameplayTag> TagsArray;

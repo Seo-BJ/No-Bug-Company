@@ -112,6 +112,8 @@ void APeCoPlayerCharacter::BeginPlay()
 	{
 		SpawnWeapon(GameInstance->SelectedWeaponTag);
 	}
+	InitPlayerCharacter();
+
 }
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
@@ -126,12 +128,13 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 void APeCoPlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	InitPlayerCharacter();
+
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
 	if (PeCoPlayerState)
 	{
 		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
 	}
+
 }
 
 void APeCoPlayerCharacter::InitPlayerCharacter()
@@ -144,11 +147,8 @@ void APeCoPlayerCharacter::InitPlayerCharacter()
 		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
 	}
 
-	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
-	check(PeCOPC);
-
-	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
-	check(PeCoHUD);
+	APeCoPlayerController* PeCOPC = CastChecked<APeCoPlayerController>(GetController());
+	APeCoHUD* PeCoHUD = CastChecked<APeCoHUD>(PeCOPC->GetHUD());
 	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
 
 }

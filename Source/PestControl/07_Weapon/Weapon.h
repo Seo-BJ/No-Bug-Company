@@ -11,6 +11,9 @@
 #include "PeCoGameplayTags.h"
 #include "Weapon.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FFire, int32, CurrentAmmo, int32, MaxAamo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartReload, float, Cooldown);
+
 UCLASS()
 class PESTCONTROL_API AWeapon : public AActor
 {
@@ -19,10 +22,6 @@ class PESTCONTROL_API AWeapon : public AActor
 public:
 
 	AWeapon();
-
-protected:
-
-	virtual void BeginPlay() override;
 
 public:
 
@@ -44,13 +43,21 @@ public:
 
 	void UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TMap<FGameplayTag, int32> WeaponStatLevelMap; // 스텟별 업그레이드 단계 (업그레이드 가능한 스텟만 존재)
 
 	UFUNCTION(BlueprintCallable)
 	float GetStatValueByTag(FGameplayTag StatTag);
 
+	UPROPERTY(BlueprintAssignable)
+	FFire OnFire;
+
+	UPROPERTY(BlueprintAssignable)
+	FStartReload OnStartReload;
+
 protected:
 
+	virtual void BeginPlay() override;
 	//~Weapon Stats
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -119,9 +126,15 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual bool EvolveWeapon(int32 EvolveIndex);
 
+	UFUNCTION(BlueprintCallable)
+	TMap<FGameplayTag, int32> GetWeaponMaterialData(int32 CurrentLevel, bool bEnhancement);
+
 	//~End of Weapon Upgrade
 
 private:
+
+
+
 	void InitWeaponData();
 
 	void StartReload();

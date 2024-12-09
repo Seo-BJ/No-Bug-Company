@@ -44,9 +44,12 @@ void UStoreComponent::BeginPlay()
 FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
 {
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
-	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Combat));
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Consumption));
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
+	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
+	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
+
 	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
 }
@@ -54,7 +57,11 @@ FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
 FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count)
 {
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
 	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
+	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
+
 	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
 }
