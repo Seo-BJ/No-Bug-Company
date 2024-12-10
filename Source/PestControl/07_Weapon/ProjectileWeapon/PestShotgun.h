@@ -18,16 +18,15 @@ public:
 	APestShotgun();
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
 	AWeapon* SecondShotgun;
 
-public:
+private:
 
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
+	virtual bool EvolveWeapon(int32 EvolveIndex) override;
 	void EvolvePestShotgun();
 
-
-	virtual void Enhencement(int32 EnhencementIndex) override;
 };

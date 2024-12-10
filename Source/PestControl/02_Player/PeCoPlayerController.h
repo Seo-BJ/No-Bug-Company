@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "PeCoGameplayTags.h"
 #include "21_Data/PeCoDataTypes.h"
 
 
@@ -45,9 +46,10 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FStartDashCooldown OnStartDashCooldown;
 
-	//~Floating Text
-	void ShowDamageText(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
-	//~End of Floating Text
+	//~Floating Widgets
+	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
+	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
+	//~End of Floating Widgets
 
 protected:
 
@@ -98,9 +100,6 @@ private:
 	UInPutActionDataAsset* InputActions;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
-	float DashVelocity = 4000.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Dash")
 	float DashCooldown = 2.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Dash")
@@ -109,6 +108,9 @@ private:
 	bool bCanDash = true;
 	FTimerHandle DashTimer;
 	FVector DashDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Dash")
+	bool bIsDashing = false;
 
 	// ~End of Player Movement
 

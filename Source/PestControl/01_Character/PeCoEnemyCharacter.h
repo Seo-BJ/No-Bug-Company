@@ -6,13 +6,12 @@
 
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
-
 #include "GameFramework/CharacterMovementComponent.h"
 #include "10_Enemy/EnemyStats.h"
-
-#include "GameFramework/Character.h"
+#include "PeCoGameplayTags.h"
 #include "PeCoEnemyCharacter.generated.h"
 
+struct FEnemyDropData;
 /**
  * 
  */
@@ -51,17 +50,19 @@ public:
 		AController* InstigatorController, AActor* DamageCauser) override;
 
 	virtual void CharacterDie() override;
+
+
 	//~End of ICombatInterface
 
-	// (EnemyID)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
 	FName EnemyID;
 
-	// ü��
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+	FGameplayTag EnemyTag;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float Health;
 
-	// �ִ� ü��
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float MaxHealth;
 
@@ -69,23 +70,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float Damage;
 
-	// ������ ���̺����� ���� �� ����
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
 
 private:
 
 	AActor* VarDamageCauser;
-	/*//~Enemy Stats
-	UPROPERTY(EditAnywhere, Category = "EnemyStats")
-	float Health;
 
-	UPROPERTY(EditAnywhere, Category = "EnemyStats")
-	float MaxHealth = 100;
+	void DropItem(bool bDropFlameSample);
+	void AsyncLoadDropItem(FEnemyDropData* Row);
+	void SpawnItem(UClass* ItemCalss);
 
-
-	//~End of Enemy Stats*/
-
-	//~Status effect
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
 	bool bIsSlowed = false;  
@@ -96,6 +90,12 @@ public:
 	bool bIsStun = false; 
 
 	void ResetStunStatus();
+
+	bool bIsWithered = false;
+
+	bool bIsBurned = false;
+
+	void ApplyTickDamage(float TickInterval, float DamagePerTick, float Duration, AActor* DamageCauser, AController* InstInstigator);
 	//~End of Status effect
 
 	float GetMaxHealth();

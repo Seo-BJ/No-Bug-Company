@@ -47,9 +47,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual ETeam GetTeam() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
-	TMap<FGameplayTag, AWeapon*> SpawnedWeapons;
-
 
 protected:
 
@@ -68,7 +65,6 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
-
 
 	//~Spawn Weapon
 
@@ -132,6 +128,11 @@ public:
 	void BecomeCrashInvincible(float Duration);
 
 	void EndCrashInvincible();
+
+	void PlayRollAnimation();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage* RollForwardMontage;
 
 	FORCEINLINE FVector GetWeaponSpawnPointLocation() { return WeaponSpawnPoint->GetComponentLocation(); }
 protected:

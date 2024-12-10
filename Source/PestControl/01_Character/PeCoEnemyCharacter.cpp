@@ -7,7 +7,15 @@
 #include "01_Character/PeCoPlayerCharacter.h"
 #include "02_Player/PeCoPlayerState.h"
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
+#include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
+#include "20_System/PeCoGameInstance.h"
+#include "21_Data/PeCoDataRow.h"
+
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Engine/StreamableManager.h"
+#include "Engine/AssetManager.h"
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
@@ -58,11 +66,15 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 		if (DamageCauser && DamageCauser->IsA(AFlamethrower::StaticClass()))
 		{
 			AFlamethrower* Flamethrower = Cast<AFlamethrower>(DamageCauser);
-			if (Flamethrower && Flamethrower->bIsEvolved)
+			if (Flamethrower && Flamethrower->HasWeaponEvolved())
 			{
 				Flamethrower->SpawnWreckage(GetActorLocation());
-
+				//DropItem(true);
 			}
+		}
+		else
+		{
+			// DropItem(false);
 		}
 		//End of Flamethrower Wreckage
 
@@ -74,20 +86,16 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 				PS->AddToKillCount(1);
 			}
 		}
+	
 		CharacterDie();
 	}
 }
 
 void APeCoEnemyCharacter::CharacterDie()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Enemy character has died."));
-	
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
-
-
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-
 	Destroy();
 }
 
@@ -148,6 +156,126 @@ void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = Stats.WalkSpeed;
 	}
+}
 
-	
+void APeCoEnemyCharacter::DropItem(bool bDropFlameSample)
+{
+	APeCoGameMode* GameMode = CastChecked<APeCoGameMode>(GetOwner());
+	UPeCoGameInstance* GameInstance = CastChecked<UPeCoGameInstance>(GameMode->GetGameInstance());
+	UDataTable* DropTable = GameInstance->EnemyDropTable;
+	if (!DropTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("몬스터 드랍 데이터 테이블 없음."));
+		return;
+	}
+
+	if (EnemyTag.MatchesTag(PeCoGameplayTags::Enemy))
+	{
+		FEnemyDropData* Row = DropTable->FindRow<FEnemyDropData>("Item.Material.BiologicalSample", TEXT("Read Drop table"), false);
+		AsyncLoadDropItem(Row);
+	}
+
+	if (EnemyTag.MatchesTag(PeCoGameplayTags::Enemy_Spider))
+	{
+		FEnemyDropData* Row = DropTable->FindRow<FEnemyDropData>("Item.Material.WebSample", TEXT("Read Drop table"), false);
+		AsyncLoadDropItem(Row);
+	}
+	else if (EnemyTag.MatchesTag(PeCoGameplayTags::Enemy_Mosquito))
+	{
+		FEnemyDropData* Row = DropTable->FindRow<FEnemyDropData>("Item.Material.VirusSample", TEXT("Read Drop table"), false);
+		AsyncLoadDropItem(Row);
+	}
+
+	if (bDropFlameSample)
+	{
+		FEnemyDropData* Row = DropTable->FindRow<FEnemyDropData>("Item.Material.FlameBioSample", TEXT("Read Drop table"), false);
+		AsyncLoadDropItem(Row);
+	}
+}
+
+void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
+{
+	if (FMath::RandRange(1, 100) < Row->DropRate / 100)
+	{
+		if (IsValid(Row->Item.Get()))
+		{
+			SpawnItem(Row->Item.Get());
+		}
+		else
+		{
+			FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+			Streamable.RequestAsyncLoad(Row->Item.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &APeCoEnemyCharacter::SpawnItem, Row->Item.Get()));
+		}
+	}
+}
+
+void APeCoEnemyCharacter::SpawnItem(UClass* ItemCalss)
+{
+	if (!GetWorld()) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = nullptr;
+	SpawnParams.Instigator = nullptr;
+
+	const AActor* ItemCDO = Cast<AActor>(ItemCalss->StaticClass()->GetDefaultObject());
+	FTransform NewTransform = GetActorTransform();
+	NewTransform.SetScale3D(IsValid(ItemCDO) ? ItemCDO->GetActorScale() : FVector::OneVector);
+	AActor* NewItemActor = GetWorld()->SpawnActor(ItemCalss, &NewTransform, SpawnParams);
+
+	Destroy();
+}
+
+void APeCoEnemyCharacter::ApplyTickDamage(float TickInterval, float DamagePerTick, float Duration, AActor* DamageCauser, AController* InstInstigator)
+{
+	if (!GetWorld() || TickInterval <= 0.0f || Duration <= 0.0f)
+	{
+		return;
+	}
+
+	int32 TotalTicks = FMath::CeilToInt(Duration / TickInterval);
+	int32 CurrentTick = 0;
+
+	FTimerHandle TickDamageTimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		TickDamageTimerHandle,
+		FTimerDelegate::CreateWeakLambda(this, [=]() mutable
+			{
+				if (CurrentTick >= TotalTicks)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(TickDamageTimerHandle);
+					return;
+				}
+
+				UGameplayStatics::ApplyDamage(
+					this,
+					DamagePerTick,
+					InstInstigator,
+					DamageCauser,
+					UDamageType::StaticClass()
+				);
+
+				UE_LOG(LogTemp, Warning, TEXT("틱 데미지: %s에게 %f 데미지 적용 (Tick: %d/%d)"),
+					*GetName(), DamagePerTick, CurrentTick + 1, TotalTicks);
+
+				++CurrentTick;
+
+			}),
+		TickInterval,
+		true 
+	);
+
+	ALarvaLauncher* LarvaLauncherWeapon = Cast<ALarvaLauncher>(DamageCauser);
+	if (LarvaLauncherWeapon)
+	{
+		bIsWithered = false;
+	}
+
+	AFlamethrower* FlamethrowerWeapon = Cast<AFlamethrower>(DamageCauser);
+	if (LarvaLauncherWeapon)
+	{
+		bIsBurned = false;
+	}
+
 }

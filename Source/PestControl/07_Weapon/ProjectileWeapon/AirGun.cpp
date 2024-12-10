@@ -6,18 +6,21 @@
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AAirGun::AAirGun()
 {
-    WeaponID = FName(TEXT("AirGun"));
+    WeaponTag = PeCoGameplayTags::Weapon_Projectile_AirGun;
+    WeaponType = EWeaponType::Projectile;
 }
 
 void AAirGun::BeginPlay()
 {
     Super::BeginPlay();
-    WeaponType = EWeaponType::Projectile;
 }
 
 void AAirGun::ApplyStunEffect(APeCoEnemyCharacter* EnemyCharacter)
@@ -62,10 +65,6 @@ void AAirGun::ApplyStunEffect(APeCoEnemyCharacter* EnemyCharacter)
     }
 }
 
-void AAirGun::EvolveAirGun()
-{
-    bIsEvolved = true;
-}
 
 void AAirGun::SpawnProjectile()
 {
@@ -74,7 +73,7 @@ void AAirGun::SpawnProjectile()
         return;
     }
 
-    TSubclassOf<AProjectile> ProjectileClass = bIsEvolved ? EvolvedBulletClass : BulletClass;
+    TSubclassOf<AProjectile> ProjectileClass = HasWeaponEvolved() ? EvolvedBulletClass : BulletClass;
     if (!ProjectileClass)
     {
         UE_LOG(LogTemp, Warning, TEXT("ProjectileClass is null."));
@@ -91,16 +90,11 @@ void AAirGun::SpawnProjectile()
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation, SpawnParams);
     if (Projectile)
     {
-        float ActualDamage = BaseDamage * DamageMultiplier;
-        if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-        {
-            ActualDamage *= CriticalDamageMultiplier;
-        }
+        float ActualDamage = 0.f;
+        GetCriticalDamage(ActualDamage);
 
         Projectile->SetDamage(ActualDamage);
         Projectile->SetOwner(this);
-
-        UE_LOG(LogTemp, Log, TEXT("Spawned Projectile: %s"), *Projectile->GetName());
     }
 }
 
@@ -126,7 +120,21 @@ void AAirGun::ApplyKnockback(APeCoEnemyCharacter* Enemy, const FVector& HitLocat
         *Enemy->GetName(), *KnockbackVector.ToString());
 }
 
-void AAirGun::Enhencement(int32 EnhencementIndex)
+
+bool AAirGun::EnhancementWeapon(int32 EnhancementIndex)
 {
+    if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
     StunDuration += 0.05f;
+    return true;
+}
+
+bool AAirGun::EvolveWeapon(int32 EvolveIndex)
+{
+    if (Super::EvolveWeapon(EvolveIndex) == false) return false;
+    EvolveAirGun();
+    return true;
+}
+void AAirGun::EvolveAirGun()
+{
+
 }

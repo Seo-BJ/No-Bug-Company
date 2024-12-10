@@ -11,8 +11,6 @@
 UEquipmentComponent::UEquipmentComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
 }
 void UEquipmentComponent::BeginPlay()
 {
@@ -22,6 +20,13 @@ void UEquipmentComponent::BeginPlay()
 
 bool UEquipmentComponent::UseItemInSlot(const FGameplayTag SlotTag)
 {
+    // ƒ≈∏¿” »Æ¿Œ
+    if (IsCooldownActive(SlotTag))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Slot %s is on cooldown!"), *SlotTag.ToString());
+        return false;
+    }
+
     AActor* ItemInSlot;
     if (GetItemInSlot(SlotTag, ItemInSlot))
     {
@@ -37,12 +42,15 @@ bool UEquipmentComponent::UseItemInSlot(const FGameplayTag SlotTag)
                 ItemComponent->UseItem(GetOwner(), true);
             }
         }
+
         OnItemUsedInSlot.Broadcast(ItemInSlot, SlotTag);
+
+        // ƒ≈∏¿” Ω√¿€
+        StartCooldown(SlotTag);
         return true;
     }
     return false;
 }
-
 
 bool UEquipmentComponent::EquipItemInSlot(const FGameplayTag SlotTag, AActor* ItemActor, AActor*& OutPreviousItem, AActor*& OutNewItem)
 {
@@ -192,4 +200,46 @@ bool UEquipmentComponent::GetAllItems(TArray<AActor*>& OutItems)
     return OutItems.Num() > 0;
 }
 
+bool UEquipmentComponent::IsCooldownActive(const FGameplayTag& SlotTag) const
+{
+    if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Combat))
+    {
+        return bCombatItemCooldown;
+    }
+    else if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Consumption))
+    {
+        return bConsuptionItemCooldown;
+    }
 
+    return false;
+}
+
+void UEquipmentComponent::StartCooldown(const FGameplayTag& SlotTag)
+{
+    if (!GetWorld()) return;
+
+    if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Combat))
+    {
+        bCombatItemCooldown = true;
+        OnCooldownStart.Broadcast(SlotTag, CombatItemCooltime);
+        GetWorld()->GetTimerManager().SetTimer(CombatItemCooldownTimer, this, &UEquipmentComponent::CombattemEndCooldown, CombatItemCooltime, false);
+    }
+    else if (SlotTag.MatchesTagExact(PeCoGameplayTags::Item_Consumption))
+    {
+        bConsuptionItemCooldown = true;
+        OnCooldownStart.Broadcast(SlotTag, ConsumptionItemCooltime);
+        GetWorld()->GetTimerManager().SetTimer(ConsumptionCooldownTimer, this, &UEquipmentComponent::ConsumptionItemEndCooldown, ConsumptionItemCooltime, false);
+    }
+}
+void UEquipmentComponent::CombattemEndCooldown()
+{
+    bCombatItemCooldown = false;
+    OnCooldownEnd.Broadcast(PeCoGameplayTags::Item_Combat);
+
+}
+
+void UEquipmentComponent::ConsumptionItemEndCooldown()
+{
+    bConsuptionItemCooldown = false;
+    OnCooldownEnd.Broadcast(PeCoGameplayTags::Item_Consumption);
+}

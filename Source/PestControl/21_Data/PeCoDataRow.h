@@ -38,21 +38,7 @@ public:
 	int32 MoveSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AttackPower;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 AttackSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 DamageResistance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CriticalChance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CriticalDamage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 SkillCoolTime;
@@ -78,3 +64,75 @@ struct FWidgetInfoData : public FTableRowBase
 
 
 
+USTRUCT(BlueprintType)
+struct FStoreRewardPriceData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag GameplayTag;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 CommonPrice;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 RarePrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 EpicPrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 LegendaryPrice;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponEnhancementMaterialsData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<FGameplayTag, int32> RequiredMaterials; 
+};
+
+USTRUCT(BlueprintType)
+struct FSupplyProbablity
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> SupplyActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag ItemTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<int32> Probablities;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<int32> Amounts;
+};
+USTRUCT(BlueprintType)
+struct FSupplyData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)	
+	int32 LastLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FSupplyProbablity> SupplyMap;
+};
+
+USTRUCT(BlueprintType)
+struct FEnemyDropData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag ItemTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftClassPtr<AActor> Item;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DropRate; 
+};

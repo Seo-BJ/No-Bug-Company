@@ -17,26 +17,14 @@ class PESTCONTROL_API ALarvaLauncher : public AWeapon
 public:
 	ALarvaLauncher();
 
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void FirstEvolveLarvaLauncher();
-
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
-	void SecondEvolveLarvaLauncher();
-
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-
-public:
 	void ApplyWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
-
-	void ClearWitherEffect(APeCoEnemyCharacter* EnemyCharacter);
 
 	virtual void SpawnProjectile() override;
 
 protected:
+
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wither Effect")
 	float WitherDuration = 3.0f; 
 
@@ -56,15 +44,15 @@ protected:
 	USceneComponent* EVBulletSpawnPoint;
 
 private:
+
 	TMap<AActor*, FTimerHandle> WitherTimers; 
 	TMap<AActor*, FTimerHandle> EndWitherTimers;
 
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Evolution")
+	virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
+	virtual bool EvolveWeapon(int32 EvolveIndex) override;
 	void LarvaLauncherEvolve();
+	void FirstEvolveLarvaLauncher();
+	void SecondEvolveLarvaLauncher();
 
-	int32 CurrentEvolveLevel = 0;
 
-	virtual void Enhencement(int32 EnhencementIndex) override;
 };

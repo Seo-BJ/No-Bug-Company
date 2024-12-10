@@ -40,12 +40,7 @@ void UPlayerStatPresenterComponent::BroadcastInitialValues()
 		OnHealthChanged.Broadcast(0, PlayerState->GetHealth());
 		OnMaxHealthChanged.Broadcast(0, PlayerState->GetMaxHealth());
 		OnMoveSpeedChanged.Broadcast(0, PlayerState->GetMoveSpeed());
-		OnAttackPowerChanged.Broadcast(0, PlayerState->GetAttackPower());
-		OnAttackSpeedChanged.Broadcast(0, PlayerState->GetAttackSpeed());
 		OnDamageResistanceChanged.Broadcast(0, PlayerState->GetDamageResistance());
-		OnCriticalChanceChanged.Broadcast(0, PlayerState->GetCriticalChance());
-		OnCriticalDamageChanged.Broadcast(0, PlayerState->GetCriticalDamage());
-		OnRangeChanged.Broadcast(0, PlayerState->GetRange());
 		OnSkillCoolTimeChanged.Broadcast(0, PlayerState->GetSkillCoolTime());
 	}
 }
@@ -72,40 +67,10 @@ void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
 				OnMoveSpeedChanged.Broadcast(OldValue, NewValue);
 			}
 		);
-		PlayerState->AttackPower.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnAttackPowerChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->AttackSpeed.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnAttackSpeedChanged.Broadcast(OldValue, NewValue);
-			}
-		);
 		PlayerState->DamageResistance.OnStatChanged.AddLambda(
 			[this](const float OldValue, const float NewValue)
 			{
 				OnDamageResistanceChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->CriticalChance.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnCriticalChanceChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->CriticalDamage.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnCriticalDamageChanged.Broadcast(OldValue, NewValue);
-			}
-		);
-		PlayerState->Range.OnStatChanged.AddLambda(
-			[this](const float OldValue, const float NewValue)
-			{
-				OnRangeChanged.Broadcast(OldValue, NewValue);
 			}
 		);
 		PlayerState->SkillCoolTime.OnStatChanged.AddLambda(
@@ -144,7 +109,7 @@ void UPlayerStatPresenterComponent::MultiplyHealth(float Percent, AActor* Causer
 }
 
 #pragma region Speed Buff
-void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
+void UPlayerStatPresenterComponent::BuffSpeed(float Percent, float BuffTime)
 {
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
 	if (PeCoPlayerState)
@@ -154,9 +119,9 @@ void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCro
 			PlayerCharcater->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UPlayerStatPresenterComponent::ResetSpeeds, BuffTime);
 			if (PlayerCharcater->GetCharacterMovement())
 			{
-				SetInitialSpeeds(PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed, PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched);
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = BuffBaseSpeed;
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = BuffCrouchSpeed;
+				
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = (1 + (Percent/100))* PeCoPlayerState->GetMoveSpeed();
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = (1 + (Percent / 100)) * PeCoPlayerState->GetMoveSpeed();
 			}
 		}
 	}
@@ -168,16 +133,12 @@ void UPlayerStatPresenterComponent::ResetSpeeds()
 	{
 		if (APeCoPlayerCharacter* PlayerCharcater = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
 		{
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = InitialBaseSpeed;
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = InitialCrouchSpeed;
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = PeCoPlayerState->GetMoveSpeed();
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = PeCoPlayerState->GetMoveSpeed();
 		}
 	}
 }
-void UPlayerStatPresenterComponent::SetInitialSpeeds(float BaseSpeed, float CrouchSpeed)
-{
-	InitialBaseSpeed = BaseSpeed;
-	InitialCrouchSpeed = CrouchSpeed;
-}
+
 #pragma endregion
 
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)

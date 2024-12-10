@@ -2,13 +2,23 @@
 
 
 
-#include "07_Weapon/Weapon.h"
+#include "Weapon.h"
+
+#include "01_Character/PeCoEnemyCharacter.h" 
+#include "01_Character/Components/InventoryComponent.h"
+
+#include "04_UI/PeCoHUD.h"
+
 #include "07_Weapon/Projectile.h"
 #include "07_Weapon/ConicalWeapon/Flamethrower.h" 
 
-#include "01_Character/PeCoEnemyCharacter.h" 
+#include "20_System/PeCoGameInstance.h"
+#include "20_System/PeCoFunctionLibrary.h"
 
-#include "04_UI/PeCoHUD.h"
+#include "21_Data/PeCoDataRow.h"
+
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,7 +26,6 @@
 // Sets default values
 AWeapon::AWeapon()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -28,67 +37,75 @@ AWeapon::AWeapon()
     BulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Bullet Spawn Point"));
     BulletSpawnPoint->SetupAttachment(WeaponMesh);
 
-    CurrentLevel = 1;
-
-    EnhencementLevel = 0;
-
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackPower, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Damage, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_AttackSpeed, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 0);
+    WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 0);
 }
 
-// Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-    LoadWeaponStats(CurrentLevel);
-    
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, true);
+    InitWeaponData();
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), true);
 }
-
-// Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void AWeapon::LoadWeaponStats(int32 Level)
+
+void AWeapon::InitWeaponData()
 {
-    if (WeaponID.IsNone())
+    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+    if (!IsValid(GameInstance))
     {
-        WeaponID = FName(TEXT("NoWeapon"));
+        return;
     }
-    FString RowNameString = FString::Printf(TEXT("%s_Lv%d"), *WeaponID.ToString(), Level);
-    FName RowName = FName(*RowNameString);
-
-    if (WeaponDataTable)
+    UDataTable* WeaponMaterialDataTable = GameInstance->WeaponInitInfoDataTable;
+    if (!IsValid(WeaponMaterialDataTable))
     {
-        FWeaponStats* WeaponStats = WeaponDataTable->FindRow<FWeaponStats>(RowName, TEXT(""));
-        if (WeaponStats)
-        {
-            BaseDamage = WeaponStats->BaseDamage;
-            DamageMultiplier = WeaponStats->DamageMultiplier;
-            CriticalChance = WeaponStats->CriticalChance;
-            CriticalDamageMultiplier = WeaponStats->CriticalDamageMultiplier;
-            Cooldown = WeaponStats->Cooldown;
-            Delay = WeaponStats->Delay;
-            NumberOfProjectiles = WeaponStats->NumberOfProjectiles;
-            Ammo = WeaponStats->Ammo;
-            MaxAmmo = WeaponStats->Ammo;
-            ReloadCoolDown = WeaponStats->ReloadCoolDown;
-            FireAngle = WeaponStats->FireAngle;
-            RangeRadius = WeaponStats->RangeRadius;
+        UE_LOG(LogTemp, Error, TEXT("Weapon Material Data Table 없음."));
+        return;
+    }
+    FName RowName = WeaponTag.GetTagName();
+    FWeaponStats* RowData = WeaponMaterialDataTable->FindRow<FWeaponStats>(
+        RowName,
+        TEXT("Read Weapon Init Stat Data"),
+        true
+    );
+    if (RowData == nullptr)
+    {
+        return;
+    }
+    BaseDamage = RowData->BaseDamage;
+    DamageMultiplier = RowData->DamageMultiplier;
+    CriticalChance = RowData->CriticalChance;
+    CriticalDamageMultiplier = RowData->CriticalDamageMultiplier;
+    Cooldown = RowData->Cooldown;
+    Delay = RowData->Delay;
+    NumberOfProjectiles = RowData->NumberOfProjectiles;
+    Ammo = RowData->Ammo;
+    MaxAmmo = RowData->Ammo;
+    ReloadCoolDown = RowData->ReloadCoolDown;
+    FireAngle = RowData->FireAngle;
+    RangeRadius = RowData->RangeRadius;
+    Range = RowData->Range;
+}
 
-
-            UE_LOG(LogTemp, Log, TEXT("Loaded stats for %s at Level %d"), *WeaponID.ToString(), Level);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Weapon stats not found in Data Table for %s at Level %d"), *WeaponID.ToString(), Level);
-        }
+bool AWeapon::GetCriticalDamage(float& OutDamage)
+{
+    if (FMath::RandRange(0.f, 1.f) <= CriticalChance)
+    {
+        OutDamage = GetActualDamage() * CriticalDamageMultiplier;
+        return true;
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("WeaponDataTable is null"));
+        OutDamage = GetActualDamage();
+        return false;
     }
 }
 
@@ -118,13 +135,12 @@ void AWeapon::FireWeapon()
         break;
 
     default:
-        UE_LOG(LogTemp, Warning, TEXT("Unknown weapon type"));
         break;
     }
-
+    OnFire.Broadcast(Ammo, MaxAmmo);
     if (Ammo > 0)
     {
-        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+        GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
     }
     else
     {
@@ -134,17 +150,17 @@ void AWeapon::FireWeapon()
 
 void AWeapon::StartReload()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
-
+    bIsReloading = true;
+    OnStartReload.Broadcast(ReloadCoolDown);
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::Reload, ReloadCoolDown, false);
 }
 
 void AWeapon::Reload()
 {
+    bIsReloading = false;
     Ammo = MaxAmmo;
-    UE_LOG(LogTemp, Log, TEXT("Reload complete. Ammo refilled to %d"), Ammo);
-
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, Cooldown, false);
+    // UE_LOG(LogTemp, Log, TEXT("Reload complete. Ammo refilled to %d"), Ammo);
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), false);
 }
 
 
@@ -163,24 +179,16 @@ void AWeapon::SpawnProjectile()
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
 
     AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
+   
+    if(Projectile)
+    { 
+        float ActualDamage = 0.f;
+        GetCriticalDamage(ActualDamage);
 
-    float ActualDamage = BaseDamage * DamageMultiplier ;
-    if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-    {
-        ActualDamage *= CriticalDamageMultiplier;
+        Projectile->SetDamage(ActualDamage);
+        Projectile->SetOwner(this);
     }
-
-    Projectile->SetDamage(ActualDamage);
-    Projectile->SetOwner(this);
-
-    //if (Projectile)
-    //{
-    //    UE_LOG(LogTemp, Log, TEXT("Projectile spawned with Owner: %s and Instigator: %s"),
-    //        *Projectile->GetOwner()->GetName(),
-    //        Projectile->GetInstigator() ? *Projectile->GetInstigator()->GetName() : TEXT("None"));
-    //}
 }
-
 void AWeapon::ProjectileFire()
 {
     for (int32 i = 1; i <= NumberOfProjectiles; i++)
@@ -190,11 +198,8 @@ void AWeapon::ProjectileFire()
 
         GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::SpawnProjectile, DelayTime, false);
     }
-
     float TotalFireTime = FMath::Max(NumberOfProjectiles * Delay, Delay);
-   
 }
-
 
 void AWeapon::ShotgunFire()
 {
@@ -227,46 +232,17 @@ void AWeapon::ShotgunFire()
                 MovementComponent->Velocity = NewDirection * MovementComponent->InitialSpeed;
             }
 
-            float ActualDamage = BaseDamage * DamageMultiplier;
-            if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-            {
-                ActualDamage *= CriticalDamageMultiplier;
-            }
+            float ActualDamage = 0.f;
+            GetCriticalDamage(ActualDamage);
 
             Projectile->SetDamage(ActualDamage);
             Projectile->SetOwner(this);
         }
     }
 }
-
 void AWeapon::StartShotgunCooldown()
 {
-    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ShotgunFire, Cooldown, false);
-}
-
-void AWeapon::LevelUp()
-{
-    if (CurrentLevel < 3)
-    {
-        CurrentLevel++;
-        LoadWeaponStats(CurrentLevel);
-        UE_LOG(LogTemp, Log, TEXT("Weapon leveled up to Level %d"), CurrentLevel);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Max level reached! No more leveling up."));
-    }
-}
-
-void AWeapon::Enhencement(int32 EnhencementIndex)
-{
-    ++EnhencementLevel;
-}
-
-void AWeapon::InitInfo()
-{
-    InitialLocation = GetActorLocation();
-    InitialRotation = GetActorRotation();
+    GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::ShotgunFire, GetActualCoolDown(), false);
 }
 
 void AWeapon::ConicalFire()
@@ -287,16 +263,13 @@ void AWeapon::ConicalFire()
     //    }
     //}
 
-    InitInfo();
-
-    for (int32 i = 1; i < Cooldown / Delay + 1 ; i++)
+    for (int32 i = 1; i < GetActualCoolDown() / Delay + 1 ; i++)
     {
         FTimerHandle TempHandle;
         float DelayTime = FMath::Max(i * Delay, Delay);
         GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::DealDamageInSector, DelayTime, false);
     }
 }
-
 void AWeapon::DealDamageInSector()
 {
     FVector WeaponLocation = GetActorLocation();
@@ -349,17 +322,14 @@ void AWeapon::DealDamageInSector()
                     APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OverlappedActor);
                     if (EnemyCharacter)
                     {
-                        float ActualDamage = BaseDamage * DamageMultiplier;
-                        if (FMath::RandRange(0.f, 1.f) < CriticalChance)
-                        {
-                            ActualDamage *= CriticalDamageMultiplier;
-                        }
+                        float ActualDamage = 0.f;
+                        GetCriticalDamage(ActualDamage);
 
                         UGameplayStatics::ApplyDamage(EnemyCharacter, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 
                         UE_LOG(LogTemp, Log, TEXT("Enemy %s hit by sector fire Damage: %f"), *EnemyCharacter->GetName(), ActualDamage);
 
-                        if (WeaponID == FName("Flamethrower"))
+                        if (WeaponTag.MatchesTagExact(PeCoGameplayTags::Weapon_Conical_Flamethrower))
                         {
                             AFlamethrower* Flamethrower = Cast<AFlamethrower>(this);
                             if (Flamethrower)
@@ -372,4 +342,158 @@ void AWeapon::DealDamageInSector()
             }
         }
     }
+}
+
+
+
+
+void AWeapon::UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount)
+{
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackPower)) //피해량
+    {
+        DamageMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //공격력
+    {
+        BaseDamage += UpgradeAmount;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackSpeed))
+    {
+        CooldownMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+    {
+        CriticalChance += UpgradeAmount/100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalDamage))
+    {
+        CriticalDamageMultiplier += UpgradeAmount / 100;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
+    {
+        Range += UpgradeAmount;
+    }
+    int32* Level = WeaponStatLevelMap.Find(StatTag);
+    *Level += 1;
+}
+
+float AWeapon::GetStatValueByTag(FGameplayTag StatTag)
+{
+    if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage) || StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage)) //피해량
+    {
+        return GetActualDamage();
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_AttackSpeed))
+    {
+        return GetAttackSpeedPerSecond();
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+    {
+        return CriticalChance;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalDamage))
+    {
+        return GetActualDamage() * CriticalDamageMultiplier;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Range))
+    {
+        return Range;
+    }
+    else if (StatTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_MaxAmmo))
+    {
+        return MaxAmmo;
+    }
+
+    return -1;
+}
+
+
+
+
+bool AWeapon::CanEnhancementWeapon()
+{
+    AActor* OwnerCharacter = GetOwner();
+    if (!IsValid(OwnerCharacter))
+    {
+        return false;
+    }
+    UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(OwnerCharacter);
+    if (!IsValid(InventoryComponent))
+    {
+        return false;
+    }
+     
+    return InventoryComponent->HasEnoughMaterials(GetWeaponMaterialData(EnhancementLevel, true));
+}
+bool AWeapon::CanEvolveWeapon()
+{
+    if (EnhancementLevel <= 4) return false;
+
+    AActor* OwnerCharacter = GetOwner();
+    if (!IsValid(OwnerCharacter))
+    {
+        return false;
+    }
+    UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(OwnerCharacter);
+    if (!IsValid(InventoryComponent))
+    {
+        return false;
+    }
+
+    return InventoryComponent->HasEnoughMaterials(GetWeaponMaterialData(EvolveLevel, false));
+}
+
+bool AWeapon::EnhancementWeapon(int32 EnhancementIndex)
+{
+    if (!CanEnhancementWeapon())
+    {
+        return false;
+    }
+    EnhancementLevel += 1;
+    return true;
+
+}
+bool AWeapon::EvolveWeapon(int32 EvolveIndex)
+{
+    if (!CanEvolveWeapon())
+    {
+        return false;
+    }
+    EvolveLevel += 1;
+    return true;
+}
+
+TMap<FGameplayTag, int32> AWeapon::GetWeaponMaterialData(int32 CurrentLevel, bool bEnhancement)
+{
+    TMap<FGameplayTag, int32> MaterialMap;
+    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+    if (!IsValid(GameInstance))
+    {
+        return MaterialMap;
+    }
+    // to do bIsEnhancement 쓰기.
+    UDataTable* WeaponMaterialDataTable =* GameInstance->WeaponEvolveMaterialDataTableMap.Find(WeaponTag);
+    if (!IsValid(WeaponMaterialDataTable))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
+        return MaterialMap;
+    }
+    AActor* OwnerCharacter = GetOwner();
+    if (!IsValid(OwnerCharacter))
+    {
+        return MaterialMap;
+    }
+    UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(OwnerCharacter);
+    if (!IsValid(InventoryComponent))
+    {
+        return MaterialMap;
+    }
+    FName RowName = FName(*FString::FromInt(CurrentLevel + 1));
+    FWeaponEnhancementMaterialsData* RowData = WeaponMaterialDataTable->FindRow<FWeaponEnhancementMaterialsData>(
+        RowName,
+        TEXT("Read Weapon Enhancement Materials"),
+        true
+    );
+    MaterialMap = RowData->RequiredMaterials;
+    return MaterialMap;
 }

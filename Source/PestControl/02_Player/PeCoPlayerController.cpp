@@ -97,14 +97,12 @@ void APeCoPlayerController::SetupInputComponent()
 void APeCoPlayerController::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
 	CurrentMoveDirection = MovementVector;
 
-	const FRotator	Rotation = GetControlRotation();
-	const FRotator	YawRotation(0, Rotation.Yaw, 0);
+	const FRotator Rotation = GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 	if (GetPawn())
@@ -112,22 +110,28 @@ void APeCoPlayerController::Move(const FInputActionValue& Value)
 		GetPawn()->AddMovementInput(ForwardDirection, MovementVector.X);
 		GetPawn()->AddMovementInput(RightDirection, MovementVector.Y);
 	}
-
 }
+
 void APeCoPlayerController::Dash(const FInputActionValue& Value)
 {
-	if (bCanDash && !CurrentMoveDirection.IsNearlyZero())
+	if (!bCanDash || bIsDashing || CurrentMoveDirection.IsNearlyZero(0.1f))
 	{
-		FVector DashDirection = FVector(CurrentMoveDirection.X, CurrentMoveDirection.Y, 0.0f).GetSafeNormal();
-		ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
-		if (ControlledCharacter)
+		return;
+	}
+
+	ACharacter* ControlledCharacter = Cast<ACharacter>(GetPawn());
+	if (ControlledCharacter)
+	{
+		APeCoPlayerCharacter* PeCoCharacter = Cast<APeCoPlayerCharacter>(ControlledCharacter);
+		if (PeCoCharacter)
 		{
-			DashDistance = DashDirection * (DashVelocity * DashDuration);
-			ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = DashDistance.Size();
-			bCanDash = false;
-			GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashDuration, false);
-			OnStartDash.Broadcast();
-		}	
+			PeCoCharacter->PlayRollAnimation();
+		}
+
+		bIsDashing = true; 
+		bCanDash = false; 
+		GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::ResetDash, DashDuration, false);
+		OnStartDash.Broadcast();
 	}
 }
 
@@ -215,6 +219,7 @@ void APeCoPlayerController::ResetDash()
 	{
 		ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.f; 
 	}
+	bIsDashing = false;
 	GetWorldTimerManager().SetTimer(DashTimer, this, &APeCoPlayerController::CoolDownDash, DashCooldown, false);
 	OnStartDashCooldown.Broadcast(DashCooldown);
 }
@@ -276,7 +281,7 @@ void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 	}
 }
 
-void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
+void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
 {
 	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
 	if (PeCoHUD && PeCoHUD->GetDamageTextComponnet())
@@ -286,6 +291,19 @@ void APeCoPlayerController::ShowDamageText(float DamageAmount, APeCoCharacter* T
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
+	}
+}
+
+void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap)
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowSupply(SupplyResultMap);
+		}
 	}
 }
 

@@ -9,8 +9,9 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption, "Item.Consumption");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Combat, "Item.Combat");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Material, "Item.Material");
-	
-	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Health, "Item.Consumption.Health");
+
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_EnergyDrink, "Item.Consumption.EnergyDrink");
+	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_FirstAidKit, "Item.Consumption.FirstAidKit");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Speed, "Item.Consumption.Speed");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Power, "Item.Consumption.Power");
 	UE_DEFINE_GAMEPLAY_TAG(Item_Consumption_Adrenaline, "Item.Consumption.Adrenaline");
@@ -34,16 +35,28 @@ namespace PeCoGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_RoachShooter, "Weapon.Projectile.RoachShooter");
 	UE_DEFINE_GAMEPLAY_TAG(Weapon_Projectile_WebRevolver, "Weapon.Projectile.WebRevolver");
 
+	UE_DEFINE_GAMEPLAY_TAG(PlayerStat, "PlayerStat");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Health, "PlayerStat.Health");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MaxHealth, "PlayerStat.MaxHealth");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_MoveSpeed, "PlayerStat.MoveSpeed");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackPower, "PlayerStat.AttackPower");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_AttackSpeed, "PlayerStat.AttackSpeed");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_DamageResistance, "PlayerStat.DamageResistance");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalChance, "PlayerStat.CriticalChance");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_CriticalDamage, "PlayerStat.CriticalDamage");
-	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_Range, "PlayerStat.Range");
 	UE_DEFINE_GAMEPLAY_TAG(PlayerStat_SkillCoolTime, "PlayerStat.SkillCoolTime");
+
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat, "WeaponStat");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Damage, "WeaponStat.Damage");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_AttackPower, "WeaponStat.AttackPower");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_AttackSpeed, "WeaponStat.AttackSpeed");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_CriticalChance, "WeaponStat.CriticalChance");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_CriticalDamage, "WeaponStat.CriticalDamage");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_Range, "WeaponStat.Range");
+	UE_DEFINE_GAMEPLAY_TAG(WeaponStat_MaxAmmo, "WeaponStat.MaxAmmo");
+
+	UE_DEFINE_GAMEPLAY_TAG(Enemy, "Enemy");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider, "Enemy.Spider.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider_Normal, "Enemy.Spider.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Spider_Boss, "Enemy.Spider.Boss");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Mosquito, "Enemy.Mosquito");
+	UE_DEFINE_GAMEPLAY_TAG(Enemy_Mosquito_Normal, "Enemy.Mosquito.Normal");
 
 
 	FGameplayTagContainer GetRandomTags(const FGameplayTagContainer& TargetTagContainer, int Count)
@@ -51,22 +64,29 @@ namespace PeCoGameplayTags
 		TArray<FGameplayTag> TagsArray;
 		TargetTagContainer.GetGameplayTagArray(TagsArray);
 		FGameplayTagContainer RandomTags;
-
+	
 		if (Count <= 0 || TagsArray.Num() == 0)
 		{
-			return RandomTags; // 빈 컨테이너 반환
+			return RandomTags;
 		}
 
-		// Count와 AvailableTags의 크기 비교 후 안전하게 처리
 		int32 MaxCount = FMath::Min(Count, TagsArray.Num());
 
 		while (RandomTags.Num() < MaxCount)
 		{
 			int32 RandomIndex = FMath::RandRange(0, TagsArray.Num() - 1);
 			RandomTags.AddTag(TagsArray[RandomIndex]);
-			TagsArray.RemoveAt(RandomIndex); // 중복 방지
+			TagsArray.RemoveAt(RandomIndex); 
 		}
 
 		return RandomTags;
+	}
+	PESTCONTROL_API FGameplayTagContainer GetChildTags(const FGameplayTag& ParentTag)
+	{
+		// GameplayTagsManager�� ���� �±� �˻�
+		const UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
+
+		// �ڽ� �±� �˻�
+		return TagManager.RequestGameplayTagChildrenInDictionary(ParentTag);
 	}
 }

@@ -2,6 +2,7 @@
 
 
 #include "07_Weapon/Projectile.h"
+#include "07_Weapon/Weapon.h"
 #include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "07_Weapon/ProjectileWeapon/WebRevolver.h"
 #include "07_Weapon/ProjectileWeapon/AirGun.h"
@@ -14,6 +15,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 #include "Kismet/GameplayStatics.h"
 
 
@@ -23,11 +27,10 @@ AProjectile::AProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
-    SetRootComponent(RootSceneComponent);
-
+    //RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
-    ProjectileMesh -> SetupAttachment(RootSceneComponent);
+    SetRootComponent(ProjectileMesh);
+    //ProjectileMesh -> SetupAttachment(RootSceneComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 	ProjectileMovementComponent->MaxSpeed = 1300.f;
@@ -40,8 +43,27 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	StartLocation = GetActorLocation();
+    AWeapon* OwnerWeapon = Cast<AWeapon>(GetOwner());
+    if (OwnerWeapon)
+    {
+        MaxDistance = OwnerWeapon->GetRange();
+    }
 
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+    
+    if (NiagaraTraceEffect)
+    {
+        FVector SpawnLocation = GetActorLocation();
+        FRotator SpawnRotation = GetActorRotation();
+
+        ActiveTraceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            NiagaraTraceEffect,
+            SpawnLocation,
+            SpawnRotation,
+            TraceEffectScale
+        );
+    }
 }
 
 
@@ -68,6 +90,7 @@ UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() cons
 {
 	return ProjectileMovementComponent;
 }
+
 
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -111,12 +134,33 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
             {
                 WebRevolverWeapon->ApplySlowEffect(HitEnemy, WebRevolverWeapon->SlowMultiplier);
 
-                if(WebRevolverWeapon->bIsEvolved)
+                if(WebRevolverWeapon->HasWeaponEvolved())
                 { 
                     WebRevolverWeapon->SpawnFragmentProjectiles(GetActorLocation(), GetActorRotation());
                 }
             }
         }
-        Destroy();
+        ProjectileMesh->SetVisibility(false);
+        ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ 
+        if (NiagaraImpactEffect)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                NiagaraImpactEffect,
+                GetActorLocation(),
+                GetActorRotation(),
+                ImpactEffectScale
+            );
+        }
+
+        SetLifeSpan(0.2f); 
+
+        if (ActiveTraceEffect)
+        {
+            ActiveTraceEffect->DestroyComponent();
+        }
+
+        //Destroy();
     }
 }

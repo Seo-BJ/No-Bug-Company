@@ -27,6 +27,8 @@
 
 #include "20_System/PeCoGameInstance.h"
 
+#include "Animation/AnimInstance.h"
+
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -73,7 +75,7 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	WeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Spawn Point"));
-	WeaponSpawnPoint->SetupAttachment(RootComponent);
+	//WeaponSpawnPoint->SetupAttachment(RootComponent);
 
 	SecondWeaponSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SecondWeapon Spawn Point"));
 	SecondWeaponSpawnPoint->SetupAttachment(WeaponSpawnPoint);
@@ -105,15 +107,14 @@ void APeCoPlayerCharacter::BeginPlay()
 
 	InitializeWeaponClasses();
 
-
-
 	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
 	if (IsValid(GameInstance))
 	{
 		SpawnWeapon(GameInstance->SelectedWeaponTag);
 	}
-}
+	InitPlayerCharacter();
 
+}
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -124,6 +125,34 @@ void APeCoPlayerCharacter::Tick(float DeltaSeconds)
 		MoveWeaponSpawnPoint(TargetLocation);
 	}
 }
+void APeCoPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
+	if (PeCoPlayerState)
+	{
+		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
+	}
+
+}
+
+void APeCoPlayerCharacter::InitPlayerCharacter()
+{
+	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
+	check(PeCoPS);
+	PeCoPS->InitPlayerStat();
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
+	}
+
+	APeCoPlayerController* PeCOPC = CastChecked<APeCoPlayerController>(GetController());
+	APeCoHUD* PeCoHUD = CastChecked<APeCoHUD>(PeCOPC->GetHUD());
+	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
+
+}
+
 
 FVector APeCoPlayerCharacter::GetTargetCursorLocation()
 {
@@ -200,41 +229,6 @@ ETeam APeCoPlayerCharacter::GetTeam()
 	return PeCoPlayerState->Team;
 }
 
-
-void APeCoPlayerCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	InitPlayerCharacter();
-	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
-	if (PeCoPlayerState)
-	{
-		PeCoPlayerState->SetTeam(ETeam::ET_Player);  // Set Player Team		
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerState is nullptr in APeCoPlayerCharacter PossessedBy!"));
-	}
-
-}
-
-void APeCoPlayerCharacter::InitPlayerCharacter()
-{
-	APeCoPlayerState* PeCoPS = GetPlayerState<APeCoPlayerState>();
-	check(PeCoPS);
-	PeCoPS->InitPlayerStat();
-	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = PeCoPS->GetMoveSpeed();
-	}
-
-	APeCoPlayerController* PeCOPC = Cast<APeCoPlayerController>(GetController());
-	check(PeCOPC);
-
-	APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCOPC->GetHUD());
-	check(PeCoHUD);
-	PeCoHUD->InitOverlay(PeCOPC, PeCoPS);
-}
-
 void APeCoPlayerCharacter::InitializeWeaponClasses()
 {
 	WeaponClassMap.Add(PeCoGameplayTags::Weapon_Projectile_LarvaLauncher, LarvaLauncherClass);
@@ -270,9 +264,6 @@ void APeCoPlayerCharacter::SpawnWeapon(FGameplayTag WeaponTag)
 	if (SpawnedWeapon)
 	{
 		SpawnedWeapon->AttachToComponent(WeaponSpawnPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
-
-		SpawnedWeapons.Add(WeaponTag, SpawnedWeapon);
-
 		UE_LOG(LogTemp, Log, TEXT("Spawned and attached weapon: %s"), *WeaponTag.ToString());
 
 	}
@@ -310,4 +301,16 @@ void APeCoPlayerCharacter::EndCrashInvincible()
 {
 	bIsCrashInvincible = false;
 	UE_LOG(LogTemp, Warning, TEXT("Player is no longer invincible."));
+}
+
+void APeCoPlayerCharacter::PlayRollAnimation()
+{
+	if (RollForwardMontage) // RollForwardMontage는 Anim Montage 에셋입니다.
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && !AnimInstance->Montage_IsPlaying(RollForwardMontage))
+		{
+			AnimInstance->Montage_Play(RollForwardMontage);
+		}
+	}
 }

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "00_GameModes/PeCoGameMode.h"
-
+#include "PeCoGameMode.h"
+#include "00_GameModes/Components/StoreComponent.h"
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 #include "TimerManager.h"
@@ -18,7 +18,7 @@ APeCoGameMode::APeCoGameMode()
 
 	// 라운드별 시간 설정
 	RoundTimes = { 180.0f, 180.0f, 240.0f, 240.0f, 300.0f }; // 초 단위로 설정 (3분, 3분, 4분, 4분, 5분)
-
+	StoreComponent = CreateDefaultSubobject<UStoreComponent>(TEXT("StoreComponent"));
 }
 
 void APeCoGameMode::BeginPlay()
@@ -26,29 +26,16 @@ void APeCoGameMode::BeginPlay()
 	Super::BeginPlay();
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
 	
-
 	// 스포너 생성
 	FVector SpawnLocation(2110.f, 1640.f, 100.f);
 	FRotator SpawnRotation = FRotator::ZeroRotator;
 	
-	if (EnemySpawnerClass)
+	if (IsValid(EnemySpawnerClass))
 	{
 		EnemySpawnerInstance = GetWorld()->SpawnActor<APeCoEnemySpawner>(EnemySpawnerClass, SpawnLocation, SpawnRotation);
-
-		if (EnemySpawnerInstance)
-		{
-			UE_LOG(LogTemp, Log, TEXT("EnemySpawnerInstance successfully created."));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to create EnemySpawnerInstance."));
-		}
 	}
 
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("EnemySpawnerClass is not set in GameMode!"));
-	}
+
 	
 	StartNextRound();
 
