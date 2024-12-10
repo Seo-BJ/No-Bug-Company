@@ -69,12 +69,12 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 			if (Flamethrower && Flamethrower->HasWeaponEvolved())
 			{
 				Flamethrower->SpawnWreckage(GetActorLocation());
-				DropItem(true);
+				//DropItem(true);
 			}
 		}
 		else
 		{
-			DropItem(false);
+			// DropItem(false);
 		}
 		//End of Flamethrower Wreckage
 
@@ -96,6 +96,7 @@ void APeCoEnemyCharacter::CharacterDie()
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	Destroy();
 }
 
 
