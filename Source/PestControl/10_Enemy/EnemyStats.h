@@ -38,4 +38,8 @@ struct FEnemyStats : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
     float FlySpeed;
     
+    // 보스 여부 (추가)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
+    bool bIsBoss;
+
 };
