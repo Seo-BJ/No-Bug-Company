@@ -5,11 +5,9 @@
 #include "10_Enemy/PeCoGroundEnemyCharacter.h"
 #include "10_Enemy/PeCoFlyingEnemyCharacter.h"
 
-#include "10_Enemy/PeCoLarvaCharacter.h"
-#include "10_Enemy/PeCoFlyCharacter.h"
 #include "10_Enemy/PeCoSpiderCharacter.h"
-#include "10_Enemy/PeCoRoachCharacter.h"
 #include "10_Enemy/PeCoMosquitoCharacter.h"
+#include "10_Enemy/BossEnemy.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -23,12 +21,9 @@ APeCoEnemySpawner::APeCoEnemySpawner()
 	PrimaryActorTick.bCanEverTick = true;
 
     // EnemyID와 클래스 매핑 초기화
-    EnemyIDToClassMap.Add("Larva", APeCoLarvaCharacter::StaticClass());
-    EnemyIDToClassMap.Add("Fly", APeCoFlyCharacter::StaticClass());
     EnemyIDToClassMap.Add("Spider", APeCoSpiderCharacter::StaticClass());
-    EnemyIDToClassMap.Add("Roach", APeCoRoachCharacter::StaticClass());
     EnemyIDToClassMap.Add("Mosquito", APeCoMosquitoCharacter::StaticClass());
-
+    EnemyIDToClassMap.Add("Boss", ABossEnemy::StaticClass()); 
 
 }
 
@@ -67,7 +62,7 @@ void APeCoEnemySpawner::UpdateEnemyPool()
 
     for (FEnemyStats* Stats : AllRows)
     {
-        if (Stats && Stats->Round == CurrentRound)
+        if (Stats && Stats->Round == CurrentRound && !Stats->bIsBoss)
         {
             CurrentRoundStats.Add(*Stats);
         }
@@ -153,7 +148,8 @@ void APeCoEnemySpawner::SpawnEnemies()
             if (SpawnedEnemy)
             {
                 SpawnedEnemy->ApplyStatsFromData(Stats);
-                UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s"), *SpawnedEnemy->GetName());
+                UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with health %.2f"), *SpawnedEnemy->GetName(), Stats.Health);
+                //UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s"), *SpawnedEnemy->GetName());
             }
             else
             {
