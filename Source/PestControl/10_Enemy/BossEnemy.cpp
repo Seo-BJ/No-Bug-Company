@@ -13,6 +13,7 @@
 ABossEnemy::ABossEnemy()
 {
     EnemyID = "Boss";
+    EnemyTag = PeCoGameplayTags::Enemy_Spider_Boss;
     
     // 이동 및 회전 설정
     bUseControllerRotationYaw = false; 

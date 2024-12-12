@@ -69,12 +69,12 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 			if (Flamethrower && Flamethrower->HasWeaponEvolved())
 			{
 				Flamethrower->SpawnWreckage(GetActorLocation());
-				//DropItem(true);
+				DropItem(true);
 			}
 		}
 		else
 		{
-			// DropItem(false);
+			DropItem(false);
 		}
 		//End of Flamethrower Wreckage
 
@@ -96,7 +96,7 @@ void APeCoEnemyCharacter::CharacterDie()
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	Destroy();
+	//Destroy();
 }
 
 
@@ -160,8 +160,7 @@ void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 
 void APeCoEnemyCharacter::DropItem(bool bDropFlameSample)
 {
-	APeCoGameMode* GameMode = CastChecked<APeCoGameMode>(GetOwner());
-	UPeCoGameInstance* GameInstance = CastChecked<UPeCoGameInstance>(GameMode->GetGameInstance());
+	UPeCoGameInstance* GameInstance = CastChecked<UPeCoGameInstance>(GetGameInstance());
 	UDataTable* DropTable = GameInstance->EnemyDropTable;
 	if (!DropTable)
 	{
@@ -206,6 +205,10 @@ void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
 			FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 			Streamable.RequestAsyncLoad(Row->Item.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &APeCoEnemyCharacter::SpawnItem, Row->Item.Get()));
 		}
+	}
+	else
+	{
+		Destroy();
 	}
 }
 
