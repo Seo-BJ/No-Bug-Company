@@ -21,7 +21,7 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USceneComponent* RootSceneComponent;
+	class UCapsuleComponent* RootCollisionComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	UStaticMeshComponent* ProjectileMesh;

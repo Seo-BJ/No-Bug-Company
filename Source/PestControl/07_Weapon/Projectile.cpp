@@ -11,6 +11,7 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -27,10 +28,13 @@ AProjectile::AProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    RootCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Root Collision Component"));
+    RootCollisionComponent->InitCapsuleSize(20.0f, 40.0f);
+    SetRootComponent(RootCollisionComponent);
+
     //RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
-    SetRootComponent(ProjectileMesh);
-    //ProjectileMesh -> SetupAttachment(RootSceneComponent);
+    ProjectileMesh -> SetupAttachment(RootCollisionComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 	ProjectileMovementComponent->MaxSpeed = 1300.f;
@@ -49,7 +53,7 @@ void AProjectile::BeginPlay()
         MaxDistance = OwnerWeapon->GetRange();
     }
 
-	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+    RootCollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
     
     if (NiagaraTraceEffect)
     {
@@ -140,8 +144,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
                 }
             }
         }
-        ProjectileMesh->SetVisibility(false);
-        ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        RootCollisionComponent->SetVisibility(false);
+        RootCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  
         if (NiagaraImpactEffect)
         {
@@ -154,13 +158,13 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
             );
         }
 
-        SetLifeSpan(0.2f); 
+        //SetLifeSpan(0.2f); 
 
         if (ActiveTraceEffect)
         {
             ActiveTraceEffect->DestroyComponent();
         }
 
-        //Destroy();
+        Destroy();
     }
 }
