@@ -72,7 +72,7 @@ int32 UStoreComponent::GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERew
 	UDataTable* StoreDataTable = GameInstance->StoreDataTable;
 	if (!StoreDataTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("»óÁ¡ µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½."));
+		UE_LOG(LogTemp, Error, TEXT("ìƒì  ë°ì´í„° í…Œì´ë¸” ì—†ìŒ."));
 		return -1;
 	}
 	FStoreRewardPriceData* Row = StoreDataTable->FindRow<FStoreRewardPriceData>(RewardTag.GetTagName(), TEXT("Read Reward Price"), false);
@@ -118,7 +118,7 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 	UCurveTable* UpgradeCurveTable = GameInstance->StatUpgradeCurveTable;
 	if (!UpgradeCurveTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ÇÃ·¹ÀÌ¾î ½ºÅÈ µ¥ÀÌÅÍ Å×ÀÌºí ¾øÀ½."));
+		UE_LOG(LogTemp, Error, TEXT("í”Œë ˆì´ì–´ ìŠ¤íƒ¯ ë°ì´í„° í…Œì´ë¸” ì—†ìŒ."));
 		return -1;
 	}
 	int32 OriginStatLevel = 0;
@@ -129,7 +129,7 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 		FRealCurve* StatCurve = UpgradeCurveTable->FindCurve(RowName, TEXT(""));
 		if (!StatCurve)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ä¿ºê Å×ÀÌºí¿¡¼­ ÇØ´ç Stat Curve¸¦ Ã£Áö ¸øÇÔ!"));
+			UE_LOG(LogTemp, Error, TEXT("ì»¤ë¸Œ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ Stat Curveë¥¼ ì°¾ì§€ ëª»í•¨!"));
 			return -1;
 		}
 		OriginStatLevel = TargetStat.GetStatLevel();
@@ -142,7 +142,7 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 		FRealCurve* StatCurve = UpgradeCurveTable->FindCurve(RowName, TEXT(""));
 		if (!StatCurve)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ä¿ºê Å×ÀÌºí¿¡¼­ ÇØ´ç Stat Curve¸¦ Ã£Áö ¸øÇÔ!"));
+			UE_LOG(LogTemp, Error, TEXT("ì»¤ë¸Œ í…Œì´ë¸”ì—ì„œ í•´ë‹¹ Stat Curveë¥¼ ì°¾ì§€ ëª»í•¨!"));
 			return -1;
 		}
 		OriginStatLevel = *PlayerCharacter->PlayerWeapon->WeaponStatLevelMap.Find(StatTag);
@@ -161,7 +161,7 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 		return false;
 	}
 
-	// ¼ÒÇÁÆ® ¿ÀºêÁ§Æ® Æ÷ÀÎÅÍ¿¡¼­ Å¬·¡½º ·Îµå
+	// ì†Œí”„íŠ¸ ì˜¤ë¸Œì íŠ¸ í¬ì¸í„°ì—ì„œ í´ë˜ìŠ¤ ë¡œë“œ
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 
 	if (IsValid(SoftItemClass.Get()))
