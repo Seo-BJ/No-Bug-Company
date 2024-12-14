@@ -7,6 +7,8 @@
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
 
+#include "07_Weapon/Weapon.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -147,5 +149,56 @@ void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
 	if (PeCoPlayerState)
 	{
 		PeCoPlayerState->UpgradeStat(StatTag);
+	}
+}
+
+void UPlayerStatPresenterComponent::BuffWeaponStat(FGameplayTag StatTag, float Amount, float BuffTime, float Percent)
+{
+	FTimerHandle WeaponStatBuffTimer;
+
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
+	if (PeCoPlayerState)
+	{
+		if (APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
+		{
+			if (PlayerCharacter->PlayerWeapon)
+			{
+				float CurrentValue = PlayerCharacter->PlayerWeapon->GetStatValueByTag(StatTag);
+				PreviousWeaponStats.Add(StatTag, CurrentValue);
+
+				if(Amount == 0)
+				{ 
+					float PercentMultiplier = Percent / 100;
+					PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, CurrentValue*PercentMultiplier);
+				}
+				else
+				{
+					PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, Amount);
+				}
+				PlayerCharacter->GetWorldTimerManager().SetTimer(WeaponStatBuffTimer, [this, StatTag]()
+					{
+						ResetWeaponStat(StatTag);
+					}, BuffTime, false);
+			}
+		}
+	}
+}
+
+void UPlayerStatPresenterComponent::ResetWeaponStat(FGameplayTag StatTag)
+{
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
+	if (PeCoPlayerState)
+	{
+		if (APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
+		{
+			if (PlayerCharacter->PlayerWeapon && PreviousWeaponStats.Contains(StatTag))
+			{
+				float PreviousValue = PreviousWeaponStats[StatTag];
+				float CurrentValue = PlayerCharacter->PlayerWeapon->GetStatValueByTag(StatTag);
+				PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, PreviousValue - CurrentValue);
+
+				PreviousWeaponStats.Remove(StatTag);
+			}
+		}
 	}
 }
