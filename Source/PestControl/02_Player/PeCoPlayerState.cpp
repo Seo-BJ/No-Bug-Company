@@ -48,22 +48,7 @@ void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const U
 	if (IsValid(PeCoGameMode))
 	{
 		Damage = PeCoGameMode->CalculateDamage(InstigatorController, GetPawn()->GetController(), Damage);
-		float DamageToHealth = Damage;
-		/*
-		if (Shield > 0.f)
-		{
-			if (Shield >= Damage)
-			{
-				Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
-				DamageToHealth = 0.f;
-			}
-			else
-			{
-				DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
-				Shield = 0.f;
-			}
-		}
-		*/
+		Damage = FMath::Clamp(Damage - Damage*(GetDamageResistance()/100), 0, Damage);
 		AddHealth(Damage * -1, InstigatorController, DamageCauser);
 	}	
 }
@@ -215,7 +200,7 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MoveSpeed))
 	{
-		MoveSpeed.AddAdditiveBonus(UpgradeAmount);
+		MoveSpeed.AddMultiplierBonus(UpgradeAmount/100);
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_DamageResistance))
 	{
@@ -223,7 +208,7 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_SkillCoolTime))
 	{
-		SkillCoolTime.AddAdditiveBonus(UpgradeAmount);
+		SkillCoolTime.AddAdditiveBonus(-UpgradeAmount);
 	}
 	else
 	{

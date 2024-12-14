@@ -57,8 +57,6 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
     bool bIsBossDead;
 
-    // 보스 초기화 후에 AIController에 설정할 변수
-    UPROPERTY(EditDefaultsOnly, Category = "Boss")
-    FName BossID = "Boss";
+   
         
 };

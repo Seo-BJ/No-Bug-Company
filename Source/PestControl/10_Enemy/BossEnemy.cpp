@@ -12,6 +12,8 @@
 
 ABossEnemy::ABossEnemy()
 {
+    EnemyID = "Boss";
+    
     // 이동 및 회전 설정
     bUseControllerRotationYaw = false; 
     GetCharacterMovement()->bOrientRotationToMovement = true; 

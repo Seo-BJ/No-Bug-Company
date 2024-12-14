@@ -7,6 +7,8 @@
 #include "02_Player/PeCoPlayerController.h"
 #include "02_Player/PeCoPlayerState.h"
 
+#include "07_Weapon/Weapon.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -109,7 +111,7 @@ void UPlayerStatPresenterComponent::MultiplyHealth(float Percent, AActor* Causer
 }
 
 #pragma region Speed Buff
-void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
+void UPlayerStatPresenterComponent::BuffSpeed(float Percent, float BuffTime)
 {
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
 	if (PeCoPlayerState)
@@ -119,9 +121,9 @@ void UPlayerStatPresenterComponent::BuffSpeed(float BuffBaseSpeed, float BuffCro
 			PlayerCharcater->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UPlayerStatPresenterComponent::ResetSpeeds, BuffTime);
 			if (PlayerCharcater->GetCharacterMovement())
 			{
-				SetInitialSpeeds(PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed, PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched);
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = BuffBaseSpeed;
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = BuffCrouchSpeed;
+				
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = (1 + (Percent/100))* PeCoPlayerState->GetMoveSpeed();
+				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = (1 + (Percent / 100)) * PeCoPlayerState->GetMoveSpeed();
 			}
 		}
 	}
@@ -133,16 +135,12 @@ void UPlayerStatPresenterComponent::ResetSpeeds()
 	{
 		if (APeCoPlayerCharacter* PlayerCharcater = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
 		{
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = InitialBaseSpeed;
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = InitialCrouchSpeed;
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = PeCoPlayerState->GetMoveSpeed();
+			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = PeCoPlayerState->GetMoveSpeed();
 		}
 	}
 }
-void UPlayerStatPresenterComponent::SetInitialSpeeds(float BaseSpeed, float CrouchSpeed)
-{
-	InitialBaseSpeed = BaseSpeed;
-	InitialCrouchSpeed = CrouchSpeed;
-}
+
 #pragma endregion
 
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
@@ -151,5 +149,56 @@ void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
 	if (PeCoPlayerState)
 	{
 		PeCoPlayerState->UpgradeStat(StatTag);
+	}
+}
+
+void UPlayerStatPresenterComponent::BuffWeaponStat(FGameplayTag StatTag, float Amount, float BuffTime, float Percent)
+{
+	FTimerHandle WeaponStatBuffTimer;
+
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
+	if (PeCoPlayerState)
+	{
+		if (APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
+		{
+			if (PlayerCharacter->PlayerWeapon)
+			{
+				float CurrentValue = PlayerCharacter->PlayerWeapon->GetStatValueByTag(StatTag);
+				PreviousWeaponStats.Add(StatTag, CurrentValue);
+
+				if(Amount == 0)
+				{ 
+					float PercentMultiplier = Percent / 100;
+					PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, CurrentValue*PercentMultiplier);
+				}
+				else
+				{
+					PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, Amount);
+				}
+				PlayerCharacter->GetWorldTimerManager().SetTimer(WeaponStatBuffTimer, [this, StatTag]()
+					{
+						ResetWeaponStat(StatTag);
+					}, BuffTime, false);
+			}
+		}
+	}
+}
+
+void UPlayerStatPresenterComponent::ResetWeaponStat(FGameplayTag StatTag)
+{
+	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
+	if (PeCoPlayerState)
+	{
+		if (APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
+		{
+			if (PlayerCharacter->PlayerWeapon && PreviousWeaponStats.Contains(StatTag))
+			{
+				float PreviousValue = PreviousWeaponStats[StatTag];
+				float CurrentValue = PlayerCharacter->PlayerWeapon->GetStatValueByTag(StatTag);
+				PlayerCharacter->PlayerWeapon->UpgradeWeapon(StatTag, PreviousValue - CurrentValue);
+
+				PreviousWeaponStats.Remove(StatTag);
+			}
+		}
 	}
 }

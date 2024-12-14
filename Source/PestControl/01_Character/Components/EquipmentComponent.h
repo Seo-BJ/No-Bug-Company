@@ -23,10 +23,11 @@ struct FEquipmentInfo
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemEquip, AActor*, Item, FGameplayTag, SlotTag);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUnEquip, AActor*, Item, FGameplayTag, SlotTag);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUsedInSlot, AActor*, Item, FGameplayTag, SlotTag);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCooldownStart, FGameplayTag, SlotTag, float, Cooldown);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCooldownEnd, FGameplayTag, SlotTag);
 
 class UPeCoItemComponent;
 
@@ -71,7 +72,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
 	FOnItemUnEquip OnItemUsedInSlot;
 
+	// 쿨타임 시작 시 Broadcast
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnCooldownStart OnCooldownStart;
 
+	// 쿨타임 종료 시 Broadcast
+	UPROPERTY(BlueprintAssignable, Category = "InventorySystem|Events")
+	FOnCooldownEnd OnCooldownEnd;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float CombatItemCooltime = 15.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ConsumptionItemCooltime = 20.f;
 
 protected:
 
@@ -79,7 +91,19 @@ protected:
 
 private:
 
+	bool IsCooldownActive(const FGameplayTag& SlotTag) const;
 
+	bool bCombatItemCooldown = false;
+	bool bConsuptionItemCooldown = false;
+
+	FTimerHandle CombatItemCooldownTimer;
+	FTimerHandle ConsumptionCooldownTimer;
+
+
+	void StartCooldown(const FGameplayTag& SlotTag);
+
+	void CombattemEndCooldown();
+	void ConsumptionItemEndCooldown();
 
 
 

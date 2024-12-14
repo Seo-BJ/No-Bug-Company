@@ -97,7 +97,7 @@ protected:
 	FGameplayTag StatTag;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
-	int32 StatLevel = 1;
+	int32 StatLevel = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
 	float BaseValue = 0.f;
