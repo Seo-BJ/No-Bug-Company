@@ -6,6 +6,7 @@
 APeCoMosquitoCharacter::APeCoMosquitoCharacter()
 {
     EnemyID = "Mosquito";
+    EnemyTag = PeCoGameplayTags::Enemy_Mosquito_Normal;
 }
 
 void APeCoMosquitoCharacter::BeginPlay()
