@@ -6,6 +6,7 @@
 APeCoSpiderCharacter::APeCoSpiderCharacter()
 {
     EnemyID = "Spider";
+    EnemyTag = PeCoGameplayTags::Enemy_Spider_Normal;
 }
 
 void APeCoSpiderCharacter::BeginPlay()
