@@ -46,9 +46,9 @@ public:
 	int32 MaterialSellingPrice = 20;
 
 	UFUNCTION(BlueprintCallable)
-	FGameplayTagContainer GetRandomRewardTags(int32 Count);
+	FGameplayTagContainer GetRandomRewardTags(int32 Count, APlayerController* PlayerController);
 	UFUNCTION(BlueprintCallable)
-	FGameplayTagContainer GetRandomStatTags(int32 Count);
+	FGameplayTagContainer GetRandomStatTags(int32 Count, APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERewardRarity Rarity);

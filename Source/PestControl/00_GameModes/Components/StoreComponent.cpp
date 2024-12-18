@@ -41,8 +41,28 @@ void UStoreComponent::BeginPlay()
 }
 
 
-FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
+FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count, APlayerController* PlayerController)
 {
+	if (!IsValid(PlayerController))
+	{
+		return FGameplayTagContainer();
+	}
+	APeCoPlayerState* PlayerState = PlayerController->GetPlayerState<APeCoPlayerState>();
+	if (!IsValid(PlayerState))
+	{
+		return FGameplayTagContainer();
+	}
+	APeCoPlayerCharacter* PlayerCharacter = PlayerState->GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter))
+	{
+		return FGameplayTagContainer();
+	}
+	AWeapon* Weapon = PlayerCharacter->PlayerWeapon;
+	if (!IsValid(Weapon))
+	{
+		return FGameplayTagContainer();
+	}
+
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Combat));
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Consumption));
@@ -50,16 +70,82 @@ FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count)
 	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
 	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
 
+	FGameplayTagContainer RemoveContainer = FGameplayTagContainer();
+	for (const FGameplayTag& Tag : TagContainer)
+	{
+		if (Tag.MatchesTag(PeCoGameplayTags::PlayerStat))
+		{
+			if ((PlayerState->GetStatByTag(Tag)).GetStatLevel() >= 5)
+			{
+				RemoveContainer.AddTag(Tag);
+			}
+		}
+		else if (Tag.MatchesTag(PeCoGameplayTags::WeaponStat))
+		{
+			int32* StatLevel = Weapon->WeaponStatLevelMap.Find(Tag);
+			if (*StatLevel >= 5)
+			{
+				RemoveContainer.AddTag(Tag);
+			}
+		}
+	}
+	TagContainer.RemoveTags(RemoveContainer);
+
 	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
 }
-FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count)
+
+	
+
+
+FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerController* PlayerController)
 {
+	if (!IsValid(PlayerController))
+	{
+		return FGameplayTagContainer();
+	}
+	APeCoPlayerState* PlayerState = PlayerController->GetPlayerState<APeCoPlayerState>();
+	if (!IsValid(PlayerState))
+	{
+		return FGameplayTagContainer();
+	}
+	APeCoPlayerCharacter* PlayerCharacter = PlayerState->GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter))
+	{
+		return FGameplayTagContainer();
+	}
+	AWeapon* Weapon = PlayerCharacter->PlayerWeapon;
+	if (!IsValid(Weapon))
+	{
+		return FGameplayTagContainer();
+	}
+
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
 	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
 	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
+
+	FGameplayTagContainer RemoveContainer = FGameplayTagContainer();
+	for (const FGameplayTag& Tag : TagContainer)
+	{
+		if (Tag.MatchesTag(PeCoGameplayTags::PlayerStat))
+		{
+			if ((PlayerState->GetStatByTag(Tag)).GetStatLevel() >= 5)
+			{
+				RemoveContainer.AddTag(Tag);
+			}
+		}
+		else if (Tag.MatchesTag(PeCoGameplayTags::WeaponStat))
+		{
+			int32* StatLevel = Weapon->WeaponStatLevelMap.Find(Tag);
+			if (*StatLevel >= 5)
+			{
+				RemoveContainer.AddTag(Tag);
+			}
+		}
+	}
+	TagContainer.RemoveTags(RemoveContainer);
 
 	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 	return RandomTags;
