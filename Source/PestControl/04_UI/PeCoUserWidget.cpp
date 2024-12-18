@@ -11,6 +11,7 @@
 #include "02_Player/Components/PlayerStatPresenterComponent.h"
 #include "20_System/PeCoFunctionLibrary.h"
 
+#include "PeCoGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
 
 UPlayerStatPresenterComponent* UPeCoUserWidget::GetStatPresenter()
@@ -50,4 +51,45 @@ UInventoryComponent* UPeCoUserWidget::GetInventory()
 UEquipmentComponent* UPeCoUserWidget::GetEquipment()
 {
 	return UPeCoFunctionLibrary::GetEquipmentComponent(GetOwningPlayer()->GetPawn());
+}
+
+FText UPeCoUserWidget::ConstructStatTextFromTag(const FGameplayTag& GameplayTag, float Value)
+{
+	FGameplayTagContainer TimeRelavantTags = FGameplayTagContainer();
+	TimeRelavantTags.AddTag(PeCoGameplayTags::WeaponStat_AttackSpeed); 	
+	TimeRelavantTags.AddTag(PeCoGameplayTags::PlayerStat_SkillCoolTime);
+	if (GameplayTag.MatchesAnyExact(TimeRelavantTags))
+	{
+		return FText::FromString(FString::Printf(TEXT("%.1f s"), Value)); 
+	}
+	else if (GameplayTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MoveSpeed))
+	{
+		return FText::FromString(FString::Printf(TEXT("%.1f cm/s"), Value)); 
+	}
+	else if (GameplayTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+	{
+		return FText::FromString(FString::Printf(TEXT("%.1f%%"), Value));
+	}
+	else if (GameplayTag.MatchesTag(PeCoGameplayTags::Item))
+	{
+		return FText::FromString(FString::Printf(TEXT("%1d"), Value));
+	}
+
+	return FText::FromString(FString::Printf(TEXT("%.1f"), Value)); 
+}
+
+
+FText UPeCoUserWidget::ConstructRewardTextFromTag(const FGameplayTag& GameplayTag, float Value)
+{
+
+	if (GameplayTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_Damage) || GameplayTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MaxHealth))
+	{
+		return FText::FromString(FString::Printf(TEXT("%.1f"), Value)); 
+	}
+	else if (GameplayTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_SkillCoolTime))
+	{
+		return FText::FromString(FString::Printf(TEXT("%.1f s"), Value));
+	}
+
+	return FText::FromString(FString::Printf(TEXT("%.1f%%"), Value));
 }

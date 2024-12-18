@@ -52,6 +52,7 @@ public:
 	void UpgradeStat(FGameplayTag StatTag);
 
 	void AddHealth(float Amount, AController* InstigatorController, AActor* DamageCauser);
+	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	TArray<FPeCoStatData> CharacterStats;

@@ -436,21 +436,25 @@ bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialM
 	 return PlayerMoney >= Quantity ? true : false;
  }
 
- void UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
+ bool UInventoryComponent::BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice)
  {
 	 FText OutNote;
 	 if (AddItemsOfClass(Class, 1, OutNote))
 	 {
 		 AddPlayerMoney(-PurchasePrice, OutNote);
+		 return true;
 	 }
+	 return false;
 
  }
- void UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
+ bool UInventoryComponent::SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice)
  {
 	 FText OutNote;
 	 if (RemoveItemsOfTag(ItemTag, 1, OutNote))
 	 {
 		 AddPlayerMoney(SellingPrice, OutNote);
+		 return true;
 	 }
+	 return false;
  }
 

@@ -60,6 +60,7 @@ void APeCoPlayerState::AddHealth(float Amount, AController* InstigatorController
 	HandleHealthChagne(Amount * -1, InstigatorController, DamageCauser);
 	Health.OnStatChanged.Broadcast(OldHealth, NewHealth);
 }
+
 void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser)
 {
 	// 데미지를 입는 경우
@@ -200,7 +201,9 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MoveSpeed))
 	{
-		MoveSpeed.AddMultiplierBonus(UpgradeAmount/100);
+		MoveSpeed.AddMultiplierBonus(UpgradeAmount/100);	
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetMoveSpeed();
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = GetMoveSpeed();
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_DamageResistance))
 	{
