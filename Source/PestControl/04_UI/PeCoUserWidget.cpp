@@ -66,7 +66,7 @@ FText UPeCoUserWidget::ConstructStatTextFromTag(const FGameplayTag& GameplayTag,
 	{
 		return FText::FromString(FString::Printf(TEXT("%.1f cm/s"), Value)); 
 	}
-	else if (GameplayTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance))
+	else if (GameplayTag.MatchesTagExact(PeCoGameplayTags::WeaponStat_CriticalChance) || GameplayTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_DamageResistance))
 	{
 		return FText::FromString(FString::Printf(TEXT("%.1f%%"), Value));
 	}

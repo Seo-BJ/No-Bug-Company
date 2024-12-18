@@ -198,20 +198,24 @@ void APeCoPlayerState::UpgradeStat(FGameplayTag StatTag)
 	if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MaxHealth))
 	{
 		MaxHealth.AddAdditiveBonus(UpgradeAmount);
+		MaxHealth.IncreaseLevel(1);
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_MoveSpeed))
 	{
 		MoveSpeed.AddMultiplierBonus(UpgradeAmount/100);	
+		MoveSpeed.IncreaseLevel(1);
 		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetMoveSpeed();
 		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = GetMoveSpeed();
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_DamageResistance))
 	{
 		DamageResistance.AddAdditiveBonus(UpgradeAmount);
+		DamageResistance.IncreaseLevel(1);
 	}
 	else if (StatTag.MatchesTagExact(PeCoGameplayTags::PlayerStat_SkillCoolTime))
 	{
 		SkillCoolTime.AddAdditiveBonus(-UpgradeAmount);
+		SkillCoolTime.IncreaseLevel(1);
 	}
 	else
 	{

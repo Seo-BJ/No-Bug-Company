@@ -55,7 +55,6 @@ struct PESTCONTROL_API FPeCoStatData
 	void IncreaseLevel(int32 Amount)
 	{
 		StatLevel += Amount;
-		NotifyStatChanged(StatLevel - Amount, StatLevel);
 	}
 	void SetBaseValue(float Value)
 	{
