@@ -422,12 +422,17 @@ bool AWeapon::CanEnhancementWeapon()
     {
         return false;
     }
+    if (EnhancementLevel >= 5)
+    {
+        return false;
+    }
      
     return InventoryComponent->HasEnoughMaterials(GetWeaponMaterialData(EnhancementLevel, true));
 }
 bool AWeapon::CanEvolveWeapon()
 {
     if (EnhancementLevel <= 4) return false;
+    if (EvolveLevel >= 1) return false;
 
     AActor* OwnerCharacter = GetOwner();
     if (!IsValid(OwnerCharacter))
@@ -471,13 +476,28 @@ TMap<FGameplayTag, int32> AWeapon::GetWeaponMaterialData(int32 CurrentLevel, boo
     {
         return MaterialMap;
     }
-    // to do bIsEnhancement 쓰기.
-    UDataTable* WeaponMaterialDataTable =* GameInstance->WeaponEvolveMaterialDataTableMap.Find(WeaponTag);
-    if (!IsValid(WeaponMaterialDataTable))
+    UDataTable* WeaponMaterialDataTable = nullptr;
+    if (bEnhancement)
     {
-        UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
-        return MaterialMap;
+        WeaponMaterialDataTable = *GameInstance->WeaponEnhancemenMaterialDataTableMap.Find(WeaponTag);
+        if (!IsValid(WeaponMaterialDataTable))
+        {
+            UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
+            return MaterialMap;
+        }
+        CurrentLevel = FMath::Clamp(CurrentLevel+1, 0, 5);
     }
+    else
+    {
+        WeaponMaterialDataTable = *GameInstance->WeaponEvolveMaterialDataTableMap.Find(WeaponTag);
+        if (!IsValid(WeaponMaterialDataTable))
+        {
+            UE_LOG(LogTemp, Error, TEXT("Cant find Weapon Material Data"));
+            return MaterialMap;
+        }
+        CurrentLevel = FMath::Clamp(CurrentLevel+1, 0, 1);
+    }
+
     AActor* OwnerCharacter = GetOwner();
     if (!IsValid(OwnerCharacter))
     {
@@ -488,7 +508,7 @@ TMap<FGameplayTag, int32> AWeapon::GetWeaponMaterialData(int32 CurrentLevel, boo
     {
         return MaterialMap;
     }
-    FName RowName = FName(*FString::FromInt(CurrentLevel + 1));
+    FName RowName = FName(*FString::FromInt(CurrentLevel));
     FWeaponEnhancementMaterialsData* RowData = WeaponMaterialDataTable->FindRow<FWeaponEnhancementMaterialsData>(
         RowName,
         TEXT("Read Weapon Enhancement Materials"),

@@ -121,7 +121,6 @@ void UPlayerStatPresenterComponent::BuffSpeed(float Percent, float BuffTime)
 			PlayerCharcater->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UPlayerStatPresenterComponent::ResetSpeeds, BuffTime);
 			if (PlayerCharcater->GetCharacterMovement())
 			{
-				
 				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = (1 + (Percent/100))* PeCoPlayerState->GetMoveSpeed();
 				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = (1 + (Percent / 100)) * PeCoPlayerState->GetMoveSpeed();
 			}
@@ -140,7 +139,6 @@ void UPlayerStatPresenterComponent::ResetSpeeds()
 		}
 	}
 }
-
 #pragma endregion
 
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)

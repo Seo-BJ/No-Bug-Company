@@ -87,8 +87,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	bool HasEnoughMoney(const int32 Quantity, FText& OutNote);
 
-	void BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice);
-	void SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice);
+	bool BuyItemInternal(const TSubclassOf<AActor> Class, int32 PurchasePrice);
+	bool SellItemInternal(FGameplayTag ItemTag, int32 SellingPrice);
 
 	//~End of Player Moneny
 

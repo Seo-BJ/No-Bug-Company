@@ -35,5 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UEquipmentComponent* GetEquipment();
 
-
+	UFUNCTION(BlueprintCallable)
+	FText ConstructStatTextFromTag(const FGameplayTag& GameplayTag, float Value);
+	UFUNCTION(BlueprintCallable)
+	FText ConstructRewardTextFromTag(const FGameplayTag& GameplayTag, float Value);
 };

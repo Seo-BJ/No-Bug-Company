@@ -109,7 +109,7 @@ protected:
 	float AdditiveBonus = 0.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
-	float MultiplierBonus = 1.f;
+	float MultiplierBonus = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
-	float MultiplierReduction = 1.f;
+	float MultiplierReduction = 0.f;
 };

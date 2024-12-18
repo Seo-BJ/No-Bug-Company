@@ -160,10 +160,23 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 		UE_LOG(LogTemp, Warning, TEXT("Item with tag %s not found in shop!"), *ItemTag.ToString());
 		return false;
 	}
-
-	// 소프트 오브젝트 포인터에서 클래스 로드
+	APawn* Pawn = User->GetPawn();
+	if (!IsValid(Pawn))
+	{
+		return false;
+	}
+	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
+	if (!IsValid(InventoryComponent))
+	{
+		return false;
+	}
+	bool bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
+	if (!bCanBuyItem)
+	{
+		return false;
+	}
+	// 돈이 있으면 소프트 오브젝트 포인터에서 클래스 로드
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
-
 	if (IsValid(SoftItemClass.Get()))
 	{
 		OnItemClassLoaded(ItemTag, User);
@@ -171,6 +184,7 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	}
 	else
 	{
+
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
 		Streamable.RequestAsyncLoad(SoftItemClass.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
 		return true;
@@ -192,9 +206,7 @@ bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AContr
 	{
 		return false;
 	}
-	InventoryComponent->SellItemInternal(ItemTag, MaterialSellingPrice);
-	return true; 
-
+	return InventoryComponent->SellItemInternal(ItemTag, MaterialSellingPrice);
 }
 void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
 {
@@ -215,15 +227,5 @@ void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
 	{
 		return;
 	}
-	FText OutNote;
-	bool bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
-	if (!bCanBuyItem)
-	{
-		return;
-	}
-	else
-	{
-		InventoryComponent->BuyItemInternal(SoftItemClass.Get(), MaterialPurchasePrice);
-	}
-
+	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), MaterialPurchasePrice);
 }
