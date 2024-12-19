@@ -238,7 +238,7 @@ void APeCoPlayerController::GetGameTimeData()
 	PeCoGameMode = PeCoGameMode == nullptr ? Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this)) : PeCoGameMode;
 	if (PeCoGameMode)
 	{
-		TotalGameTime = PeCoGameMode->TotalGameTime;
+		StageOneTwoGameTime = PeCoGameMode->StageTimeLimit;
 		// To Do : 다른 시간 변수들 설정..
 	}
 }
@@ -251,7 +251,7 @@ void APeCoPlayerController::SetHUDTime(float DeltaTime)
 	{
 		LevelStartingTime = PeCoGameMode->LevelStartingTime;
 	}
-	TimeLeft = LevelStartingTime + TotalGameTime - GetWorld()->GetTimeSeconds();
+	TimeLeft = LevelStartingTime + StageOneTwoGameTime - GetWorld()->GetTimeSeconds();
 	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
 
 	if (CountdownInt != SecondsLeft) // Every One Seconds Later

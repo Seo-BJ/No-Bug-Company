@@ -21,7 +21,7 @@ public:
     virtual void Tick(float DeltaTime) override;*/
 
     // 라운드 설정
-    void SetRound(int32 NewRound);
+    void SetRound();
 
     /*// 스폰할 적의 클래스 (BP로 설정 가능)
     UPROPERTY(EditAnywhere, Category = "Spawning")
@@ -68,6 +68,7 @@ private:
     TArray<FEnemyStats> CurrentRoundStats;
 
     // 현재 라운드
+
     int32 CurrentRound;
 
     

@@ -33,6 +33,9 @@ APeCoEnemyCharacter::APeCoEnemyCharacter()
 
 	MaxHealth = 100.0f; // set max health
 	Health = MaxHealth; // when the game start, set health = max health
+
+	// 기본값 초기화
+	bIsImmune = true; // 스폰 시 기본적으로 무적 상태
 }
 
 void APeCoEnemyCharacter::BeginPlay()
@@ -40,6 +43,21 @@ void APeCoEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
 	OnTakeAnyDamage.AddDynamic(this, &APeCoEnemyCharacter::ReceiveDamage);
 	SetTeam(ETeam::ET_Enemy);
+
+
+	// 무적 상태 활성화
+	bIsImmune = true;
+
+	// 무적 상태 유지 시간 이후 해제
+	GetWorld()->GetTimerManager().SetTimer(
+		SpawnImmunityTimerHandle,
+		this,
+		&APeCoEnemyCharacter::RemoveSpawnImmunity,
+		SpawnImmunityTime,
+		false
+	);
+
+
 	
 }
 
@@ -92,11 +110,11 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 			}
 		}
 	
-		CharacterDie();
+		GameOver();
 	}
 }
 
-void APeCoEnemyCharacter::CharacterDie()
+void APeCoEnemyCharacter::GameOver()
 {
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
@@ -134,7 +152,8 @@ void APeCoEnemyCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 		bRecentlyKnockedBack = true;
 				
 		GetWorld()->GetTimerManager().SetTimer(KnockbackTimerHandle, this, &APeCoEnemyCharacter::ResetKnockbackFlag, 2.0f, false);  // Prevent re-collision for 2 seconds
-			
+
+					
 	}
 }
 
@@ -199,7 +218,7 @@ void APeCoEnemyCharacter::DropItem(bool bDropFlameSample)
 
 void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
 {
-	if (FMath::RandRange(1, 100) < Row->DropRate / 100)
+	if (FMath::RandRange(1, 100) <= Row->DropRate)
 	{
 		if (IsValid(Row->Item.Get()))
 		{
@@ -286,4 +305,10 @@ void APeCoEnemyCharacter::ApplyTickDamage(float TickInterval, float DamagePerTic
 		bIsBurned = false;
 	}
 
+}
+
+void APeCoEnemyCharacter::RemoveSpawnImmunity()
+{
+	bIsImmune = false; // 무적 상태 해제
+	UE_LOG(LogTemp, Log, TEXT("Spawn immunity removed for %s"), *GetName());
 }

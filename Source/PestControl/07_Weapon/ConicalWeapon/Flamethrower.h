@@ -56,8 +56,22 @@ private:
     virtual bool EnhancementWeapon(int32 EnhancementIndex) override;
     virtual bool EvolveWeapon(int32 EvolveIndex) override;
     void FlamethrowerEvolve();
-
     virtual void ConicalFire() override;
+
+    bool bHasPlayedStartSound = false;
+public:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+    class USoundBase* StartSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+    USoundBase* LoopSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+    USoundBase* EndSound;
+
+    UPROPERTY()
+    class UAudioComponent* LoopingAudioComponent;
+
 
 //public:
     //~Particle Effect Parameter

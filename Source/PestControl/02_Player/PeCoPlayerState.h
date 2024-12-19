@@ -38,11 +38,13 @@ public:
 	TObjectPtr<UPlayerStatPresenterComponent> PlayerStatPresenterComponent;
 
 	void HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser);
+
+	void HandleStageEnd(int32 StageNumber);
 	
 	//~ICombatInterface
 
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
-	virtual void CharacterDie() override;
+	virtual void GameOver() override;
 
 	//~End of ICombatInterface
 

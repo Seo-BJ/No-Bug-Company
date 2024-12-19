@@ -20,6 +20,8 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
+#include "Sound/SoundCue.h"
+
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -43,6 +45,18 @@ AWeapon::AWeapon()
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 0);
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 0);
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 0);
+
+    static ConstructorHelpers::FObjectFinder<USoundCue> FireSoundCueAsset(TEXT("/Game/Sounds/FireSoundCue"));
+    if (FireSoundCueAsset.Succeeded())
+    {
+        FireSoundCue = FireSoundCueAsset.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<USoundCue> ReloadSoundCueAsset(TEXT("/Game/Sounds/ReloadSoundCue"));
+    if (ReloadSoundCueAsset.Succeeded())
+    {
+        ReloadSoundCue = ReloadSoundCueAsset.Object;
+    }
 }
 
 void AWeapon::BeginPlay()
@@ -137,6 +151,12 @@ void AWeapon::FireWeapon()
     default:
         break;
     }
+
+    if (FireSoundCue)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, FireSoundCue, GetActorLocation());
+    }
+
     OnFire.Broadcast(Ammo, MaxAmmo);
     if (Ammo > 0)
     {
@@ -153,6 +173,19 @@ void AWeapon::StartReload()
     bIsReloading = true;
     OnStartReload.Broadcast(ReloadCoolDown);
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::Reload, ReloadCoolDown, false);
+    if (ReloadSoundCue)
+    {
+        FTimerHandle SoundDelayHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            SoundDelayHandle,
+            [this]()
+            {
+                UGameplayStatics::PlaySoundAtLocation(this, ReloadSoundCue, GetActorLocation());
+            },
+            0.2f, // 딜레이 시간 (초 단위)
+            false
+        );
+    }
 }
 
 void AWeapon::Reload()

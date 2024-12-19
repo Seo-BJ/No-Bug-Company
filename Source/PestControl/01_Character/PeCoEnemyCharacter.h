@@ -49,7 +49,7 @@ public:
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 		AController* InstigatorController, AActor* DamageCauser) override;
 
-	virtual void CharacterDie() override;
+	virtual void GameOver() override;
 
 
 	//~End of ICombatInterface
@@ -70,6 +70,21 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float Damage;
 
+	// 스폰 무적 상태
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy|Spawn")
+	bool bIsImmune;
+
+	// 무적 상태 유지 시간
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy|Spawn")
+	float SpawnImmunityTime = 1.0f; // 기본값 1초
+
+	// 무적 상태 해제 타이머
+	FTimerHandle SpawnImmunityTimerHandle;
+
+	// 무적 상태 해제 함수
+	void RemoveSpawnImmunity();
+
+	
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
 
 private:

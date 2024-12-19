@@ -29,7 +29,7 @@ public:
 	UFUNCTION()
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage,const UDamageType* DamageType, AController* InstigatorController,AActor* DamageCauser);
 
-	virtual void CharacterDie() = 0;
+	virtual void GameOver() = 0;
 
 	//~Team 
 	ETeam Team = ETeam::ET_Neutral;

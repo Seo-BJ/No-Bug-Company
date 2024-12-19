@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "01_Character/PeCoEnemyCharacter.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "BossEnemy.generated.h"
 
 /**
@@ -41,6 +43,8 @@ public:
 
     // 돌진 공격 함수 선언
     void PerformRushAttackFromVent(int32 CurrentVentNumber);
+
+    void PlayNiagaraEffect(FVector Location);
        
 
     /*UPROPERTY(EditDefaultsOnly, Category = "Boss|Vent")
@@ -57,7 +61,7 @@ protected:
     void UpdatePhase();
 
     // 보스가 사망했을 때의 처리
-    virtual void CharacterDie() override;
+    virtual void GameOver() override;
 
     // 현재 페이즈
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
@@ -74,6 +78,14 @@ protected:
     // 보스가 사망했는지 여부
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
     bool bIsBossDead;
+
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+    UNiagaraSystem* AOE_NiagaraSystem;
+
+    // 블루프린트에서 설정 가능한 광범위 공격 사운드
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+    USoundBase* AOESound;
 
     // 현재 위치에서 대상 벤트 위치로 돌진 방향을 설정하는 함수
     FVector CalculateRushDirection(FVector CurrentVentLocation, FVector TargetVentLocation);
