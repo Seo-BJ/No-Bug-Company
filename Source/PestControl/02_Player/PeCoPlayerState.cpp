@@ -391,7 +391,7 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 		}	
 	}
 	PeCoPlayerController->ShowSupplyResultWidget(SupplyResult);
-    PeCoPlayerController->SetPause(true);
+    // PeCoPlayerController->SetPause(true);
 	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
 	OnLevelChanged.Broadcast(Level);
     

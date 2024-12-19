@@ -78,6 +78,10 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 				Flamethrower->SpawnWreckage(GetActorLocation());
 				DropItem(true);
 			}
+			else
+			{
+				Destroy();
+			}
 		}
 		else
 		{
