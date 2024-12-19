@@ -48,9 +48,12 @@ public:
 
 	//~Floating Widgets
 
-	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
-	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
 	void ShowDamageScreenWidget();
+	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
+	UFUNCTION(BlueprintCallable)
+	void ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity);
+	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
+
 
 
 	//~End of Floating Widgets

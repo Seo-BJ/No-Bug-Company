@@ -16,6 +16,7 @@
 #include "04_UI/SubWidget/GameTimerWidget.h"
 #include "04_UI/SubWidget/PeCoProgressBar.h"
 #include "04_UI/WidgetComponents/DamageTextComponent.h"
+#include "04_UI/WidgetComponents/GetItemWidgetComponent.h"
 
 #include "21_Data/PeCoDataTypes.h"
 
@@ -301,6 +302,20 @@ void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharac
 
 	}
 }
+void APeCoPlayerController::ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity)
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (PeCoHUD && PeCoHUD->GetGetItemTextComponnet())
+	{
+		UGetItemWidgetComponent* ItemText = NewObject<UGetItemWidgetComponent>(GetPawn(), PeCoHUD->GetGetItemTextComponnet());
+		ItemText->RegisterComponent();
+		ItemText->AttachToComponent(GetCharacter()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		ItemText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		ItemText->SetGetItemText(ItemTag, Quantity);
+	}
+}
+
+
 
 void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap)
 {

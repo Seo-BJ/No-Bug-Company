@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Components/WidgetComponent.h"
-#include "DamageTextComponent.generated.h"
+#include "PeCoGameplayTags.h"
+#include "GetItemWidgetComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PESTCONTROL_API UDamageTextComponent : public UWidgetComponent
+class PESTCONTROL_API UGetItemWidgetComponent : public UWidgetComponent
 {
 	GENERATED_BODY()
-
+	
 public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void SetDamageText(float Damage, bool bCriticalHit, bool bBlockedHit, bool bPlayerGetDamage);
+	void SetGetItemText(FGameplayTag ItemTag, int32 Quantity);
 };
