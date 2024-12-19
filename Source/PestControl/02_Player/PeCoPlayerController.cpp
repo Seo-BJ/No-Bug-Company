@@ -307,4 +307,17 @@ void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> Sup
 	}
 }
 
+void APeCoPlayerController::ShowDamageScreenWidget()
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowDamageScrren();
+		}
+	}
+}
+
 #pragma endregion

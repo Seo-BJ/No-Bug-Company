@@ -44,5 +44,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSupply(const TMap<FGameplayTag, int32>& SupplyResultMap);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowDamageScrren();
+
 };
 	

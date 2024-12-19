@@ -58,8 +58,13 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 	
 	float DamageToHealth = InputDamage;
 
-	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 
+	if (DamageToHealth > 0)
+	{
+		ShowFloatingText(this, InstigatorController, Damage);
+	}
+
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	if (Health <= 0.f)
 	{
 		//Flamethrower Wreckage
