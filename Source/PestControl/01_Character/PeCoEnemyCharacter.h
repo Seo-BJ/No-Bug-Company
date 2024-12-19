@@ -99,4 +99,8 @@ public:
 	//~End of Status effect
 
 	float GetMaxHealth();
+
+public:
+	float DefaultFlySpeed = 400.0f; 
+	float DefaultWalkSpeed = 300.0f;
 };
