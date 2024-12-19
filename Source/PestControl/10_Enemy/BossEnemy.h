@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -19,44 +19,73 @@ public:
 
     virtual void BeginPlay() override;
 
-    // Ã¼·Â º¯°æ ½Ã È£Ãâ
+    // ì²´ë ¥ ë³€ê²½ ì‹œ í˜¸ì¶œ
     virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser) override;
 
-    // ±¤¹üÀ§ °ø°İ(AOE)
+    // ê´‘ë²”ìœ„ ê³µê²©(AOE)
     void PerformAOEAttack();
 
-    UPROPERTY(EditDefaultsOnly, Category = "Boss|Vent")
-    TArray<FVector> VentLocations;
+    // ì‚¬ìš© ê°€ëŠ¥í•œ ë²¤íŠ¸ ì¸ë±ìŠ¤ ì´ˆê¸°í™”
+    void ResetVentIndices();
+
+    // ì‚¬ìš© ê°€ëŠ¥í•œ ë²¤íŠ¸ ë²ˆí˜¸
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Vent")
+    TArray<int32> AvailableVentIndices;
+
+    //í…Œë‘ë¦¬ ì ˆë°˜ ê¸¸ì´
+    UPROPERTY(EditDefaultsOnly, Category = "Boss|Movement")
+    float SquareSize = 1000.f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Boss|Movement")
+    FVector CenterVentLocation = FVector::ZeroVector;
+
+    // ëŒì§„ ê³µê²© í•¨ìˆ˜ ì„ ì–¸
+    void PerformRushAttackFromVent(int32 CurrentVentNumber);
+       
+
+    /*UPROPERTY(EditDefaultsOnly, Category = "Boss|Vent")
+    TArray<FVector> VentLocations;*/
 
 protected:
-    // º¸½º ÃÊ±âÈ­
+    // ë³´ìŠ¤ ì´ˆê¸°í™”
     virtual void InitializeBoss();
 
-    // ÆäÀÌÁî ÀüÈ¯ Ã¼Å©
+    // í˜ì´ì¦ˆ ì „í™˜ ì²´í¬
     void CheckPhaseTransition();
 
-    // ÆäÀÌÁî ¾÷µ¥ÀÌÆ®(Behavior Tree ¿¬µ¿ µî)
+    // í˜ì´ì¦ˆ ì—…ë°ì´íŠ¸(Behavior Tree ì—°ë™ ë“±)
     void UpdatePhase();
 
-    // º¸½º°¡ »ç¸ÁÇßÀ» ¶§ÀÇ Ã³¸®
+    // ë³´ìŠ¤ê°€ ì‚¬ë§í–ˆì„ ë•Œì˜ ì²˜ë¦¬
     virtual void CharacterDie() override;
 
-    // ÇöÀç ÆäÀÌÁî
+    // í˜„ì¬ í˜ì´ì¦ˆ
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
     int32 CurrentPhase;
 
-    // ÃÖ´ë Ã¼·ÂÀÇ 50% ±âÁØÀ¸·Î ÆäÀÌÁî¸¦ ³ª´¯´Ï´Ù.
+    // ìµœëŒ€ ì²´ë ¥ì˜ 50% ê¸°ì¤€ìœ¼ë¡œ í˜ì´ì¦ˆë¥¼ ë‚˜ëˆ•ë‹ˆë‹¤.
     UPROPERTY(EditDefaultsOnly, Category = "Boss")
     float PhaseChangeThreshold = 0.5f; // 50%
 
-    // º¸½º°¡ È°¼º »óÅÂÀÎÁö
+    // ë³´ìŠ¤ê°€ í™œì„± ìƒíƒœì¸ì§€
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
     bool bIsBossActive;
 
-    // º¸½º°¡ »ç¸ÁÇß´ÂÁö ¿©ºÎ
+    // ë³´ìŠ¤ê°€ ì‚¬ë§í–ˆëŠ”ì§€ ì—¬ë¶€
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
     bool bIsBossDead;
 
-   
-        
+    // í˜„ì¬ ìœ„ì¹˜ì—ì„œ ëŒ€ìƒ ë²¤íŠ¸ ìœ„ì¹˜ë¡œ ëŒì§„ ë°©í–¥ì„ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
+    FVector CalculateRushDirection(FVector CurrentVentLocation, FVector TargetVentLocation);
+
+    // ê¸°ë³¸ ì´ë™ ì†ë„
+    float DefaultWalkSpeed = 600.0f;
+
+    // ëŒì§„ ì†ë„
+    float RushSpeed = 1200.0f;
+
+    // íƒ€ì´ë¨¸ í•¸ë“¤ (ëŒì§„ í›„ ì†ë„ ë³µêµ¬ìš©)
+    FTimerHandle ResetSpeedHandle;
+    
+           
 };
