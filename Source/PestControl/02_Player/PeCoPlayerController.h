@@ -85,7 +85,7 @@ protected:
 
 
 	//~Timer Widget
-	float TotalGameTime = 0.f;
+	float StageOneTwoGameTime = 0.f;
 	float LevelStartingTime = 0.f;
 
 	uint32 CountdownInt = 0;

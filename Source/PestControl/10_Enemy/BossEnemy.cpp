@@ -138,9 +138,9 @@ void ABossEnemy::UpdatePhase()
     }
 }
 
-void ABossEnemy::CharacterDie()
+void ABossEnemy::GameOver()
 {
-    Super::CharacterDie();
+    Super::GameOver();
 
     bIsBossDead = true;
     bIsBossActive = false;
