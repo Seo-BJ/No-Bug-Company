@@ -163,6 +163,15 @@ void ABossEnemy::PerformAOEAttack()
     FVector AttackCenter = GetActorLocation();
     float AttackRadius = 500.0f; // 공격 범위 반경
 
+    // Niagara 효과 실행
+    PlayNiagaraEffect(AttackCenter);
+
+    // 사운드 효과 재생
+    if (AOESound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), AOESound, AttackCenter);
+    }
+
     // 디버그용 공격 범위 시각화
     DrawDebugSphere(
         GetWorld(),            // 월드 컨텍스트
@@ -375,6 +384,21 @@ void ABossEnemy::PerformRushAttackFromVent(int32 CurrentVentNumber)
         }, 2.0f, false);
 
     UE_LOG(LogTemp, Log, TEXT("Boss is rushing from Vent #%d to Vent #%d"), CurrentVentNumber, TargetVentNumber);
+}
+
+void ABossEnemy::PlayNiagaraEffect(FVector Location)
+{
+    if (AOE_NiagaraSystem)
+    {
+        // Niagara 효과를 특정 위치에 생성
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            AOE_NiagaraSystem,
+            Location,             // 효과 위치
+            FRotator::ZeroRotator, // 회전 값
+            FVector(1.0f)         // 크기
+        );
+    }
 }
 
 /*void ABossEnemy::PerformRushAttackFromVent(int32 CurrentVentNumber)

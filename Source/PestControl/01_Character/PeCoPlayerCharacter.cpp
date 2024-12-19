@@ -285,6 +285,13 @@ void APeCoPlayerCharacter::OnHit(UPrimitiveComponent* PlayerHitComponent, AActor
 		APeCoEnemyCharacter* Enemy = Cast<APeCoEnemyCharacter>(EnemyHitActor);
 		if (Enemy)
 		{
+			// 적이 무적 상태라면 데미지 적용하지 않음
+			if (Enemy->bIsImmune)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Enemy %s is immune. No damage applied to player."), *Enemy->GetName());
+				return;
+			}
+			
 			float EnemyDamage = Enemy->Damage; 
 			UGameplayStatics::ApplyDamage(this, EnemyDamage, Enemy->GetController(), Enemy, nullptr);
 			BecomeCrashInvincible(CrashInvincibleDuration);
