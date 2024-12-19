@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -21,7 +21,7 @@ protected:
     virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
-    // ¥Ÿ¿Ω ¿Ãµø ¡ˆ¡° ∞ËªÍ
-    FVector GetNextCounterClockwisePoint(const FVector& CurrentLocation) const;
+    // Îã§Ïùå Ïù¥Îèô ÏßÄÏ†ê Í≥ÑÏÇ∞
+    FVector GetNextCounterClockwisePoint(const FVector& CurrentLocation, const FVector& SquareCenter, float SquareSize ) const;
 	
 };

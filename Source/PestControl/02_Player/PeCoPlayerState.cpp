@@ -66,7 +66,18 @@ void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorC
 	// 데미지를 입는 경우
 	if (Damage > 0)
 	{
-		ShowFloatingText(GetPlayerController()->GetPawn(), InstigatorController, Damage);
+		APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();
+		if (IsValid(PlayerCharacter))
+		{
+			PlayerCharacter->ShakeCameraWhenDamaged();
+			PlayerCharacter->StartAlphaFade(PlayerCharacter->DamageMaterialInstance, PlayerCharacter->CrashInvincibleDuration);
+		}
+		APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
+		if (IsValid(PeCoPlayerController))
+		{
+			ShowFloatingText(PeCoPlayerController->GetPawn(), InstigatorController, Damage);
+			PeCoPlayerController->ShowDamageScreenWidget();
+		}
 	}
 
 	// 죽음 처리

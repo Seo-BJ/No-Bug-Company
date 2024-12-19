@@ -16,6 +16,7 @@
 #include "04_UI/SubWidget/GameTimerWidget.h"
 #include "04_UI/SubWidget/PeCoProgressBar.h"
 #include "04_UI/WidgetComponents/DamageTextComponent.h"
+#include "04_UI/WidgetComponents/GetItemWidgetComponent.h"
 
 #include "21_Data/PeCoDataTypes.h"
 
@@ -290,9 +291,31 @@ void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharac
 		DamageText->RegisterComponent();
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
+		if (TargetCharacter->IsA(APeCoEnemyCharacter::StaticClass()))
+		{
+			DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit, false);
+		}
+		else
+		{
+			DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit, true);
+		}
+
 	}
 }
+void APeCoPlayerController::ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity)
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (PeCoHUD && PeCoHUD->GetGetItemTextComponnet())
+	{
+		UGetItemWidgetComponent* ItemText = NewObject<UGetItemWidgetComponent>(GetPawn(), PeCoHUD->GetGetItemTextComponnet());
+		ItemText->RegisterComponent();
+		ItemText->AttachToComponent(GetCharacter()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		ItemText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		ItemText->SetGetItemText(ItemTag, Quantity);
+	}
+}
+
+
 
 void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap)
 {
@@ -303,6 +326,19 @@ void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> Sup
 		if (IsValid(PlayerOverlay))
 		{
 			PlayerOverlay->ShowSupply(SupplyResultMap);
+		}
+	}
+}
+
+void APeCoPlayerController::ShowDamageScreenWidget()
+{
+	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	if (IsValid(PeCoHUD))
+	{
+		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
+		if (IsValid(PlayerOverlay))
+		{
+			PlayerOverlay->ShowDamageScrren();
 		}
 	}
 }

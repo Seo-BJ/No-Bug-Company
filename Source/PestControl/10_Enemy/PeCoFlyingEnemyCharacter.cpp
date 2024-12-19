@@ -34,6 +34,8 @@ void APeCoFlyingEnemyCharacter::BeginPlay()
           
     // Force enable flying mode in BeginPlay
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+    DefaultFlySpeed = FlyingSpeed;
                 
 }
 

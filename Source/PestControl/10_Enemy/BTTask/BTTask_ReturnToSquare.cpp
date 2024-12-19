@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/BTTask/BTTask_ReturnToSquare.h"
@@ -7,7 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "10_Enemy/BossEnemy.h"
 
-UBTTask_ReturnToSquare::UBTTask_ReturnToSquare()
+UBTTask_ReturnToSquare::UBTTask_ReturnToSquare()     
 {
     NodeName = "Return to Square";
 }
@@ -18,58 +18,137 @@ EBTNodeResult::Type UBTTask_ReturnToSquare::ExecuteTask(UBehaviorTreeComponent& 
     if (!AIController)
     {
         UE_LOG(LogTemp, Error, TEXT("AIController is null in ReturnToSquare task"));
-        return EBTNodeResult::Failed;
+        return EBTNodeResult::Failed;      
     }
 
-    ABossEnemy* Boss = Cast<ABossEnemy>(AIController->GetPawn());
+    ABossEnemy* Boss = Cast<ABossEnemy>(AIController->GetPawn());        
     if (!Boss)
     {
-        UE_LOG(LogTemp, Error, TEXT("BossEnemy is null in ReturnToSquare task"));
-        return EBTNodeResult::Failed;
+        UE_LOG(LogTemp, Error, TEXT("BossEnemy is null in ReturnToSquare task"));     
+        return EBTNodeResult::Failed;      
     }
 
-    // ÇöÀç º¸½º À§Ä¡
     FVector CurrentLocation = Boss->GetActorLocation();
 
-    // °¡Àå °¡±î¿î Å×µÎ¸® ÁöÁ¡ °è»ê
-    FVector ClosestEdgePoint = GetClosestEdgePoint(CurrentLocation);
+    // ì‚¬ê°í˜• ì¤‘ì‹¬ê³¼ í¬ê¸° ê°€ì ¸ì˜¤ê¸°
+    FVector SquareCenter = Boss->CenterVentLocation;   
+    float SquareSize = Boss->SquareSize;
 
-    // º¸½º¸¦ ¼ø°£ÀÌµ¿ ½ÃÅ´
-    Boss->SetActorLocation(ClosestEdgePoint);
+    // ê°€ì¥ ê°€ê¹Œìš´ í…Œë‘ë¦¬ ì  ê³„ì‚°
+    FVector ClosestEdgePoint = GetClosestEdgePoint(CurrentLocation, SquareCenter, SquareSize);
 
-    // ºí·¢º¸µå¿¡ »õ·Î¿î ÀÌµ¿ ÁöÁ¡À» ÀúÀå (¹İ½Ã°è ÀÌµ¿À» ÀÌ¾î°¡±â À§ÇØ)
+    // ë¸”ë™ë³´ë“œì— ê°€ì¥ ê°€ê¹Œìš´ í…Œë‘ë¦¬ ì  ì €ì¥
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
     if (BlackboardComp)
     {
-        BlackboardComp->SetValueAsVector(GetSelectedBlackboardKey(), ClosestEdgePoint);
+        BlackboardComp->SetValueAsVector("EdgeLocation", ClosestEdgePoint);
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Boss returned to square edge: %s"), *ClosestEdgePoint.ToString());
-    return EBTNodeResult::Succeeded;
+    // ë°˜ì‹œê³„ ë°©í–¥ì˜ ê¼­ì§“ì  ê³„ì‚°
+    FVector CounterClockwiseCorner = GetCounterClockwiseCorner(ClosestEdgePoint, SquareCenter, SquareSize);
+    if (BlackboardComp)
+    {
+        BlackboardComp->SetValueAsVector("CornerLocation", CounterClockwiseCorner);
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Closest Edge Point: %s"), *ClosestEdgePoint.ToString());
+    UE_LOG(LogTemp, Log, TEXT("Next CounterClockwise Corner: %s"), *CounterClockwiseCorner.ToString());
+
+    return EBTNodeResult::Succeeded;             
+       
+
 }
 
-FVector UBTTask_ReturnToSquare::GetClosestEdgePoint(const FVector& CurrentLocation) const
+FVector UBTTask_ReturnToSquare::GetClosestEdgePoint(const FVector& CurrentLocation, const FVector& SquareCenter, float SquareSize) const
 {
-    // »ç°¢ÇüÀÇ °¢ Å×µÎ¸® ÁÂÇ¥
-    FVector Points[4] = {
+    // ì •ì‚¬ê°í˜• í…Œë‘ë¦¬ì˜ í¬ì¸íŠ¸ ì„¤ì •
+    FVector Points[8] = {
+        // Bottom edge
+        SquareCenter + FVector(-SquareSize, -SquareSize, 0), // Bottom-left corner
+        SquareCenter + FVector(0, -SquareSize, 0),           // Bottom-center
+        SquareCenter + FVector(SquareSize, -SquareSize, 0),  // Bottom-right corner
+
+        // Right edge
+        SquareCenter + FVector(SquareSize, 0, 0),            // Right-center
+        SquareCenter + FVector(SquareSize, SquareSize, 0),   // Top-right corner
+
+        // Top edge
+        SquareCenter + FVector(0, SquareSize, 0),            // Top-center
+        SquareCenter + FVector(-SquareSize, SquareSize, 0),  // Top-left corner
+
+        // Left edge
+        SquareCenter + FVector(-SquareSize, 0, 0)            // Left-center     
+    };
+
+    // í˜„ì¬ ìœ„ì¹˜ì—ì„œ ê°€ì¥ ê°€ê¹Œìš´ í¬ì¸íŠ¸ ì°¾ê¸°
+    int32 ClosestIndex = 0;
+    float ClosestDistance = FVector::Dist(CurrentLocation, Points[0]);
+
+    for (int32 i = 1; i < 8; ++i)
+    {
+        float Distance = FVector::Dist(CurrentLocation, Points[i]);
+        if (Distance < ClosestDistance)
+        {
+            ClosestDistance = Distance;                  
+            ClosestIndex = i;            
+        }
+    }
+          
+
+    return Points[ClosestIndex];
+}
+
+// ë°˜ì‹œê³„ ë°©í–¥ ê¼­ì§“ì  ì°¾ê¸°
+FVector UBTTask_ReturnToSquare::GetCounterClockwiseCorner(const FVector& EdgePoint, const FVector& SquareCenter, float SquareSize) const
+{
+    FVector Corners[4] = {
         SquareCenter + FVector(-SquareSize, -SquareSize, 0), // Bottom-left
         SquareCenter + FVector(-SquareSize, SquareSize, 0),  // Top-left
         SquareCenter + FVector(SquareSize, SquareSize, 0),   // Top-right
         SquareCenter + FVector(SquareSize, -SquareSize, 0)   // Bottom-right
     };
 
-    // ÇöÀç À§Ä¡¿¡¼­ °¡Àå °¡±î¿î Å×µÎ¸® Á¡ °è»ê
-    int32 ClosestIndex = 0;
-    float ClosestDistance = FVector::Dist(CurrentLocation, Points[0]);
+    // EdgePointì™€ ê¼­ì§“ì  ê°„ì˜ ê±°ë¦¬ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ê°€ì¥ ê°€ê¹Œìš´ ê¼­ì§“ì  ì°¾ê¸°
+    int32 CurrentCornerIndex = -1;
+
+    if (EdgePoint.Equals(SquareCenter + FVector(-SquareSize, 0, 0), 1.0f)) // Left-center
+    {
+        CurrentCornerIndex = 0; // Bottom-left
+    }
+    else if (EdgePoint.Equals(SquareCenter + FVector(0, SquareSize, 0), 1.0f)) // Top-center
+    {
+        CurrentCornerIndex = 1; // Top-left
+    }
+    else if (EdgePoint.Equals(SquareCenter + FVector(SquareSize, 0, 0), 1.0f)) // Right-center
+    {
+        CurrentCornerIndex = 2; // Top-right
+    }
+    else if (EdgePoint.Equals(SquareCenter + FVector(0, -SquareSize, 0), 1.0f)) // Bottom-center
+    {
+        CurrentCornerIndex = 3; // Bottom-right
+    }
+
+    // ë°˜ì‹œê³„ ë°©í–¥ ê·œì¹™ ì ìš©
+    if (CurrentCornerIndex >= 0)
+    {
+        return Corners[(CurrentCornerIndex + 1) % 4]; // ë‹¤ìŒ ë°˜ì‹œê³„ ë°©í–¥ ê¼­ì§“ì  ë°˜í™˜                    
+    }
+
+    // ë§Œì•½ EdgePointê°€ ì˜ˆìƒí•˜ì§€ ì•Šì€ ìœ„ì¹˜ë¼ë©´ ê¸°ë³¸ ê±°ë¦¬ ê³„ì‚°
+    FVector ClosestCorner = Corners[0];
+    float ClosestDistance = FVector::Dist(EdgePoint, Corners[0]);
+
     for (int32 i = 1; i < 4; ++i)
     {
-        float Distance = FVector::Dist(CurrentLocation, Points[i]);
+        float Distance = FVector::Dist(EdgePoint, Corners[i]);
         if (Distance < ClosestDistance)
         {
+            ClosestCorner = Corners[i];
             ClosestDistance = Distance;
-            ClosestIndex = i;
         }
     }
 
-    return Points[ClosestIndex];
-}
+    return ClosestCorner;
+
+   
+}       

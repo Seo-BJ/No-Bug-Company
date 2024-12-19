@@ -6,6 +6,7 @@
 #include "01_Character/PeCoCharacter.h"
 #include "01_Character/CombatInterface.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "21_Data/PeCoDataTypes.h"
 
@@ -26,13 +27,18 @@ void APeCoGameMode::BeginPlay()
 	Super::BeginPlay();
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
 	
-	// 스포너 생성
-	FVector SpawnLocation(2110.f, 1640.f, 100.f);
-	FRotator SpawnRotation = FRotator::ZeroRotator;
-	
-	if (IsValid(EnemySpawnerClass))
+	// 레벨에서 스포너를 검색
+	TArray<AActor*> FoundSpawners;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APeCoEnemySpawner::StaticClass(), FoundSpawners);
+
+	if (FoundSpawners.Num() > 0)
 	{
-		EnemySpawnerInstance = GetWorld()->SpawnActor<APeCoEnemySpawner>(EnemySpawnerClass, SpawnLocation, SpawnRotation);
+		EnemySpawnerInstance = Cast<APeCoEnemySpawner>(FoundSpawners[0]);
+		UE_LOG(LogTemp, Log, TEXT("Found Enemy Spawner: %s"), *EnemySpawnerInstance->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Enemy Spawner found in level!"));
 	}
 
 

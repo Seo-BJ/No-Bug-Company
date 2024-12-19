@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/BossEnemyAIController.h"
@@ -8,7 +8,7 @@
 
 ABossEnemyAIController::ABossEnemyAIController()
 {
-    // ºí·¢º¸µå ÄÄÆ÷³ÍÆ® »ı¼º
+    // ë¸”ë™ë³´ë“œ ì»´í¬ë„ŒíŠ¸ ìƒì„±
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
@@ -16,45 +16,84 @@ void ABossEnemyAIController::BeginPlay()
 {
     Super::BeginPlay();
 
-    // º¸½º¿¡ ¿¬°áµÈ Behavior Tree¸¦ ½ÇÇà
-    StartBehaviorTree();
+    // BeginPlayì—ì„œì˜ Pawn ì†Œìœ  ìƒíƒœ í™•ì¸ ë””ë²„ê¹…
+    APawn* ControlledPawn = GetPawn();
+    if (ControlledPawn)
+    {
+        UE_LOG(LogTemp, Log, TEXT("BeginPlay: AIController possesses Pawn: %s"), *ControlledPawn->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("BeginPlay: AIController has no Pawn at this point."));
+    }
+
+    // ë³´ìŠ¤ì— ì—°ê²°ëœ Behavior Treeë¥¼ ì‹¤í–‰
+    //StartBehaviorTree();
 }
 
-void ABossEnemyAIController::StartBehaviorTree()
+void ABossEnemyAIController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+
+    // ë³´ìŠ¤ ìºë¦­í„°ë¡œ ìºìŠ¤íŒ…
+    ABossEnemy* BossEnemy = Cast<ABossEnemy>(InPawn);
+    if (BossEnemy && BossAIBehavior)
+    {
+        // ë¸”ë™ë³´ë“œ ì´ˆê¸°í™”
+        if (BlackboardComponent && BossAIBehavior->BlackboardAsset)
+        {
+            BlackboardComponent->InitializeBlackboard(*(BossAIBehavior->BlackboardAsset));
+            InitializeBlackboardValues();
+        }
+
+        // Behavior Tree ì‹¤í–‰
+        RunBehaviorTree(BossAIBehavior);
+        UE_LOG(LogTemp, Log, TEXT("Boss AIController successfully possessed Pawn: %s"), *InPawn->GetName());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to possess Pawn or BossAIBehavior is missing."));
+    }
+}
+
+/*void ABossEnemyAIController::StartBehaviorTree()
 {
     if (BossAIBehavior)
     {
-        // º¸½º Ä³¸¯ÅÍ °¡Á®¿À±â
+        APawn* ControlledPawn = GetPawn();
+        // ë³´ìŠ¤ ìºë¦­í„° ê°€ì ¸ì˜¤ê¸°
         ABossEnemy* BossEnemy = Cast<ABossEnemy>(GetPawn());
         if (BossEnemy)
         {
-            // ºí·¢º¸µå ÃÊ±âÈ­
+            // ë¸”ë™ë³´ë“œ ì´ˆê¸°í™”
             if (BlackboardComponent && BossAIBehavior->BlackboardAsset)
             {
                 BlackboardComponent->InitializeBlackboard(*(BossAIBehavior->BlackboardAsset));
-                InitializeBlackboardValues(); // ºí·¢º¸µå ±âº» °ª ¼³Á¤
+                InitializeBlackboardValues(); // ë¸”ë™ë³´ë“œ ê¸°ë³¸ ê°’ ì„¤ì •
             }
 
-            // Behavior Tree ½ÇÇà
+            // Behavior Tree ì‹¤í–‰
             RunBehaviorTree(BossAIBehavior);
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("Failed to cast Pawn to BossEnemy in AIController"));
+            UE_LOG(LogTemp, Warning, TEXT("Failed to cast Pawn to BossEnemy in AIController. Controlled Pawn: %s"),
+                *GetNameSafe(ControlledPawn));
+            //UE_LOG(LogTemp, Warning, TEXT("Failed to cast Pawn to BossEnemy in AIController"));
         }
     }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("BehaviorTreeAsset is not set in AIController"));
     }
-}
+}*/
 
 void ABossEnemyAIController::InitializeBlackboardValues()
 {
-    // ÃÊ±â ºí·¢º¸µå °ª ¼³Á¤
+    // ì´ˆê¸° ë¸”ë™ë³´ë“œ ê°’ ì„¤ì •
     if (BlackboardComponent)
     {
-        BlackboardComponent->SetValueAsInt(TEXT("Phase"), 1); // ±âº» ÆäÀÌÁî´Â 1
+        BlackboardComponent->SetValueAsInt(TEXT("Phase"), 1); // ê¸°ë³¸ í˜ì´ì¦ˆëŠ” 1
         BlackboardComponent->SetValueAsBool(TEXT("IsActive"), true);
     }
 }

@@ -47,8 +47,15 @@ public:
 	FStartDashCooldown OnStartDashCooldown;
 
 	//~Floating Widgets
+
+	void ShowDamageScreenWidget();
 	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
+	UFUNCTION(BlueprintCallable)
+	void ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity);
 	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
+
+
+
 	//~End of Floating Widgets
 
 protected:
@@ -87,6 +94,7 @@ protected:
 	void GetGameTimeData();
 	void SetHUDTime(float DeltaTime);
 	void SetHUDGameTimer(float CountdownTime);
+
 	//~End of Timer Widget
 
 

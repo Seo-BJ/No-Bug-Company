@@ -1,7 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/BTTask/BTTask_MoveCounterClockwise.h"
+
+#include "10_Enemy/BossEnemy.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -9,82 +11,75 @@
 
 UBTTask_MoveCounterClockwise::UBTTask_MoveCounterClockwise()
 {
-    NodeName = "Move Counter Clockwise";
+    NodeName = "Move Counter Clockwise";   
 }
 
 EBTNodeResult::Type UBTTask_MoveCounterClockwise::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    AAIController* AIController = OwnerComp.GetAIOwner();
+    AAIController* AIController = OwnerComp.GetAIOwner();     
     if (!AIController)
     {
-        UE_LOG(LogTemp, Error, TEXT("AIController is null"));
+        UE_LOG(LogTemp, Error, TEXT("AIController is null"));    
         return EBTNodeResult::Failed;
     }
 
-    APawn* ControlledPawn = AIController->GetPawn();
-    if (!ControlledPawn)
+    ABossEnemy* Boss = Cast<ABossEnemy>(AIController->GetPawn());
+    if (!Boss)
     {
-        UE_LOG(LogTemp, Error, TEXT("Controlled Pawn is null"));
+        UE_LOG(LogTemp, Warning, TEXT("Boss is null in BTTask_MoveCounterClockwise"));
         return EBTNodeResult::Failed;
     }
 
-    FVector CurrentLocation = ControlledPawn->GetActorLocation();
+    FVector CurrentLocation = Boss->GetActorLocation();
+    FVector CenterVentLocation = Boss->CenterVentLocation;
 
-    // ´ÙÀ½ ¹Ý½Ã°è ¹æÇâ À§Ä¡ °è»ê
-    FVector NextLocation = GetNextCounterClockwisePoint(CurrentLocation);
+    // ì¤‘ì•™ ë²¤íŠ¸ ìœ„ì¹˜ ìœ íš¨ì„± ê²€ì‚¬
+    if (CenterVentLocation.IsZero())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("CenterVentLocation is invalid"));
+        return EBTNodeResult::Failed;
+    }
+        
+    // Bossì˜ SquareSize ê°€ì ¸ì˜¤ê¸°
+    float SquareSize = Boss->SquareSize;   
+    
+    // ë‹¤ìŒ ë°˜ì‹œê³„ ë°©í–¥ ìœ„ì¹˜ ê³„ì‚°
+    FVector NextLocation = GetNextCounterClockwisePoint(CurrentLocation, CenterVentLocation, SquareSize);
 
-    // ºí·¢º¸µå¿¡ ´ÙÀ½ À§Ä¡ ÀúÀå
-    UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+    // **ë””ë²„ê·¸ ë¡œê·¸ ì¶”ê°€**    
+    UE_LOG(LogTemp, Log, TEXT("Boss Current Location: %s"), *CurrentLocation.ToString());             
+    UE_LOG(LogTemp, Log, TEXT("Boss Target Location (NextLocation): %s"), *NextLocation.ToString());    
+
+
+     
+
+    // ë¸”ëž™ë³´ë“œì— ë‹¤ìŒ ìœ„ì¹˜ ì €ìž¥
+    UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();   
     if (BlackboardComp)
     {
         BlackboardComp->SetValueAsVector(GetSelectedBlackboardKey(), NextLocation);
     }
 
-    return EBTNodeResult::Succeeded;
+    return EBTNodeResult::Succeeded;                                                 
 }
 
-FVector UBTTask_MoveCounterClockwise::GetNextCounterClockwisePoint(const FVector& CurrentLocation) const
+FVector UBTTask_MoveCounterClockwise::GetNextCounterClockwisePoint(const FVector& CurrentLocation, const FVector& SquareCenter ,float SquareSize) const    
 {
-    // Á¤»ç°¢Çü Å×µÎ¸®ÀÇ ÁÂÇ¥¿Í ÇöÀç À§Ä¡¸¦ ±â¹ÝÀ¸·Î ´ÙÀ½ ÀÌµ¿ ÁöÁ¡ °è»ê
-    FVector SquareCenter(1390.f, -160.f, CurrentLocation.Z); // Á¤»ç°¢Çü Áß½É
-    float SquareSize = 1000.f;                         // Á¤»ç°¢Çü ÇÑ º¯ ±æÀÌ
+         
     FVector Points[4] = {
         SquareCenter + FVector(-SquareSize, -SquareSize, 0), // Bottom-left
         SquareCenter + FVector(-SquareSize, SquareSize, 0),  // Top-left
         SquareCenter + FVector(SquareSize, SquareSize, 0),   // Top-right
-        SquareCenter + FVector(SquareSize, -SquareSize, 0)   // Bottom-right
+        SquareCenter + FVector(SquareSize, -SquareSize, 0)   // Bottom-right      
     };
+      
 
-
-    // ÇöÀç À§Ä¡¸¦ Á¤»ç°¢Çü Å×µÎ¸®ÀÇ °¡Àå °¡±î¿î ÁöÁ¡À¸·Î ½º³À
-    FVector SnappedLocation = CurrentLocation;
-
-    // X ÁÂÇ¥ ½º³À
-    if (FMath::Abs(CurrentLocation.X - (SquareCenter.X - SquareSize)) < 1.f)
-    {
-        SnappedLocation.X = SquareCenter.X - SquareSize; // Left edge
-    }
-    else if (FMath::Abs(CurrentLocation.X - (SquareCenter.X + SquareSize)) < 1.f)
-    {
-        SnappedLocation.X = SquareCenter.X + SquareSize; // Right edge
-    }
-
-    // Y ÁÂÇ¥ ½º³À
-    if (FMath::Abs(CurrentLocation.Y - (SquareCenter.Y - SquareSize)) < 1.f)
-    {
-        SnappedLocation.Y = SquareCenter.Y - SquareSize; // Bottom edge
-    }
-    else if (FMath::Abs(CurrentLocation.Y - (SquareCenter.Y + SquareSize)) < 1.f)
-    {
-        SnappedLocation.Y = SquareCenter.Y + SquareSize; // Top edge
-    }
-
-    // °¡Àå °¡±î¿î ²ÀÁþÁ¡ Ã£±â
+    // í˜„ìž¬ ìœ„ì¹˜ì™€ ê°€ìž¥ ê°€ê¹Œìš´ ê¼­ì§“ì  ì°¾ê¸°
     int32 ClosestIndex = 0;
-    float ClosestDistance = FVector::Dist(SnappedLocation, Points[0]);
+    float ClosestDistance = FVector::Dist(CurrentLocation, Points[0]);
     for (int32 i = 1; i < 4; ++i)
     {
-        float Distance = FVector::Dist(SnappedLocation, Points[i]);
+        float Distance = FVector::Dist(CurrentLocation, Points[i]);
         if (Distance < ClosestDistance)
         {
             ClosestDistance = Distance;
@@ -92,8 +87,8 @@ FVector UBTTask_MoveCounterClockwise::GetNextCounterClockwisePoint(const FVector
         }
     }
 
-    // ´ÙÀ½ ¹Ý½Ã°è ¹æÇâ À§Ä¡ ¹ÝÈ¯
-    return Points[(ClosestIndex + 1) % 4];    
+    // ë‹¤ìŒ ë°˜ì‹œê³„ ë°©í–¥ ìœ„ì¹˜ ë°˜í™˜
+    return Points[(ClosestIndex + 1) % 4];
 
 }
 
