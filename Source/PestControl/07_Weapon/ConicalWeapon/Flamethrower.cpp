@@ -69,7 +69,7 @@ void AFlamethrower::ApplyBurnDamage(AActor* Target)
 
 void AFlamethrower::ApplyBurnEffect(APeCoEnemyCharacter* EnemyCharacter)
 {
-    if (!EnemyCharacter)
+    if (!IsValid(EnemyCharacter))
     {
         return;
     }
