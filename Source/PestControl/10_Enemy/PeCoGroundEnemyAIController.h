@@ -20,6 +20,8 @@ public:
 	
 	void SetIsKnockedBack(bool IsKnockedBack);
 	bool IsKnockedBack() const { return bIsKnockedBack; }
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	
 protected:

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -31,5 +31,8 @@ private:
 	// Player AcceptanceRadius
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float AcceptanceRadius = 50.f;
+
+	/** 목표와의 높이 차이를 보정하는 거리 */
+	float HeightAdjustmentThreshold;
 
 };

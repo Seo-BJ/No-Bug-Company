@@ -69,8 +69,19 @@ void APeCoGroundEnemyAIController::Tick(float DeltaSeconds)
 void APeCoGroundEnemyAIController::SetIsKnockedBack(bool IsKnockedBack)
 {
 	bIsKnockedBack = IsKnockedBack;
-	if (BlackboardComponent)
+	if (BlackboardComponent && BlackboardComponent->IsValidLowLevelFast())
 	{
 		BlackboardComponent->SetValueAsBool(TEXT("bIsKnockedBack"), IsKnockedBack);
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("BlackboardComponent is invalid or null in %s"), *GetName());
+	}
+}
+
+void APeCoGroundEnemyAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }

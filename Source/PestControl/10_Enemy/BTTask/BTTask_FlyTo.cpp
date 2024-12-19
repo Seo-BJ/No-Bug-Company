@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/BTTask/BTTask_FlyTo.h"
@@ -16,81 +16,57 @@ UBTTask_FlyTo::UBTTask_FlyTo()
 
 	AcceptanceRadius = 50.0f; // Default value: 50 units
 
+	HeightAdjustmentThreshold = 200.0f; // Z 축 이동 보정 값
+
 	bNotifyTick = true; // Enable TickTask
 
 }
+
 EBTNodeResult::Type UBTTask_FlyTo::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	// AIController 및 제어 중인 캐릭터 가져오기
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	ACharacter* ControlledCharacter = Cast<ACharacter>(AIController->GetPawn()); 
+	ACharacter* ControlledCharacter = Cast<ACharacter>(AIController->GetPawn());
 
-	if (ControlledCharacter)
+	if (!ControlledCharacter)
 	{
-		FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector("PlayerLocation");
-
-		// Get flying speed from the flying enemy character
-		APeCoFlyingEnemyCharacter * FlyingEnemy = Cast<APeCoFlyingEnemyCharacter>(ControlledCharacter);
-		float Speed = FlyingEnemy ? FlyingEnemy->FlyingSpeed : 1.0f;  // Use FlyingSpeed, default to 1.0f if not available
-		
-		// Measure the distance to the player and detect obstacles
-		FHitResult HitResult;
-		FVector Start = ControlledCharacter->GetActorLocation();
-		FVector End = PlayerLocation;
-
-		// Use line trace to detect obstacles
-		bool bHitObstacle = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-
-		if (bHitObstacle)
-		{
-			// Adjust Z-axis to move above obstacles (raise by 400 units)
-			End.Z += 400.0f;
-		}
-
-		// Perform flying movement
-		FVector Direction = (End - Start).GetSafeNormal();
-		ControlledCharacter->AddMovementInput(Direction, Speed / 600.0f);
-				
-		return EBTNodeResult::InProgress;
+		return EBTNodeResult::Failed;
 	}
 
-	return EBTNodeResult::Failed;
+	return EBTNodeResult::InProgress;
 }
 
 void UBTTask_FlyTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+	// AIController 및 제어 중인 캐릭터 가져오기
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	ACharacter* ControlledCharacter = Cast<ACharacter>(AIController->GetPawn());
 
-
-	if (ControlledCharacter)
+	if (!ControlledCharacter)
 	{
-		// Get the player's location from the blackboard
-		FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector("PlayerLocation");
-		FVector Start = ControlledCharacter->GetActorLocation();
-		
-		// Detect obstacles
-		FHitResult HitResult;
-		bool bHitObstacle = GetWorld()->LineTraceSingleByChannel(HitResult, Start, PlayerLocation, ECC_Visibility);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
 
-		if (bHitObstacle)
-		{
-			PlayerLocation.Z += 400.0f;  // Raise the player location by 400 units to move above obstacles
-		}
+	// Blackboard에서 플레이어 위치 가져오기
+	FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector("PlayerLocation");
+	FVector CurrentLocation = ControlledCharacter->GetActorLocation();
 
-		// Apply flying speed and direction to move
-		FVector Direction = (PlayerLocation - Start).GetSafeNormal();
+	// Z 축 높이 조정
+	if (FMath::Abs(CurrentLocation.Z - PlayerLocation.Z) > HeightAdjustmentThreshold)
+	{
+		// 목표 위치의 높이를 AI 캐릭터의 위치에 맞게 조정
+		PlayerLocation.Z = CurrentLocation.Z + (PlayerLocation.Z > CurrentLocation.Z ? HeightAdjustmentThreshold : -HeightAdjustmentThreshold);
+	}
 
-		// Get flying speed from the flying enemy character
-		APeCoFlyingEnemyCharacter* FlyingEnemy = Cast<APeCoFlyingEnemyCharacter>(ControlledCharacter);
-		float Speed = FlyingEnemy ? FlyingEnemy->FlyingSpeed : 1.0f;
+	// 목표를 향해 이동
+	FVector Direction = (PlayerLocation - CurrentLocation).GetSafeNormal();
+	ControlledCharacter->AddMovementInput(Direction);
 
-		// Apply speed and fly towards the player
-		ControlledCharacter->AddMovementInput(Direction, Speed / 600.0f);
-				
-		// Check if the target point has been reached
-		if (FVector::Dist(ControlledCharacter->GetActorLocation(), PlayerLocation) <= AcceptanceRadius)
-		{
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);			
-		}		
+	// 목표에 도달했는지 확인
+	if (FVector::Dist(CurrentLocation, PlayerLocation) <= AcceptanceRadius)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }
+
