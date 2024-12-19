@@ -4,6 +4,7 @@
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
 #include "07_Weapon/WeaponSub/Wreckage.h"
 
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h" 
 
@@ -53,6 +54,16 @@ void AFlamethrower::Tick(float DeltaTime)
     if (Ammo == 0)
     {
         FlamethrowerParticle->DeactivateSystem();
+
+        if (LoopingAudioComponent && LoopingAudioComponent->IsPlaying())
+        {
+            LoopingAudioComponent->Stop();
+            if (EndSound)
+            {
+                UGameplayStatics::PlaySoundAtLocation(this, EndSound, GetActorLocation());
+                bHasPlayedStartSound = false;
+            }
+        }
     }
 }
 
@@ -141,9 +152,34 @@ void AFlamethrower::FlamethrowerEvolve()
 
 void AFlamethrower::ConicalFire()
 {
+    if (!bHasPlayedStartSound && StartSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, StartSound, GetActorLocation());
+        bHasPlayedStartSound = true;
+    }
+
     if (FlamethrowerParticle)
     {
         FlamethrowerParticle->ActivateSystem();
+    }
+
+    if (LoopSound)
+    {
+        if (!LoopingAudioComponent)
+        {
+            LoopingAudioComponent = UGameplayStatics::SpawnSoundAttached(
+                LoopSound,
+                RootComponent,
+                NAME_None,
+                FVector::ZeroVector,
+                EAttachLocation::SnapToTargetIncludingScale,
+                true 
+            );
+        }
+        else if (!LoopingAudioComponent->IsPlaying())
+        {
+            LoopingAudioComponent->Play();
+        }
     }
 
     Super::ConicalFire();
