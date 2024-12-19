@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/PeCoEnemySpawner.h"
@@ -20,7 +20,7 @@ APeCoEnemySpawner::APeCoEnemySpawner()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    // EnemyID¿Í Å¬·¡½º ¸ÅÇÎ ÃÊ±âÈ­
+    // EnemyIDì™€ í´ëž˜ìŠ¤ ë§¤í•‘ ì´ˆê¸°í™”
     EnemyIDToClassMap.Add("Spider", APeCoSpiderCharacter::StaticClass());
     EnemyIDToClassMap.Add("Mosquito", APeCoMosquitoCharacter::StaticClass());
     EnemyIDToClassMap.Add("Boss", ABossEnemy::StaticClass()); 
@@ -31,6 +31,9 @@ APeCoEnemySpawner::APeCoEnemySpawner()
 void APeCoEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
+
+    // ì´ˆê¸° ë¼ìš´ë“œë¥¼ ì„¤ì •
+    SetRound(1); // ê¸°ë³¸ ë¼ìš´ë“œë¥¼ 1ë¡œ ì„¤ì •
 
 	// Set a timer to spawn enemies at regular intervals
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APeCoEnemySpawner::SpawnEnemies, SpawnInterval, true);
@@ -128,21 +131,21 @@ void APeCoEnemySpawner::SpawnEnemies()
 
     for (int32 i = 0; i < SpawnCount; ++i)
     {
-        // ¶ó¿îµå Àû µ¥ÀÌÅÍ¿¡¼­ ·£´ý ¼±ÅÃ
+        // ë¼ìš´ë“œ ì  ë°ì´í„°ì—ì„œ ëžœë¤ ì„ íƒ
         const FEnemyStats& Stats = CurrentRoundStats[FMath::RandRange(0, CurrentRoundStats.Num() - 1)];
         TSubclassOf<APeCoEnemyCharacter> EnemyClass = GetEnemyClassFromID(Stats.EnemyID);
 
         if (EnemyClass)
         {
-            // ±âº» ½ºÆù À§Ä¡¿Í È¸Àü
+            // ê¸°ë³¸ ìŠ¤í° ìœ„ì¹˜ì™€ íšŒì „
             FVector SpawnLocation = GetActorLocation();
             FRotator SpawnRotation = GetActorRotation();
 
-            // ¾à°£ÀÇ ·£´ý ¿ÀÇÁ¼Â Ãß°¡
+            // ì•½ê°„ì˜ ëžœë¤ ì˜¤í”„ì…‹ ì¶”ê°€
             FVector Offset = FVector(FMath::RandRange(-100, 100), FMath::RandRange(-100, 100), 0);
             FVector FinalSpawnLocation = SpawnLocation + Offset;
 
-            // Àû »ý¼º
+            // ì  ìƒì„±
             APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation);
 
             if (SpawnedEnemy)
