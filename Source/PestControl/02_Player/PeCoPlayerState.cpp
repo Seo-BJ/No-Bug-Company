@@ -63,21 +63,23 @@ void APeCoPlayerState::AddHealth(float Amount, AController* InstigatorController
 
 void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser)
 {
+	APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter)) return;
+	APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
+	if (!IsValid(PeCoPlayerController)) return;
+
 	// 데미지를 입는 경우
 	if (Damage > 0)
 	{
-		APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();
-		if (IsValid(PlayerCharacter))
-		{
-			PlayerCharacter->ShakeCameraWhenDamaged();
-			PlayerCharacter->StartAlphaFade(PlayerCharacter->DamageMaterialInstance, PlayerCharacter->CrashInvincibleDuration);
-		}
-		APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
-		if (IsValid(PeCoPlayerController))
-		{
-			ShowFloatingText(PeCoPlayerController->GetPawn(), InstigatorController, Damage);
-			PeCoPlayerController->ShowDamageScreenWidget();
-		}
+		PlayerCharacter->ShakeCameraWhenDamaged();
+		PlayerCharacter->StartAlphaFade(PlayerCharacter->DamageMaterialInstance, PlayerCharacter->CrashInvincibleDuration);
+
+		ShowFloatingText(PeCoPlayerController->GetPawn(), InstigatorController, Damage);
+		PeCoPlayerController->ShowDamageScreenWidget();	
+	}
+	else
+	{
+		ShowFloatingText(PeCoPlayerController->GetPawn(), InstigatorController, Damage);
 	}
 
 	// 죽음 처리
