@@ -290,7 +290,15 @@ void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharac
 		DamageText->RegisterComponent();
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
+		if (TargetCharacter->IsA(APeCoEnemyCharacter::StaticClass()))
+		{
+			DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit, false);
+		}
+		else
+		{
+			DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit, true);
+		}
+
 	}
 }
 
