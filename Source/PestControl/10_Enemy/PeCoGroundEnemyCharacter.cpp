@@ -34,17 +34,19 @@ APeCoGroundEnemyCharacter::APeCoGroundEnemyCharacter()
 void APeCoGroundEnemyCharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    DefaultWalkSpeed = 300.0f;
       
 }
 
 void APeCoGroundEnemyCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit); // ºÎ¸ð Å¬·¡½ºÀÇ OnHit È£Ãâ
+    Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit); // ë¶€ëª¨ í´ëž˜ìŠ¤ì˜ OnHit í˜¸ì¶œ
     if (OtherActor && OtherActor != this && OtherActor->IsA(APeCoPlayerCharacter::StaticClass()))
     {
         if (bRecentlyKnockedBack)
         {
-            StopAIMovementDuringKnockback(1.0f); // ³Ë¹é ÈÄ AI ÀÌµ¿ Áß´Ü ½Ã°£À» ¼³Á¤
+            StopAIMovementDuringKnockback(1.0f); // ë„‰ë°± í›„ AI ì´ë™ ì¤‘ë‹¨ ì‹œê°„ì„ ì„¤ì •
                         
         }
     }
@@ -59,7 +61,7 @@ void APeCoGroundEnemyCharacter::StopAIMovementDuringKnockback(float Duration)
         AIController->SetIsKnockedBack(true);
 
         GetWorld()->GetTimerManager().ClearTimer(KnockbackTimerHandle);
-        // Å¸ÀÌ¸Ó¸¦ »ç¿ëÇØ ÀÏÁ¤ ½Ã°£ ÈÄ  AI ÀÌµ¿À» ¿ø»óº¹±¸
+        // íƒ€ì´ë¨¸ë¥¼ ì‚¬ìš©í•´ ì¼ì • ì‹œê°„ í›„  AI ì´ë™ì„ ì›ìƒë³µêµ¬
         GetWorld()->GetTimerManager().SetTimer(KnockbackTimerHandle, [this, AIController]() {
             AIController->SetIsKnockedBack(false);
             bRecentlyKnockedBack = false;
