@@ -4,7 +4,12 @@
 #include "PeCoPlayerState.h"
 
 #include "00_GameModes/PeCoGameMode.h"
+#include "00_GameModes/StageOneGameMode.h"
+#include "00_GameModes/StageTwoGameMode.h"
+#include "00_GameModes/StageThreeGameMode.h"
+
 #include "00_GameModes/Components/StoreComponent.h"
+
 #include "01_Character/PeCoPlayerCharacter.h"
 
 #include "02_Player/PeCoPlayerController.h"
@@ -39,6 +44,15 @@ APeCoPlayerState::APeCoPlayerState()
 void APeCoPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
+	APeCoGameMode* PeCoGameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
+	if (IsValid(PeCoGameMode))
+	{
+		if (PeCoGameMode->OnStageTimeEnd.IsBound())
+		{
+			PeCoGameMode->OnStageTimeEnd.Clear();
+		}
+		PeCoGameMode->OnStageTimeEnd.AddUObject(this, &APeCoPlayerState::HandleStageEnd);
+	}
 }
 
 void APeCoPlayerState::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -88,11 +102,28 @@ void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorC
 		APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 		if (IsValid(PeCoGameMode))
 		{
-			CharacterDie();
+			GameOver();
 		}
 	}
 }
-void APeCoPlayerState::CharacterDie()
+void APeCoPlayerState::HandleStageEnd(int32 StageNumber)
+{
+	if (StageNumber == 1)
+	{
+		GameOver();
+	}
+	else if (StageNumber == 2)
+	{
+		
+	}
+	else if (StageNumber == 3)
+	{
+
+	}
+
+
+}
+void APeCoPlayerState::GameOver()
 {
 	APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
 	if (IsValid(PeCoPlayerController))

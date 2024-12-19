@@ -40,6 +40,8 @@ void APeCoEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
 	OnTakeAnyDamage.AddDynamic(this, &APeCoEnemyCharacter::ReceiveDamage);
 	SetTeam(ETeam::ET_Enemy);
+
+
 	
 }
 
@@ -92,11 +94,11 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 			}
 		}
 	
-		CharacterDie();
+		GameOver();
 	}
 }
 
-void APeCoEnemyCharacter::CharacterDie()
+void APeCoEnemyCharacter::GameOver()
 {
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	// To Do : PeCoGameMode -> EnemyEliminated 
@@ -199,7 +201,7 @@ void APeCoEnemyCharacter::DropItem(bool bDropFlameSample)
 
 void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
 {
-	if (FMath::RandRange(1, 100) < Row->DropRate / 100)
+	if (FMath::RandRange(1, 100) <= Row->DropRate)
 	{
 		if (IsValid(Row->Item.Get()))
 		{

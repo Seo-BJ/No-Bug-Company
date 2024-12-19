@@ -57,7 +57,7 @@ protected:
     void UpdatePhase();
 
     // 보스가 사망했을 때의 처리
-    virtual void CharacterDie() override;
+    virtual void GameOver() override;
 
     // 현재 페이즈
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss")
