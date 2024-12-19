@@ -114,6 +114,10 @@ private:
 	APlayerController* PeCoPlayerController;
 
 public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShakeCameraWhenDamaged();
+
 	//~Player Crash damage
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* PlayerHitComponent, AActor* EnemyHitActor, UPrimitiveComponent* EnemyHitComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -135,9 +139,43 @@ public:
 	UAnimMontage* RollForwardMontage;
 
 	FORCEINLINE FVector GetWeaponSpawnPointLocation() { return WeaponSpawnPoint->GetComponentLocation(); }
+
 protected:
 	bool bIsCrashInvincible;
 
 	FTimerHandle CrashInvincibilityTimerHandle;
 	//~End of InvincibleStat
+
+
+
+	void InitMaterials();
+	
+public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartAlphaFade(UMaterialInstanceDynamic* MaterailInstance, float Duration);
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* DamageMaterial;
+
+	UMaterialInstanceDynamic* DamageMaterialInstance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UMaterialInterface* HealMaterials;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UMaterialInterface* AntiSprayMaterials;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UMaterialInterface* SpeedUpMaterials;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UMaterialInterface* PowerDrinkMaterials;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UMaterialInterface* AdrenalineMaterials;
+
 };

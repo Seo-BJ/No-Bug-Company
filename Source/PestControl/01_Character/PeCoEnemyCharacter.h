@@ -49,7 +49,7 @@ public:
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 		AController* InstigatorController, AActor* DamageCauser) override;
 
-	virtual void CharacterDie() override;
+	virtual void GameOver() override;
 
 
 	//~End of ICombatInterface

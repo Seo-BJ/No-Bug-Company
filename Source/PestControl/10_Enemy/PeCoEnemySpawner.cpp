@@ -1,7 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "10_Enemy/PeCoEnemySpawner.h"
+
+#include "00_GameModes/PeCoGameMode.h"
+
 #include "10_Enemy/PeCoGroundEnemyCharacter.h"
 #include "10_Enemy/PeCoFlyingEnemyCharacter.h"
 
@@ -33,7 +37,7 @@ void APeCoEnemySpawner::BeginPlay()
 	Super::BeginPlay();
 
     // 초기 라운드를 설정
-    SetRound(1); // 기본 라운드를 1로 설정
+    SetRound(); // 기본 라운드를 1로 설정
 
 	// Set a timer to spawn enemies at regular intervals
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APeCoEnemySpawner::SpawnEnemies, SpawnInterval, true);
@@ -47,9 +51,14 @@ void APeCoEnemySpawner::Tick(float DeltaTime)
 
 }*/
 
-void APeCoEnemySpawner::SetRound(int32 NewRound)
+void APeCoEnemySpawner::SetRound()
 {
-    CurrentRound = NewRound;
+    APeCoGameMode* GameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
+    if (GameMode)
+    {
+        CurrentRound = GameMode->StageNumber;
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Current Round : %d"), CurrentRound);
     UpdateEnemyPool();
 }
 

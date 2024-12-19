@@ -11,6 +11,7 @@ class UPeCoUserWidget;
 class UDamageTextWidget;
 class APlayerController;
 class UDamageTextComponent;
+class UGetItemWidgetComponent;
 
 /**
  * 
@@ -55,11 +56,15 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGetItemWidgetComponent> GetItemTextComponentclass;
+
 public:
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE UPlayerOverlay* GetPlayerOverlayWidget() { return PlayerOverlayWidget; }
 	FORCEINLINE TSubclassOf<UDamageTextComponent> GetDamageTextComponnet() { return DamageTextComponentClass; }
+	FORCEINLINE TSubclassOf<UGetItemWidgetComponent> GetGetItemTextComponnet() { return GetItemTextComponentclass; }
 
 };
  

@@ -48,9 +48,12 @@ public:
 
 	//~Floating Widgets
 
-	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
-	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
 	void ShowDamageScreenWidget();
+	void ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
+	UFUNCTION(BlueprintCallable)
+	void ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity);
+	void ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap);
+
 
 
 	//~End of Floating Widgets
@@ -82,7 +85,7 @@ protected:
 
 
 	//~Timer Widget
-	float TotalGameTime = 0.f;
+	float StageOneTwoGameTime = 0.f;
 	float LevelStartingTime = 0.f;
 
 	uint32 CountdownInt = 0;

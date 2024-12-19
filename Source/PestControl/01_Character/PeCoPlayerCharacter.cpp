@@ -42,6 +42,10 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 
+#include "Materials/MaterialInstanceDynamic.h" // For UMaterialInstanceDynamic
+#include "Kismet/KismetMaterialLibrary.h" // For CreateDynamicMaterialInstance
+#include "TimerManager.h" // For FTimerHandle
+
 
 
 
@@ -113,6 +117,7 @@ void APeCoPlayerCharacter::BeginPlay()
 		SpawnWeapon(GameInstance->SelectedWeaponTag);
 	}
 	InitPlayerCharacter();
+	InitMaterials();
 
 }
 void APeCoPlayerCharacter::Tick(float DeltaSeconds)
@@ -321,3 +326,15 @@ void APeCoPlayerCharacter::PlayRollAnimation()
 		}
 	}
 }
+
+void APeCoPlayerCharacter::InitMaterials()
+{
+	if (IsValid(DamageMaterial))
+	{
+		DamageMaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, DamageMaterial);
+	}
+	GetMesh()->SetOverlayMaterial(DamageMaterialInstance);
+	DamageMaterialInstance->SetScalarParameterValue(FName("Alpha"), 0);
+
+}
+

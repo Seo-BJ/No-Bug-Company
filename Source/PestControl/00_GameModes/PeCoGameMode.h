@@ -13,6 +13,7 @@
  */
 class APeCoEnemySpawner;
 class UStoreComponent;
+DECLARE_MULTICAST_DELEGATE_OneParam(FStageTimeEnd, int32);
 
 UCLASS()
 class PESTCONTROL_API APeCoGameMode : public AGameMode
@@ -41,11 +42,30 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStoreComponent> StoreComponent;
 
+	//~Stage Setting
+
+	FStageTimeEnd OnStageTimeEnd;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 StageNumber = 1;
+
+	// 600.f = 10 min
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float StageTimeLimit = 600.f;
+
+	//~End of Stage Setting
+
+	virtual void StageTimeEnd();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void StageFinishAndStartNextStage();
+
+	
+	
+
+
 #pragma region Game Time & Timer
 
-	// 1200.f = 1200초 = 20분
-	UPROPERTY(EditDefaultsOnly)
-	float TotalGameTime = 1200.f; 
 
 	float LevelStartingTime = 0.f;
 
@@ -53,6 +73,10 @@ public:
 
 
 private:
+
+	bool bTimeOver = false;
+	bool bStopTimer = false;
+
 	// 적 스폰을 위한 스폰 클래스
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TSubclassOf<APeCoEnemySpawner> EnemySpawnerClass;
@@ -96,6 +120,8 @@ private:
 
 	void CheckGameOver();
 	void CheckRoundTimer(float DeltaTime);
+
+
 
 
 };
