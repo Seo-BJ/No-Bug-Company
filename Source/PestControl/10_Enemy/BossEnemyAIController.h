@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -19,20 +19,22 @@ class PESTCONTROL_API ABossEnemyAIController : public AAIController
 public:
     ABossEnemyAIController();
 
-    // BeginPlay¿¡¼­ Behavior Tree¸¦ ÃÊ±âÈ­
+    // BeginPlayì—ì„œ Behavior Treeë¥¼ ì´ˆê¸°í™”
     virtual void BeginPlay() override;
+    
+    virtual void OnPossess(APawn* InPawn) override;
 
-    // Behavior Tree¸¦ ½ÇÇàÇÏ´Â ÇÔ¼ö
-    void StartBehaviorTree();
+    // Behavior Treeë¥¼ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜
+    //void StartBehaviorTree();
 
-    // ºí·¢º¸µå Á¢±ÙÀÚ
+    // ë¸”ë™ë³´ë“œ ì ‘ê·¼ì
     UBlackboardComponent* GetBlackboardComponent() const;
 
-    // º¸½ºÀÇ Çàµ¿À» ÁßÁö
+    // ë³´ìŠ¤ì˜ í–‰ë™ì„ ì¤‘ì§€
     void StopLogic(const FString& Reason);
 
 protected:
-    // ºí·¢º¸µå ÄÄÆ÷³ÍÆ®
+    // ë¸”ë™ë³´ë“œ ì»´í¬ë„ŒíŠ¸
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
     UBlackboardComponent* BlackboardComponent;
 
@@ -40,7 +42,7 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "AI")
     UBehaviorTree* BossAIBehavior;
 
-    // ÃÊ±â ºí·¢º¸µå °ª ¼³Á¤
+    // ì´ˆê¸° ë¸”ë™ë³´ë“œ ê°’ ì„¤ì •
     virtual void InitializeBlackboardValues();
 
 };

@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "10_Enemy/BTTask/BTTask_MoveToVent.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "10_Enemy/BossEnemy.h"
+#include "10_Enemy/VentPoint.h"
 #include "01_Character/PeCoPlayerCharacter.h" 
 #include "Kismet/GameplayStatics.h"
 
@@ -29,40 +30,54 @@ EBTNodeResult::Type UBTTask_MoveToVent::ExecuteTask(UBehaviorTreeComponent& Owne
         return EBTNodeResult::Failed;
     }
 
-    // ·£´ı È¯Ç³±¸ À§Ä¡ ¼±ÅÃ
-    if (Boss->VentLocations.Num() == 0)
+    // ì‚¬ìš© ê°€ëŠ¥í•œ ë²¤íŠ¸ ë²ˆí˜¸ê°€ ì—†ëŠ” ê²½ìš° ëª¨ë“  ë²¤íŠ¸ë¥¼ ë‹¤ì‹œ ì´ˆê¸°í™”
+    if (Boss->AvailableVentIndices.Num() == 0)
     {
-        UE_LOG(LogTemp, Error, TEXT("No vent locations set for BossEnemy"));
-        return EBTNodeResult::Failed;
+        Boss->ResetVentIndices();
     }
 
-    int32 RandomIndex = FMath::RandRange(0, Boss->VentLocations.Num() - 1);
-    FVector TargetVent = Boss->VentLocations[RandomIndex];
-    FVector VentAboveLocation = TargetVent + FVector(0, 0, 1000.0f); // È¯Ç³±¸ À§ ÇÏ´Ã
+    // ëœë¤ìœ¼ë¡œ ë²¤íŠ¸ ì„ íƒ
+    int32 RandomIndex = FMath::RandRange(0, Boss->AvailableVentIndices.Num() - 1);
+    int32 SelectedVentNumber = Boss->AvailableVentIndices[RandomIndex];
+    Boss->AvailableVentIndices.RemoveAt(RandomIndex); // ì„ íƒëœ ë²¤íŠ¸ ì œê±°
 
-    // º¸½º À§Ä¡¸¦ È¯Ç³±¸ À§·Î Áï½Ã ÀÌµ¿
-    Boss->SetActorLocation(VentAboveLocation);
+    // ì„ íƒëœ ë²¤íŠ¸ì˜ ìœ„ì¹˜ ê²€ìƒ‰
+    TArray<AActor*> FoundVents;
+    UGameplayStatics::GetAllActorsOfClass(Boss->GetWorld(), AVentPoint::StaticClass(), FoundVents);
 
-    // ºí·¢º¸µå¿¡ ÀÌµ¿ÇÒ À§Ä¡ ÀúÀå
-    UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-    if (BlackboardComp)
+    for (AActor* Actor : FoundVents)
     {
-        BlackboardComp->SetValueAsVector(GetSelectedBlackboardKey(), VentAboveLocation);
+        AVentPoint* Vent = Cast<AVentPoint>(Actor);
+        if (Vent && Vent->VentNumber == SelectedVentNumber)
+        {
+            FVector VentAboveLocation = Vent->GetActorLocation() + FVector(0, 0, 1000.0f); // í™˜í’êµ¬ ìœ„ í•˜ëŠ˜ ìœ„ì¹˜
+
+            // ë³´ìŠ¤ë¥¼ í•´ë‹¹ ìœ„ì¹˜ë¡œ ì¦‰ì‹œ ì´ë™
+            Boss->SetActorLocation(VentAboveLocation);
+
+            // ë¸”ë™ë³´ë“œì— ì´ë™í•œ ìœ„ì¹˜ ì €ì¥
+            UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+            if (BlackboardComp)
+            {
+                BlackboardComp->SetValueAsVector(GetSelectedBlackboardKey(), VentAboveLocation);
+            }
+
+            // í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë³´ë„ë¡ íšŒì „ ì„¤ì •
+            APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(Boss->GetWorld(), 0));
+            if (PlayerCharacter)
+            {
+                FVector ToPlayer = PlayerCharacter->GetActorLocation() - Boss->GetActorLocation();
+                FRotator NewRotation = ToPlayer.Rotation();
+                Boss->SetActorRotation(FRotator(0.f, NewRotation.Yaw, 0.f)); // Yawë§Œ íšŒì „
+            }
+
+            UE_LOG(LogTemp, Log, TEXT("Boss moved to Vent #%d at location: %s"), Vent->VentNumber, *VentAboveLocation.ToString());
+            return EBTNodeResult::Succeeded;
+        }
     }
 
-    // **ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸µµ·Ï È¸Àü ¼³Á¤**
-    APeCoPlayerCharacter* PlayerCharacter = Cast<APeCoPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(Boss->GetWorld(), 0));
-    if (PlayerCharacter)
-    {
-        FVector ToPlayer = PlayerCharacter->GetActorLocation() - Boss->GetActorLocation();
-        FRotator NewRotation = ToPlayer.Rotation();
-        Boss->SetActorRotation(FRotator(0.f, NewRotation.Yaw, 0.f)); // Yaw¸¸ È¸Àü
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is not of type APeCoPlayerCharacter"));
-    }
+    UE_LOG(LogTemp, Error, TEXT("Failed to find vent for Boss"));
+    return EBTNodeResult::Failed;
 
-    UE_LOG(LogTemp, Log, TEXT("Boss moved instantly to vent above: %s"), *VentAboveLocation.ToString());
-    return EBTNodeResult::Succeeded;
+    
 }

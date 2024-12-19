@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,17 +15,16 @@ class PESTCONTROL_API UBTTask_ReturnToSquare : public UBTTask_BlackboardBase
 	GENERATED_BODY()
 
 public:
-    UBTTask_ReturnToSquare();
+    UBTTask_ReturnToSquare();              
 
 protected:
-    virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+    virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;    
 
 private:
-    // ¿ø·¡ ÀÌµ¿ °ø°£ÀÇ Áß½É°ú Å©±â
-    FVector SquareCenter = FVector(1390.f, -160.f, 1180.f); // Á¤»ç°¢Çü °ø°£ Áß½É
-    float SquareSize = 1000.f; // Á¤»ç°¢Çü ÇÑ º¯ÀÇ ±æÀÌ
+    
+    // ê°€ì¥ ê°€ê¹Œìš´ í…Œë‘ë¦¬ ì§€ì  ê³„ì‚°
+    FVector GetClosestEdgePoint(const FVector& CurrentLocation, const FVector& SquareCenter, float SquareSize) const;                
 
-    // °¡Àå °¡±î¿î Å×µÎ¸® ÁöÁ¡ °è»ê
-    FVector GetClosestEdgePoint(const FVector& CurrentLocation) const;
+    FVector GetCounterClockwiseCorner(const FVector& EdgePoint, const FVector& SquareCenter, float SquareSize) const; 
 	
 };
