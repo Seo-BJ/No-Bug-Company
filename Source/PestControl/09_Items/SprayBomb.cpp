@@ -11,6 +11,10 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
+#include "Sound/SoundCue.h"
+
+#include "Particles/ParticleSystemComponent.h" 
+
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -78,6 +82,11 @@ void ASprayBomb::Explode()
 
             ApplySlowEffect(EnemyCharacter);
         }
+    }
+    if (ExplosionSoundCue && ExplosionParticle)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, ExplosionSoundCue, GetActorLocation());
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorLocation(), GetActorRotation());
     }
 
     BombMesh->OnComponentHit.RemoveDynamic(this, &ASprayBomb::OnHit);

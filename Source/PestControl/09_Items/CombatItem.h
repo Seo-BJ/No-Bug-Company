@@ -26,4 +26,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void UseCombatItem();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	class USoundCue* ExplosionSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effect", meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* ExplosionParticle;
+
 };

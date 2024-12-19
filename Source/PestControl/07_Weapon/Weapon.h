@@ -39,6 +39,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
 	TSubclassOf<class AProjectile> BulletClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	class USoundCue* FireSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundCue* ReloadSoundCue;
+
 	virtual void SpawnProjectile();
 
 	void UpgradeWeapon(FGameplayTag StatTag, float UpgradeAmount);

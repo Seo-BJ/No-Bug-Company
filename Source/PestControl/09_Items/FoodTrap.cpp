@@ -4,10 +4,17 @@
 #include "09_Items/FoodTrap.h"
 
 #include "01_Character/PeCoEnemyCharacter.h"
+
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+
+#include "Sound/SoundCue.h"
+
 #include "Kismet/GameplayStatics.h"
+
+#include "Particles/ParticleSystemComponent.h" 
+
 #include "TimerManager.h"
 
 // Sets default values
@@ -103,6 +110,11 @@ void AFoodTrap::Explode()
                 UDamageType::StaticClass()
             );
         }
+    }
+    if (ExplosionSoundCue && ExplosionParticle)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, ExplosionSoundCue, GetActorLocation());
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorLocation(), GetActorRotation());
     }
     Destroy();
 }
