@@ -2,6 +2,9 @@
 
 
 #include "10_Enemy/BossEnemy.h"
+
+#include "00_GameModes/PeCoGameMode.h"
+
 #include "10_Enemy/BossEnemyAIController.h"
 #include "10_Enemy/VentPoint.h"
 
@@ -140,19 +143,21 @@ void ABossEnemy::UpdatePhase()
 
 void ABossEnemy::GameOver()
 {
-    Super::GameOver();
-
-    bIsBossDead = true;
-    bIsBossActive = false;
-
     // AI 비활성화
     ABossEnemyAIController* AIController = Cast<ABossEnemyAIController>(GetController());
     if (AIController)
     {
         AIController->StopLogic(TEXT("Boss Died"));
     }
+    APeCoGameMode* GameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
+    if (GameMode)
+    {
+        GameMode->StageFinishAndStartNextStage();
+    }
+    Super::GameOver();
 
-    UE_LOG(LogTemp, Warning, TEXT("Boss has been defeated!"));
+    bIsBossDead = true;
+    bIsBossActive = false;
 }
 
 void ABossEnemy::PerformAOEAttack()
