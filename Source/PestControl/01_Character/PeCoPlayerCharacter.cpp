@@ -3,6 +3,7 @@
 
 #include "PeCoPlayerCharacter.h"
 
+#include "00_GameModes/PeCoGameMode.h"
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "01_Character/Components/InventoryComponent.h"
 #include "01_Character/Components/EquipmentComponent.h"
@@ -115,6 +116,16 @@ void APeCoPlayerCharacter::BeginPlay()
 	if (IsValid(GameInstance))
 	{
 		SpawnWeapon(GameInstance->SelectedWeaponTag);
+		
+	}
+
+	APeCoGameMode* PeCoGameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
+	if (PeCoGameMode)
+	{
+		if (PeCoGameMode->StageNumber > 1)
+		{
+			GameInstance->LoadPlayerInfo(this);
+		}
 	}
 	InitPlayerCharacter();
 	InitMaterials();

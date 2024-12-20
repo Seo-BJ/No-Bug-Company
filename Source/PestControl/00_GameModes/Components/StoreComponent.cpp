@@ -256,7 +256,16 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	{
 		return false;
 	}
-	bool bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
+	bool bCanBuyItem = false;
+	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	{
+		bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
+	}
+	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat)||ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
+	{
+		bCanBuyItem = InventoryComponent->HasEnoughMoney(ItemPurchasePrice, OutNote);
+	}
+	
 	if (!bCanBuyItem)
 	{
 		return false;
@@ -313,5 +322,18 @@ void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
 	{
 		return;
 	}
-	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), MaterialPurchasePrice);
+
+	FText OutNote;
+	bool bCanBuyItem = false;
+	int32 Price = 0;
+	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	{
+		Price = MaterialPurchasePrice;
+	}
+	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat) || ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
+	{
+		Price = ItemPurchasePrice;
+	}
+
+	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), Price);
 }
