@@ -115,6 +115,10 @@ void UPeCoGameInstance::LoadPlayerInfo(AActor* Player)
 	PlayerState->DamageResistance = DamageResistance;
 	PlayerState->SkillCoolTime = SkillCoolTime;
 
+	PlayerState->InitHealth(MaxHealth.GetCurrentValue());
+
+	PlayerState->PlayerStatPresenterComponent->BroadcastInitialValues();
+
 
 	AWeapon* Weapon = Character->PlayerWeapon;
 	if (!IsValid(Weapon)) return;

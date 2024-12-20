@@ -3,6 +3,7 @@
 
 #include "PeCoGameplayTags.h"
 
+
 namespace PeCoGameplayTags
 {
 	UE_DEFINE_GAMEPLAY_TAG(Item, "Item");
@@ -87,6 +88,6 @@ namespace PeCoGameplayTags
 		const UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
 
 		// �ڽ� �±� �˻�
-		return TagManager.RequestGameplayTagChildrenInDictionary(ParentTag);
+		return TagManager.RequestGameplayTagChildren(ParentTag);
 	}
 }
