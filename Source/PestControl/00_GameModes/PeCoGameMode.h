@@ -61,7 +61,7 @@ public:
 	void StageFinishAndStartNextStage();
 
 	
-	
+	void CleanupEnemies();
 
 
 #pragma region Game Time & Timer

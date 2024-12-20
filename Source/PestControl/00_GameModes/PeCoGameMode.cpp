@@ -83,6 +83,8 @@ void APeCoGameMode::StageFinishAndStartNextStage_Implementation()
 {
 	bStopTimer = true;
 
+	CleanupEnemies(); // 적 및 AI 정리
+
 }
 
 
@@ -111,4 +113,26 @@ void APeCoGameMode::CheckGameOver()
 		bTimeOver = true;
 
 	}
+}
+
+void APeCoGameMode::CleanupEnemies()
+{
+	// 모든 적과 AIController 정리
+	TArray<AActor*> EnemyActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APeCoEnemyCharacter::StaticClass(), EnemyActors);
+
+	for (AActor* EnemyActor : EnemyActors)
+	{
+		APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(EnemyActor);
+		if (EnemyCharacter)
+		{
+			// 타이머 정리
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(EnemyCharacter);
+
+			// 적 제거
+			EnemyCharacter->Destroy();
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("All enemies have been cleaned up."));
 }
