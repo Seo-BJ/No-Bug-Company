@@ -23,6 +23,7 @@ public:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
+	void ResetKnockback();
 	
 protected:
 	virtual void BeginPlay() override;

@@ -68,20 +68,38 @@ void APeCoGroundEnemyAIController::Tick(float DeltaSeconds)
 
 void APeCoGroundEnemyAIController::SetIsKnockedBack(bool IsKnockedBack)
 {
-	bIsKnockedBack = IsKnockedBack;
-	if (BlackboardComponent && BlackboardComponent->IsValidLowLevelFast())
-	{
-		BlackboardComponent->SetValueAsBool(TEXT("bIsKnockedBack"), IsKnockedBack);
-	}
-	else
+	if (!BlackboardComponent || !BlackboardComponent->IsValidLowLevelFast())
 	{
 		UE_LOG(LogTemp, Error, TEXT("BlackboardComponent is invalid or null in %s"), *GetName());
+		return;
 	}
+
+	if (BlackboardComponent->GetKeyID(TEXT("bIsKnockedBack")) == FBlackboard::InvalidKey)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Blackboard key 'bIsKnockedBack' is invalid in %s"), *GetName());
+		return;
+	}
+
+	BlackboardComponent->SetValueAsBool(TEXT("bIsKnockedBack"), IsKnockedBack);
 }
 
 void APeCoGroundEnemyAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+}
+
+void APeCoGroundEnemyAIController::ResetKnockback()
+{
+	if (IsPendingKill() || !IsValid(this))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIController is pending kill or invalid, skipping ResetKnockback."));
+		return;
+	}
+
+	SetIsKnockedBack(false);
 }
