@@ -65,6 +65,7 @@ protected:
 
 	virtual void BeginPlay() override;
 	//~Weapon Stats
+public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag WeaponTag; // 각 무기별 GameplayTag
