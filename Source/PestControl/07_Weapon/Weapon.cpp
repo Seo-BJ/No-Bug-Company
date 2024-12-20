@@ -280,22 +280,6 @@ void AWeapon::StartShotgunCooldown()
 
 void AWeapon::ConicalFire()
 {
-    //if (SprayEffect)
-    //{
-    //    UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(
-    //        GetWorld(),
-    //        SprayEffect,
-    //        GetActorLocation(),
-    //        GetActorRotation(),
-    //        true
-    //    );
-    //    if (ParticleComp)
-    //    {
-    //        FTimerHandle ParticleTimerHandle;
-    //        GetWorld()->GetTimerManager().SetTimer(ParticleTimerHandle, [ParticleComp]() { ParticleComp->DestroyComponent(); }, DurationTime + 0.5f, false);
-    //    }
-    //}
-
     for (int32 i = 1; i < GetActualCoolDown() / Delay + 1 ; i++)
     {
         FTimerHandle TempHandle;
@@ -303,78 +287,61 @@ void AWeapon::ConicalFire()
         GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::DealDamageInSector, DelayTime, false);
     }
 }
+
 void AWeapon::DealDamageInSector()
 {
-    FVector WeaponLocation = GetActorLocation();
-    FVector ForwardVector = GetActorRotation().Vector();
+    if (!GetWorld()) return;
 
-    float SectorRadius = RangeRadius;
-    float HalfAngleRadians = FMath::DegreesToRadians(FireAngle / 2.0f);
+    FVector Start = GetActorLocation();
+    FVector ForwardVector = GetActorForwardVector();
+    FVector End = Start + (ForwardVector * Range);
 
-    TArray<FOverlapResult> OverlapResults;
-    FCollisionShape CollisionShape = FCollisionShape::MakeSphere(SectorRadius);
+    CapsuleHalfHeight = Range * 0.5f;
 
-    bool bHasOverlaps = GetWorld()->OverlapMultiByChannel(
-        OverlapResults,
-        WeaponLocation,
-        FQuat::Identity,
+    FCollisionShape CapsuleShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight);
+    TArray<FHitResult> HitResults;
+
+    FQuat CapsuleRotation = FRotationMatrix::MakeFromZ(ForwardVector).ToQuat();
+
+    //DrawDebugCapsule(
+    //    GetWorld(),
+    //    Start + ForwardVector * (Range * 0.5f),
+    //    CapsuleHalfHeight,
+    //    CapsuleRadius,
+    //    CapsuleRotation,
+    //    FColor::Red,
+    //    false,
+    //    0.2f
+    //);
+
+    bool bHit = GetWorld()->SweepMultiByChannel(
+        HitResults,
+        Start,
+        End,
+        CapsuleRotation,
         ECC_Pawn,
-        CollisionShape
+        CapsuleShape
     );
 
-    DrawDebugCone(
-        GetWorld(),
-        WeaponLocation,
-        ForwardVector,
-        SectorRadius,
-        HalfAngleRadians,
-        HalfAngleRadians,
-        12,
-        DebugColor,
-        false,
-        0.2f
-    );
-
-    if (bHasOverlaps)
+    if (bHit)
     {
-        for (const FOverlapResult& OverlapResult : OverlapResults)
+        for (const FHitResult& Hit : HitResults)
         {
-            AActor* OverlappedActor = OverlapResult.GetActor();
-            if (OverlappedActor && OverlappedActor->IsA(APeCoEnemyCharacter::StaticClass()))
+            APeCoEnemyCharacter* Enemy = Cast<APeCoEnemyCharacter>(Hit.GetActor());
+            if (IsValid(Enemy))
             {
-                FVector EnemyLocation = OverlappedActor->GetActorLocation();
-                FVector DirectionToEnemy = EnemyLocation - WeaponLocation;
-                float DistanceToEnemy = DirectionToEnemy.Size();
-                DirectionToEnemy.Normalize();
+                float ActualDamage = 0.0f;
+                GetCriticalDamage(ActualDamage);
+                UGameplayStatics::ApplyDamage(Enemy, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 
-                float DotProduct = FVector::DotProduct(DirectionToEnemy, ForwardVector);
-                float AngleBetween = FMath::Acos(DotProduct) * (180.f / PI);
-
-                if (DistanceToEnemy <= SectorRadius && AngleBetween <= FireAngle / 2.0f + 5.0f)
+                AFlamethrower* FlamethrowerWeapon = Cast<AFlamethrower>(this);
+                if (FlamethrowerWeapon&& IsValid(Enemy))
                 {
-                    APeCoEnemyCharacter* EnemyCharacter = Cast<APeCoEnemyCharacter>(OverlappedActor);
-                    if (EnemyCharacter)
-                    {
-                        float ActualDamage = 0.f;
-                        GetCriticalDamage(ActualDamage);
-
-                        UGameplayStatics::ApplyDamage(EnemyCharacter, ActualDamage, GetInstigatorController(), this, UDamageType::StaticClass());
-
-                        UE_LOG(LogTemp, Log, TEXT("Enemy %s hit by sector fire Damage: %f"), *EnemyCharacter->GetName(), ActualDamage);
-
-                        if (WeaponTag.MatchesTagExact(PeCoGameplayTags::Weapon_Conical_Flamethrower))
-                        {
-                            AFlamethrower* Flamethrower = Cast<AFlamethrower>(this);
-                            if (Flamethrower)
-                            {
-                                Flamethrower->ApplyBurnEffect(EnemyCharacter);
-                            }
-                        }
-                    }
+                    FlamethrowerWeapon->ApplyBurnEffect(Enemy);
                 }
             }
         }
-    }
+    }      
 }
 
 

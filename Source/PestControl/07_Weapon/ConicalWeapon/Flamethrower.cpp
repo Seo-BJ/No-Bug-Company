@@ -132,10 +132,6 @@ bool AFlamethrower::EnhancementWeapon(int32 EnhancementIndex)
     if (Super::EnhancementWeapon(EnhancementIndex) == false) return false;
     FireAngle += 5;
 
-    ////TODO: 진화할때 길어지는 사거리와 각 값 비율 찾기
-    //SetMaxParticleLifetime();
-    //SetMaxParticleInitialVelocity();
-
     return true;
 }
 
@@ -158,6 +154,10 @@ void AFlamethrower::ConicalFire()
         bHasPlayedStartSound = true;
     }
 
+    float BaseRange = 300.0f; 
+    float ScaleFactor = Range / BaseRange;
+    FlamethrowerParticle->SetWorldScale3D(FVector(ScaleFactor, 1.0f, 1.0f));
+
     if (FlamethrowerParticle)
     {
         FlamethrowerParticle->ActivateSystem();
@@ -173,7 +173,7 @@ void AFlamethrower::ConicalFire()
                 NAME_None,
                 FVector::ZeroVector,
                 EAttachLocation::SnapToTargetIncludingScale,
-                true 
+                true
             );
         }
         else if (!LoopingAudioComponent->IsPlaying())
