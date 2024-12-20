@@ -5,9 +5,22 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "PeCoGameplayTags.h"
+#include "02_Player/PlayerStats.h"
 
 #include "PeCoGameInstance.generated.h"
 
+struct FPeCoStatData;
+USTRUCT(BlueprintType)
+struct FItemSaveData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<AActor> ItemClass; // 아이템 클래스
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 Quantity; // 아이템 수량
+};
 /**
  * 
  */
@@ -17,6 +30,8 @@ class PESTCONTROL_API UPeCoGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+
+	UPeCoGameInstance();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Table", meta = (AllowPrivateAccess = "true"))
 	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Conical_Pesticide;
@@ -51,5 +66,28 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table|Enemy", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UDataTable> EnemyDropTable;
 
+	int32 Money = 0;
+	TArray<FItemSaveData> AllItems;
 
+	
+	UFUNCTION(BlueprintCallable)
+	void SavePlayerInfo(AActor* Player);
+	UFUNCTION(BlueprintCallable)
+	void LoadPlayerInfo(AActor* Player);
+
+	TMap<FGameplayTag, int32> PlayerStatMap;
+	TMap<FGameplayTag, int32> WeaponStatMap;
+
+
+	FPeCoStatData MaxHealth;
+	FPeCoStatData MoveSpeed;
+	FPeCoStatData DamageResistance;
+	FPeCoStatData SkillCoolTime;
+
+	float DamageMultiplier;
+	float BaseDamage;
+	float CooldownMultiplier;
+	float CriticalChance;
+	float CriticalDamageMultiplier;
+	float Range;
 };

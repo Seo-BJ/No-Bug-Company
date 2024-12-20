@@ -39,11 +39,17 @@ protected:
 
 public:	
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaterialPurchasePrice = 40;
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaterialSellingPrice = 20;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 ItemPurchasePrice = 100;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 RewardPurchasePrice = 100;
+
 
 	UFUNCTION(BlueprintCallable)
 	FGameplayTagContainer GetRandomRewardTags(int32 Count, APlayerController* PlayerController);
