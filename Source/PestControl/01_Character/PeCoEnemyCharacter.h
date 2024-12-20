@@ -63,7 +63,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	float Health;
 
-	UPROPERTY(EditDefaltsOnly, BlueprintReadWrite, Category = "Stats")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stats")
 	float MaxHealth = 500;
 
 	// 적의 데미지 값
