@@ -114,7 +114,11 @@ void APeCoPlayerState::HandleStageEnd(int32 StageNumber)
 	}
 	else if (StageNumber == 2)
 	{
-		
+		APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
+		if (IsValid(PeCoGameMode))
+		{
+			PeCoGameMode->StageFinishAndStartNextStage();
+		}
 	}
 	else if (StageNumber == 3)
 	{
