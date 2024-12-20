@@ -182,4 +182,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetRange() { return Range; }
 	void AddProjectile(int32 Amount) { NumberOfProjectiles += Amount; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capsule")
+	float CapsuleRadius = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capsule")
+	float CapsuleHalfHeight = 50;
 };
