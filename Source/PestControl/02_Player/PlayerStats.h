@@ -63,8 +63,7 @@ struct PESTCONTROL_API FPeCoStatData
 		CurrentValue = (BaseValue + AdditiveBonus) * (1 + MultiplierBonus) / (1 + MultiplierReduction);
 		NotifyStatChanged(OldBaseValue, BaseValue);
 	}
-
-
+	
 	void AddAdditiveBonus(float Amount);
 	void AddMultiplierBonus(float Amount);
 	void AddMultiplierReduction(float Amount);

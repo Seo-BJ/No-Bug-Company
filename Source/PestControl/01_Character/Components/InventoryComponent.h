@@ -45,8 +45,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool RemoveItemsOfTag(FGameplayTag ItemTag, const int32 Quantity, FText& OutNote);
-
-
+	
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Found") bool GetItemOfClass(const TSubclassOf<AActor> Class, UPARAM(DisplayName = "TargetActor") AActor*& OutActor);
 
@@ -61,9 +60,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfClass(const TSubclassOf<AActor> ItemClass);
+	
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Quantity") int32 GetQuantityOfTag(const FGameplayTag ItemTag);
-
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	UPARAM(DisplayName = "Success") bool HasEnoughItemsOfItem(const TSubclassOf<AActor> Item, const int32 Quantity, FText& OutNote);
@@ -84,6 +83,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	void AddPlayerMoney(const int32 Amount, FText& OutNote);
+	
 	UFUNCTION(BlueprintCallable, Category = "InventorySystem|Inventory")
 	bool HasEnoughMoney(const int32 Quantity, FText& OutNote);
 

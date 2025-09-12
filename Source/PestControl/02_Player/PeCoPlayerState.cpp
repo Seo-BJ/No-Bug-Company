@@ -141,12 +141,6 @@ void APeCoPlayerState::GameOver()
 			PlayerCharacter->GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 
 			PeCoPlayerController->DisableInput(PeCoPlayerController);
-
-			// Option
-			// PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-			//Dissolve();
-			//bDead = true;
 		}
 
 		APeCoHUD* PeCoHUD = Cast<APeCoHUD>(PeCoPlayerController->GetHUD());
@@ -158,13 +152,11 @@ void APeCoPlayerState::GameOver()
 			PeCoPlayerController->bShowMouseCursor = true;
 		}
 	}
-
-	// To Do: 추가 Death Event 처리
+	
 }
 
 void APeCoPlayerState::AddToKillCount(int32 KillCountAmount)
 {
-	// To do : KillCountAmount가 음수인 경우 0으로 설정 ?
 	SetKillCount(GetKillCount() + KillCountAmount);
 	OnExpChanged.Broadcast(GetCurrentLevelKillCount(Level, KillCount));
 	CheckLevelUp();
@@ -195,7 +187,7 @@ void APeCoPlayerState::InitPlayerStat()
 	}
 	check(PlayerStatPresenterComponent);
 	PlayerStatPresenterComponent->BindCallbacksToDependencies();
-	// To Do:행 이름 변경
+	
 	FName RowName = FName("0");
 	FPlayerStatData* RowData = InitStatDataTable->FindRow<FPlayerStatData>(RowName, TEXT("Read Player Init Stat"), true); // Warn if not found
 	if (RowData)
@@ -309,96 +301,111 @@ void APeCoPlayerState::CheckLevelUp()
 }
 void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
 {
-	if (NewLevel - Level <= 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("New Level은 기존 Level 보다 커야함!"));
-	}
-	UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
-	if (!IsValid(GameInstance))
-	{
-		return;
-	}
-	APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
-	if (!IsValid(PeCoPlayerController))
-	{
-		return;
-	}
-	APeCoPlayerCharacter* PeCoPlayerChracter = PeCoPlayerController->GetPawn<APeCoPlayerCharacter>();
-	if (!IsValid(PeCoPlayerChracter))
-	{
-		return;
-	}
-	UDataTable* InitStatDataTable = GameInstance->SupplyDataTable;
-	FPeCoStatData TargetStat;
-	if (!InitStatDataTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블 없음."));
-		return;
-	}
+    // 레벨업 유효성 검사: 새로운 레벨은 기존 레벨보다 높아야 합니다.
+    if (NewLevel - Level <= 0)
+    {
+       UE_LOG(LogTemp, Error, TEXT("New Level은 기존 Level 보다 커야함!"));
+       return; // 유효하지 않은 경우 함수 종료
+    }
 
-	Level = NewLevel;
-	TMap<FGameplayTag, int32> SupplyResult;
-	TArray<FSupplyData*> AllRows;
-	InitStatDataTable->GetAllRows<FSupplyData>(TEXT("Read Supply Data"), AllRows);
-	FSupplyData* TargetRow = nullptr;
-	for (auto Row : AllRows)
-	{
-		if (Row->LastLevel >= Level)
-		{
-			TargetRow = Row;
-			break;
-		}
-	}
-	if (TargetRow)
-	{
+    // 필수 컴포넌트 및 데이터 유효성 검사
+    UPeCoGameInstance* GameInstance = GetGameInstance<UPeCoGameInstance>();
+    if (!IsValid(GameInstance)) return;
 
-		for (auto SupplyProbability : TargetRow->SupplyMap)
-		{
-			if (SupplyProbability.Probablities.Num() != SupplyProbability.Amounts.Num())
-			{
-				UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블 입력 오류."));
-				return;
-			}
-			int32 ItemAmount = 0;
-			int32 TotalProbability = 0;
-			for (auto Probability : SupplyProbability.Probablities)
-			{
-				TotalProbability += Probability;
-			}
-			for (int32 i = 0; i < SupplyProbability.Probablities.Num(); i++)
-			{
-				int32 RandomInt = FMath::RandRange(1, 100);
-				int32 ProbabilitySum = 0;
-				if (RandomInt > TotalProbability)
-				{
-					break;
-				}
+    APeCoPlayerController* PeCoPlayerController = GetPawn()->GetController<APeCoPlayerController>();
+    if (!IsValid(PeCoPlayerController)) return;
 
-				if (RandomInt <= ProbabilitySum + SupplyProbability.Probablities[i])
-				{
-					ItemAmount = SupplyProbability.Amounts[i];
-				}
-				else
-				{
-					ProbabilitySum += SupplyProbability.Probablities[i];
-					continue;
-				}
-			}
+    APeCoPlayerCharacter* PeCoPlayerChracter = PeCoPlayerController->GetPawn<APeCoPlayerCharacter>();
+    if (!IsValid(PeCoPlayerChracter)) return;
+
+    // GameInstance에서 보상(Supply) 데이터 테이블을 가져옵니다.
+    UDataTable* SupplyDataTable = GameInstance->SupplyDataTable;
+    if (!SupplyDataTable)
+    {
+       UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블 없음."));
+       return;
+    }
+
+    // 플레이어의 레벨을 새로운 레벨로 갱신합니다.
+    Level = NewLevel;
+
+    // UI에 표시할 보상 결과 TMap
+    TMap<FGameplayTag, int32> SupplyResult;
+
+    // 데이터 테이블의 모든 행(Row)을 가져옵니다.
+    TArray<FSupplyData*> AllRows;
+    SupplyDataTable->GetAllRows<FSupplyData>(TEXT("Read Supply Data"), AllRows);
 	
-			UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(PeCoPlayerChracter);
-			if (IsValid(InventoryComponent))
-			{
-				FText OutNote;
-				InventoryComponent->AddItemsOfClass(SupplyProbability.SupplyActorClass, ItemAmount, OutNote);
-				SupplyResult.Add(SupplyProbability.ItemTag, ItemAmount);
-			}
-		}	
-	}
-	PeCoPlayerController->ShowSupplyResultWidget(SupplyResult);
-    // PeCoPlayerController->SetPause(true);
-	PeCoPlayerController = PeCoPlayerController == nullptr ? Cast<APeCoPlayerController>(GetPawn()->GetController()) : PeCoPlayerController;
-	OnLevelChanged.Broadcast(Level);
+    FSupplyData* TargetRow = nullptr;
+    for (auto Row : AllRows)
+    {
+       // 데이터 테이블의 LastLevel 값이 현재 레벨보다 크거나 같으면, 해당 보상 규칙을 사용
+       if (Row->LastLevel >= Level)
+       {
+          TargetRow = Row;
+          break;
+       }
+    }
+
+    // 현재 레벨에 맞는 보상 데이터를 찾은 경우
+    if (TargetRow)
+    {
+       // 해당 레벨 구간의 보상 아이템 목록을 순회
+       for (const FSupplyProbablity SupplyProbability : TargetRow->SupplyMap)
+       {
+          // 데이터 테이블 유효성 검사 (확률 배열과 수량 배열의 크기가 동일해야 함)
+          if (SupplyProbability.Probabilities.Num() != SupplyProbability.Amounts.Num())
+          {
+              UE_LOG(LogTemp, Error, TEXT("보급품 데이터 테이블의 확률/수량 배열 크기가 일치하지 않습니다."));
+              return;
+          }
+
+          int32 ItemAmount = 0; // 최종적으로 지급될 아이템 수량
+          int32 TotalProbability = 0; // 모든 확률의 합
+
+          // 데이터에 정의된 모든 확률 값을 더하여 총 확률을 계산
+          for (auto Probability : SupplyProbability.Probabilities)
+          {
+             TotalProbability += Probability;
+          }
+          // 확률에 따라 지급할 아이템 수량을 결정
+          int32 RandomInt = FMath::RandRange(1, 100);
+          int32 ProbabilitySum = 0;
+          if (RandomInt <= TotalProbability)
+          {
+              for (int32 i = 0; i < SupplyProbability.Probabilities.Num(); i++)
+              {
+                 // 현재 누적 확률에 현재 인덱스의 확률을 더함
+                 ProbabilitySum += SupplyProbability.Probabilities[i];
+                 // 랜덤 값이 누적 확률보다 작거나 같으면 해당 아이템 수량을 선택하고 반복을 종료
+                 if (RandomInt <= ProbabilitySum)
+                 {
+                    ItemAmount = SupplyProbability.Amounts[i];
+                    break;
+                 }
+              }
+          }
+          
+          // 결정된 아이템을 인벤토리에 추가합니다.
+          if (ItemAmount > 0)
+          {
+              UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(PeCoPlayerChracter);
+              if (IsValid(InventoryComponent))
+              {
+                 FText OutNote; 
+                 InventoryComponent->AddItemsOfClass(SupplyProbability.SupplyActorClass, ItemAmount, OutNote);
+                 // UI에 표시하기 위해 결과 맵에 추가합니다.
+                 SupplyResult.Add(SupplyProbability.ItemTag, ItemAmount);
+              }
+          }
+       }  
+    }
+
+    // 컨트롤러를 통해 UI에 보상 결과 위젯을 표시하도록 요청합니다.
+    PeCoPlayerController->ShowSupplyResultWidget(SupplyResult);
     
+    // 레벨 변경 이벤트를 다른 시스템에 알립니다 (UI 업데이트 등).
+    OnLevelChanged.Broadcast(Level);
 }
 uint32 APeCoPlayerState::GetCurrentLevelKillCount(uint32 CurrentLevel, uint32 CurrentKillCount)
 {

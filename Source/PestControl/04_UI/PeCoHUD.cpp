@@ -27,25 +27,11 @@ void APeCoHUD::InitOverlay(APlayerController* PC, APlayerState* PS)
 	PlayerOverlayWidget = CreateWidget<UPlayerOverlay>(PeCoPC, PlayerOverlayWidgetClass);
 	PlayerOverlayWidget->AddToViewport();
 
-	// PlayerOverlayWidget->GetWidgetFromName
-
 }
-
-/*
-void APeCoHUD::AddLevelUpWidget()
-{
-	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
-	if (OwningPlayerController && LevelUpWidgetClass)
-	{
-		LevelUpWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, LevelUpWidgetClass);
-		LevelUpWidget->AddToViewport();
-	}
-}
-*/
 
 void APeCoHUD::AddGameOverWidget()
 {
-	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+	OwningPlayerController =  GetOwningPlayerController();
 	if (OwningPlayerController && GameOverWidgetClass)
 	{
 		GameOverWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, GameOverWidgetClass);
@@ -54,7 +40,7 @@ void APeCoHUD::AddGameOverWidget()
 }
 void APeCoHUD::AddGameResultWidget()
 {
-	OwningPlayerController = OwningPlayerController == nullptr ? GetOwningPlayerController() : OwningPlayerController;
+	OwningPlayerController =  GetOwningPlayerController();
 	if (OwningPlayerController && GameResultWidgetClass)
 	{
 		GameResultWidget = CreateWidget<UPeCoUserWidget>(OwningPlayerController, GameResultWidgetClass);

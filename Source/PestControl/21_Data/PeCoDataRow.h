@@ -62,8 +62,6 @@ struct FWidgetInfoData : public FTableRowBase
 	FText Description = FText();
 };
 
-
-
 USTRUCT(BlueprintType)
 struct FStoreRewardPriceData : public FTableRowBase
 {
@@ -106,7 +104,8 @@ struct FSupplyProbablity
 	FGameplayTag ItemTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<int32> Probablities;
+	TArray<int32> Probabilities;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> Amounts;
 };

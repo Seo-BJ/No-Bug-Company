@@ -95,9 +95,6 @@ FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count, APlayerC
 	return RandomTags;
 }
 
-	
-
-
 FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerController* PlayerController)
 {
 	if (!IsValid(PlayerController))
@@ -166,21 +163,15 @@ int32 UStoreComponent::GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERew
 	{
 	case ERewardRarity::Common:
 		return Row->CommonPrice;
-		break;
 	case ERewardRarity::Rare:
 		return Row->RarePrice;
-		break;
 	case ERewardRarity::Epic:
 		return Row->EpicPrice;
-		break;
 	case ERewardRarity::Legendary:
 		return Row->LegendaryPrice;
-		break;
 	default:
 		return -1;
-		break;
 	}
-	return -1;
 }
 float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerController* PlayerController)
 {
@@ -270,7 +261,7 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	{
 		return false;
 	}
-	// 돈이 있으면 소프트 오브젝트 포인터에서 클래스 로드
+	// 비동기 로드 요청
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 	if (IsValid(SoftItemClass.Get()))
 	{
@@ -279,12 +270,41 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	}
 	else
 	{
-
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		Streamable.RequestAsyncLoad(SoftItemClass.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
+		Streamable.RequestAsyncLoad(
+			SoftItemClass.ToSoftObjectPath(),
+			FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
 		return true;
 	}
 }
+
+void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
+{
+	if (!ItemClassMap.Contains(ItemTag)) return;
+	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
+
+	if (!IsValid(SoftItemClass.Get())) return;
+	
+	APawn* Pawn = Cast<APeCoPlayerController>(User)->GetPawn();
+	if (!IsValid(Pawn)) return;
+
+	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
+	if (!IsValid(InventoryComponent)) return;
+
+	FText OutNote;
+	bool bCanBuyItem = false;
+	int32 Price = 0;
+	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	{
+		Price = MaterialPurchasePrice;
+	}
+	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat) || ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
+	{
+		Price = ItemPurchasePrice;
+	}
+	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), Price);
+}
+
 bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)
 {
 	if (!IsValid(User))
@@ -302,38 +322,4 @@ bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AContr
 		return false;
 	}
 	return InventoryComponent->SellItemInternal(ItemTag, MaterialSellingPrice);
-}
-void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
-{
-	if (!ItemClassMap.Contains(ItemTag)) return;
-	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
-
-	if (!IsValid(SoftItemClass.Get()))
-	{
-		return;
-	}
-	APawn* Pawn = Cast<APeCoPlayerController>(User)->GetPawn();
-	if (!IsValid(Pawn))
-	{
-		return;
-	}
-	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
-	if (!IsValid(InventoryComponent))
-	{
-		return;
-	}
-
-	FText OutNote;
-	bool bCanBuyItem = false;
-	int32 Price = 0;
-	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
-	{
-		Price = MaterialPurchasePrice;
-	}
-	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat) || ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
-	{
-		Price = ItemPurchasePrice;
-	}
-
-	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), Price);
 }

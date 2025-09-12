@@ -55,15 +55,18 @@ public:
 
 	void AddHealth(float Amount, AController* InstigatorController, AActor* DamageCauser);
 	
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	TArray<FPeCoStatData> CharacterStats;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData Health  = FPeCoStatData(PeCoGameplayTags::PlayerStat_Health);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData MaxHealth = FPeCoStatData(PeCoGameplayTags::PlayerStat_MaxHealth);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData MoveSpeed = FPeCoStatData(PeCoGameplayTags::PlayerStat_MoveSpeed);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	FPeCoStatData DamageResistance = FPeCoStatData(PeCoGameplayTags::PlayerStat_DamageResistance);
 
@@ -81,7 +84,6 @@ public:
 	//~End of Character Stats
 
 	//~Player Level, Exp System
-
 	UPROPERTY(BlueprintAssignable)
 	FPlayerExpChanged OnExpChanged;
 
@@ -125,12 +127,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FORCEINLINE int GetPlayerLevel() { return Level; }
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetCurrentLevelRequiredKillCount();
-
-
-
-
 };
 
 template <typename T>

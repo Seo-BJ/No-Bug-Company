@@ -20,7 +20,7 @@ void UEquipmentComponent::BeginPlay()
 
 bool UEquipmentComponent::UseItemInSlot(const FGameplayTag SlotTag)
 {
-    // ÄðÅ¸ÀÓ È®ÀÎ
+    // ï¿½ï¿½Å¸ï¿½ï¿½ È®ï¿½ï¿½
     if (IsCooldownActive(SlotTag))
     {
         UE_LOG(LogTemp, Warning, TEXT("Slot %s is on cooldown!"), *SlotTag.ToString());
@@ -45,7 +45,7 @@ bool UEquipmentComponent::UseItemInSlot(const FGameplayTag SlotTag)
 
         OnItemUsedInSlot.Broadcast(ItemInSlot, SlotTag);
 
-        // ÄðÅ¸ÀÓ ½ÃÀÛ
+        // ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         StartCooldown(SlotTag);
         return true;
     }
@@ -59,7 +59,7 @@ bool UEquipmentComponent::EquipItemInSlot(const FGameplayTag SlotTag, AActor* It
         return false;
     }
 
-    // ÀÌ¹Ì °°Àº ¾ÆÀÌÅÛÀÌ ÀåÂøµÈ °æ¿ì Á¶±â return
+    // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ return
     AActor* ItemInSlot;
     if (GetItemInSlot(SlotTag, ItemInSlot))
     {
@@ -92,9 +92,7 @@ bool UEquipmentComponent::EquipItemInSlot(const FGameplayTag SlotTag, AActor* It
         {
             continue;
         }
-
-        // ¾ÆÀÌÅÛ ÀåÂø ½ÃÀÛ
-
+        
         // Skip UnEquip if item is NOT valid (empty slot!)
         if (IsValid(EquipmentElement.ItemActor))
         {

@@ -271,7 +271,7 @@ void APeCoEnemyCharacter::ApplyTickDamage(float TickInterval, float DamagePerTic
 
 	GetWorld()->GetTimerManager().SetTimer(
 		TickDamageTimerHandle,
-		FTimerDelegate::CreateWeakLambda(this, [=]() mutable
+		FTimerDelegate::CreateWeakLambda(this, [=, this]() mutable
 			{
 				if (CurrentTick >= TotalTicks)
 				{

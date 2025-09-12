@@ -15,19 +15,6 @@
 UPlayerStatPresenterComponent::UPlayerStatPresenterComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	/*
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_Health, OnHealthChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_MaxHealth, OnMaxHealthChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_MoveSpeed, OnMoveSpeedChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_AttackPower, OnAttackPowerChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_AttackSpeed, OnAttackSpeedChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_DamageResistance, OnDamageResistanceChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_CriticalChance, OnCriticalChanceChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_CriticalDamage, OnCriticalDamageChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_Range, OnRangeChanged);
-	StatDelegateMap.Add(PeCoGameplayTags::PlayerStat_SkillCoolTime, OnSkillCoolTimeChanged);
-	
-	*/
 }
 void UPlayerStatPresenterComponent::BeginPlay()
 {
@@ -46,7 +33,7 @@ void UPlayerStatPresenterComponent::BroadcastInitialValues()
 		OnSkillCoolTimeChanged.Broadcast(0, PlayerState->GetSkillCoolTime());
 	}
 }
-void UPlayerStatPresenterComponent::BindCallbacksToDependencies()
+void UPlayerStatPresenterComponent::BindCallbacksToDependencies() const
 {
 	APeCoPlayerState* PlayerState = GetOwner<APeCoPlayerState>();
 	if (IsValid(PlayerState))

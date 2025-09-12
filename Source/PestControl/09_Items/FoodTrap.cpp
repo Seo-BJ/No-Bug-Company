@@ -57,7 +57,7 @@ void AFoodTrap::Tick(float DeltaTime)
 
     if (AttachedEnemy)
     {
-        if (AttachedEnemy->IsValidLowLevel() && !AttachedEnemy->IsPendingKill())
+        if (AttachedEnemy->IsValidLowLevel() && !AttachedEnemy->IsPendingKillPending())
         {
             SetActorLocation(AttachedEnemy->GetActorLocation());
         }

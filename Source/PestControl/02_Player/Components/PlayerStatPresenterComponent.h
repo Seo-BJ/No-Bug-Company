@@ -22,7 +22,7 @@ public:
 	UPlayerStatPresenterComponent();
 
 	void BroadcastInitialValues();
-	void BindCallbacksToDependencies();
+	void BindCallbacksToDependencies() const;
 
 protected:
 
@@ -71,7 +71,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")
 	FPresenterStatChanged OnSkillCoolTimeChanged;
-
 
 private:
 

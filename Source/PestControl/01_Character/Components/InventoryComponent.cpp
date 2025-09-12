@@ -194,7 +194,7 @@ TArray<AActor*> UInventoryComponent::GetAllItems()
 	for (int32 i = Items.Num() - 1; i >= 0; --i)
 	{
 		const AActor* ItemActor = Items[i];
-		UE_LOG(LogTemp, Warning, TEXT("Items Length  = %f"), Items.Num());
+		UE_LOG(LogTemp, Warning, TEXT("Items Length  = %d"), Items.Num());
 
 		UPeCoItemComponent* ItemComponent = UPeCoFunctionLibrary::GetItemComponent(ItemActor);
 		if (!IsValid(ItemComponent))
@@ -366,42 +366,37 @@ int32 UInventoryComponent::GetQuantityOfTag(const FGameplayTag ItemTag)
 	return 0;
 }
 
-
-
-
-
-
 void UInventoryComponent::SetupInventoryStorageReference()
 {
-if (IsValid(InventoryStorage))
-{
-	// Storage ref already set up
-	return;
-}
-AActor* InventoryOwner = GetOwner();
-if (!IsValid(InventoryOwner))
-{
-	return;
-}
-bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
-if (bHasPlayerState)
-{
-	// Try to get a ref to the player state.
-	const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
-	if (!IsValid(OwningPawn))
+	if (IsValid(InventoryStorage))
+	{
+		// Storage ref already set up
+		return;
+	}
+	AActor* InventoryOwner = GetOwner();
+	if (!IsValid(InventoryOwner))
 	{
 		return;
 	}
-	AActor* PlayerState = OwningPawn->GetPlayerState();
-	if (IsValid(PlayerState))
+	bool bHasPlayerState = Cast<APawn>(GetOwner()) != nullptr;
+	if (bHasPlayerState)
 	{
-		InventoryStorage = PlayerState;
+		// Try to get a ref to the player state.
+		const APawn* OwningPawn = Cast<APawn>(InventoryOwner);
+		if (!IsValid(OwningPawn))
+		{
+			return;
+		}
+		AActor* PlayerState = OwningPawn->GetPlayerState();
+		if (IsValid(PlayerState))
+		{
+			InventoryStorage = PlayerState;
+		}
 	}
-}
-else
-{
-	InventoryStorage = InventoryOwner;
-}
+	else
+	{
+		InventoryStorage = InventoryOwner;
+	}
 }
 
 bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialMap)

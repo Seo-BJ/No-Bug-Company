@@ -235,7 +235,7 @@ void APeCoPlayerController::CoolDownDash()
 
 void APeCoPlayerController::GetGameTimeData()
 {
-	PeCoGameMode = PeCoGameMode == nullptr ? Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this)) : PeCoGameMode;
+	PeCoGameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
 	if (PeCoGameMode)
 	{
 		StageOneTwoGameTime = PeCoGameMode->StageTimeLimit;
@@ -246,7 +246,7 @@ void APeCoPlayerController::SetHUDTime(float DeltaTime)
 {
 	float TimeLeft = 0.f;
 
-	PeCoGameMode = PeCoGameMode == nullptr ? Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this)) : PeCoGameMode;
+	PeCoGameMode = Cast<APeCoGameMode>(UGameplayStatics::GetGameMode(this));
 	if (PeCoGameMode)
 	{
 		LevelStartingTime = PeCoGameMode->LevelStartingTime;
@@ -263,7 +263,7 @@ void APeCoPlayerController::SetHUDTime(float DeltaTime)
 }
 void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	PeCoHUD = Cast<APeCoHUD>(GetHUD());
 	bool bHUDValid = PeCoHUD 
 		&& PeCoHUD->GetPlayerOverlayWidget()
 		&& PeCoHUD->GetPlayerOverlayWidget()->GameTimer
@@ -284,7 +284,7 @@ void APeCoPlayerController::SetHUDGameTimer(float CountdownTime)
 
 void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	PeCoHUD = Cast<APeCoHUD>(GetHUD());
 	if (PeCoHUD && PeCoHUD->GetDamageTextComponnet())
 	{
 		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, PeCoHUD->GetDamageTextComponnet());
@@ -304,7 +304,7 @@ void APeCoPlayerController::ShowDamageTextWidget(float DamageAmount, APeCoCharac
 }
 void APeCoPlayerController::ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Quantity)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	PeCoHUD = Cast<APeCoHUD>(GetHUD());
 	if (PeCoHUD && PeCoHUD->GetGetItemTextComponnet())
 	{
 		UGetItemWidgetComponent* ItemText = NewObject<UGetItemWidgetComponent>(GetPawn(), PeCoHUD->GetGetItemTextComponnet());
@@ -319,7 +319,7 @@ void APeCoPlayerController::ShowGetItemTextWidget(FGameplayTag ItemTag, int32 Qu
 
 void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> SupplyResultMap)
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
+	PeCoHUD = Cast<APeCoHUD>(GetHUD());
 	if (IsValid(PeCoHUD))
 	{
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
@@ -332,8 +332,7 @@ void APeCoPlayerController::ShowSupplyResultWidget(TMap<FGameplayTag, int32> Sup
 
 void APeCoPlayerController::ShowDamageScreenWidget()
 {
-	PeCoHUD = PeCoHUD == nullptr ? Cast<APeCoHUD>(GetHUD()) : PeCoHUD;
-	if (IsValid(PeCoHUD))
+	PeCoHUD = Cast<APeCoHUD>(GetHUD());	if (IsValid(PeCoHUD))
 	{
 		UPlayerOverlay* PlayerOverlay = PeCoHUD->GetPlayerOverlayWidget();
 		if (IsValid(PlayerOverlay))

@@ -15,15 +15,4 @@ UCLASS()
 class PESTCONTROL_API UPeCoInputComponent : public UEnhancedInputComponent
 {
 	GENERATED_BODY()
-
-public:
-
-
-protected:
-
-
-
-private:
-
-	
 };

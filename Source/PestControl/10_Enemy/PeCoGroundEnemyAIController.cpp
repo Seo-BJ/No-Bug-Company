@@ -42,9 +42,9 @@ void APeCoGroundEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsKnockedBack) // ³Ë¹é »óÅÂ¶ó¸é ÀÌµ¿ ÁßÁö
+	if (bIsKnockedBack) // ï¿½Ë¹ï¿½ ï¿½ï¿½ï¿½Â¶ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
 	{
-		// Å¸ÀÌ¸Ó Å¬¸®¾î ¹× »óÅÂ ¸®¼Â
+		// Å¸ï¿½Ì¸ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		GetWorld()->GetTimerManager().ClearTimer(KnockbackTimerHandle);
 		return;
 	}
@@ -95,7 +95,7 @@ void APeCoGroundEnemyAIController::EndPlay(const EEndPlayReason::Type EndPlayRea
 
 void APeCoGroundEnemyAIController::ResetKnockback()
 {
-	if (IsPendingKill() || !IsValid(this))
+	if (IsPendingKillPending() || !IsValid(this))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AIController is pending kill or invalid, skipping ResetKnockback."));
 		return;

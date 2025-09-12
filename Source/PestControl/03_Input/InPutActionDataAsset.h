@@ -35,7 +35,4 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* InputActionPressCombatItem;
-
-
-	
 };

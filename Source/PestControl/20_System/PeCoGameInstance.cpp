@@ -38,7 +38,7 @@ void UPeCoGameInstance::SavePlayerInfo(AActor* Player)
 				SaveData.ItemClass = Item->GetClass();
 				SaveData.Quantity = ItemComponent->ItemInfo.CurrentQuantity;
 
-				AllItems.Add(SaveData); // µ¥ÀÌÅÍ ÀúÀå
+				AllItems.Add(SaveData); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			}
 		}
 
@@ -76,9 +76,7 @@ void UPeCoGameInstance::SavePlayerInfo(AActor* Player)
 	CriticalDamageMultiplier = Weapon->CriticalDamageMultiplier;
 	Range = Weapon->Range;
 
-
-
-
+	
 }
 
 void UPeCoGameInstance::LoadPlayerInfo(AActor* Player)
@@ -99,7 +97,7 @@ void UPeCoGameInstance::LoadPlayerInfo(AActor* Player)
 			}
 		}
 
-		// µ¥ÀÌÅÍ ÃÊ±âÈ­
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		AllItems.Empty();
 		Money = 0;
 	}
