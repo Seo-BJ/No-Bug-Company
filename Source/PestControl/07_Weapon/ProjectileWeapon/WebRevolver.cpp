@@ -6,6 +6,8 @@
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
+#include "20_System/Pool/PeCoPoolSubsystem.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -73,18 +75,31 @@ void AWebRevolver::SpawnFragmentProjectiles(const FVector& SpawnLocation, const 
     const float SplitAngle = 30.0f;
     float StartYaw = SpawnRotation.Yaw - (SplitAngle / 2.0f);
 
+    UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>();
+    APawn* InstigatorPawn = GetInstigator();
+
     for (int32 i = 0; i < NumberOfFragments; ++i)
     {
         FRotator NewRotation = SpawnRotation;
         NewRotation.Yaw = StartYaw + i * (SplitAngle / (NumberOfFragments - 1));
 
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = GetInstigator();
+        AProjectile* FragmentProjectile = nullptr;
+        if (Pool)
+        {
+            FragmentProjectile = Pool->Acquire<AProjectile>(FragmentProjectileClass, FTransform(NewRotation, SpawnLocation), this, InstigatorPawn);
+        }
+        else
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.Instigator = InstigatorPawn;
+            FragmentProjectile = GetWorld()->SpawnActor<AFragmentProjectile>(FragmentProjectileClass, SpawnLocation, NewRotation, SpawnParams);
+        }
 
-        AProjectile* FragmentProjectile = GetWorld()->SpawnActor<AFragmentProjectile>(FragmentProjectileClass, SpawnLocation, NewRotation, SpawnParams);
-
-        FragmentProjectile->SetDamage(0);
+        if (FragmentProjectile)
+        {
+            FragmentProjectile->SetDamage(0);
+        }
     }
 }
 

@@ -24,7 +24,7 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
-    
-
-
+public:
+    // 풀에서 재사용 시 비행 모드 강제 복구. (BeginPlay가 재호출되지 않기 때문)
+    virtual void OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator) override;
 };

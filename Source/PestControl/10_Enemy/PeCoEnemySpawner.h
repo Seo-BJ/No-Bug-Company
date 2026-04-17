@@ -20,25 +20,25 @@ public:
     /*// Called every frame
     virtual void Tick(float DeltaTime) override;*/
 
-    // ¶ó¿îµå ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     void SetRound();
 
-    /*// ½ºÆùÇÒ ÀûÀÇ Å¬·¡½º (BP·Î ¼³Á¤ °¡´É)
+    /*// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ (BPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<APeCoEnemyCharacter> EnemyClass;
 
-    // ½ºÆù °£°İ (ÃÊ ´ÜÀ§)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 10.0f;
 
-    // ÇÑ ¹ø¿¡ ½ºÆùÇÒ ÀûÀÇ ¼ö
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 3;*/
-    // ½ºÆù °£°İ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 2.0f;
 
-    // ÇÑ ¹ø¿¡ ½ºÆùÇÒ ÀûÀÇ ¼ö
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 1;
 
@@ -56,21 +56,30 @@ private:
     void UpdateEnemyPool();
     TSubclassOf<class APeCoEnemyCharacter> GetEnemyClassFromID(const FName& EnemyID);
 
-    // µ¥ÀÌÅÍ Å×ÀÌºí º¯¼ö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Data")
     UDataTable* EnemyStatsTable;
 
-    // EnemyID¿Í Å¬·¡½º ¸ÅÇÎ
+    // EnemyIDï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Data")
     TMap<FName, TSubclassOf<class APeCoEnemyCharacter>> EnemyIDToClassMap;
 
-    // ÇöÀç ¶ó¿îµå µ¥ÀÌÅÍ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     TArray<FEnemyStats> CurrentRoundStats;
 
-    // ÇöÀç ¶ó¿îµå
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     int32 CurrentRound;
 
-    
-        
+    // ë¼ìš´ë“œ ì‹œì‘ ì‹œ Enemy í´ë˜ìŠ¤ë³„ë¡œ ë¯¸ë¦¬ ìƒì„±í•´ë‘˜ ê°œìˆ˜.
+    // 0ì´ë©´ PreWarmì„ ê±´ë„ˆë›´ë‹¤. ì²« ì›¨ì´ë¸Œì˜ SpawnActor ìŠ¤íŒŒì´í¬ë¥¼ ì¤„ì´ëŠ” ìš©ë„.
+    UPROPERTY(EditAnywhere, Category = "Spawning|Pool")
+    int32 PreWarmCountPerClass = 10;
+
+    // í´ë˜ìŠ¤ë³„ í’€ ë³´ê´€ ìƒí•œ. 0 = ë¬´ì œí•œ.
+    UPROPERTY(EditAnywhere, Category = "Spawning|Pool")
+    int32 PoolMaxSizePerClass = 0;
+
+    // ë³´ìŠ¤ëŠ” í’€ë§ ëŒ€ìƒì—ì„œ ì œì™¸ (ì¸ìŠ¤í„´ìŠ¤ë‹¹ ìƒíƒœê°€ í¬ê³  ì¬ì‚¬ìš© ì´ë“ì´ ì ìŒ).
+    static bool IsPoolableEnemyClass(TSubclassOf<class APeCoEnemyCharacter> Class);
 };

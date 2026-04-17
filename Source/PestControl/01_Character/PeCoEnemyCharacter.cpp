@@ -9,9 +9,13 @@
 #include "07_Weapon/ConicalWeapon/Flamethrower.h"
 #include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "20_System/PeCoGameInstance.h"
+#include "20_System/Pool/PeCoPoolSubsystem.h"
 #include "21_Data/PeCoDataRow.h"
 
+#include "AIController.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Engine/StreamableManager.h"
@@ -73,7 +77,7 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
 	check(PeCoGameMode);
 	InputDamage = PeCoGameMode->CalculateDamage(InstigatorController, GetController(), InputDamage);
-	
+
 	float DamageToHealth = InputDamage;
 
 
@@ -96,7 +100,8 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 			}
 			else
 			{
-				Destroy();
+				// 화염방사기(미진화) 사망 경로: 풀로 반환.
+				ReleaseSelfToPool();
 			}
 		}
 		else
@@ -121,9 +126,10 @@ void APeCoEnemyCharacter::ReceiveDamage(AActor* DamagedActor, float InputDamage,
 void APeCoEnemyCharacter::GameOver()
 {
 	APeCoGameMode* PeCoGameMode = GetWorld()->GetAuthGameMode<APeCoGameMode>();
-	// To Do : PeCoGameMode -> EnemyEliminated 
+	// To Do : PeCoGameMode -> EnemyEliminated
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	//Destroy();
+	// Destroy 대신 풀로 반환. 풀이 없는 경우(비 PIE/비정상 상태)에는 ReleaseSelfToPool 내부에서 Destroy로 폴백.
+	ReleaseSelfToPool();
 }
 
 
@@ -236,7 +242,8 @@ void APeCoEnemyCharacter::AsyncLoadDropItem(const FEnemyDropData* Row)
 	}
 	else
 	{
-		Destroy();
+		// 드랍 미확정 시에도 풀로 반환하여 재사용.
+		ReleaseSelfToPool();
 	}
 }
 
@@ -254,7 +261,8 @@ void APeCoEnemyCharacter::SpawnItem(UClass* ItemClass)
 	NewTransform.SetScale3D(IsValid(ItemCDO) ? ItemCDO->GetActorScale() : FVector::OneVector);
 	AActor* NewItemActor = GetWorld()->SpawnActor(ItemClass, &NewTransform, SpawnParams);
 
-	Destroy();
+	// 드랍 완료 후 풀로 반환.
+	ReleaseSelfToPool();
 }
 
 void APeCoEnemyCharacter::ApplyTickDamage(float TickInterval, float DamagePerTick, float Duration, AActor* DamageCauser, AController* InstInstigator)
@@ -315,4 +323,106 @@ void APeCoEnemyCharacter::RemoveSpawnImmunity()
 {
 	bIsImmune = false; // 무적 상태 해제
 	UE_LOG(LogTemp, Log, TEXT("Spawn immunity removed for %s"), *GetName());
+}
+
+// ---------------- IPoolable ----------------
+
+void APeCoEnemyCharacter::OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator)
+{
+	// 1) HP/스탯 초기화. ApplyStatsFromData가 이후에 호출되면 덮어써진다.
+	Health = MaxHealth;
+
+	// 2) 상태 플래그 초기화.
+	bRecentlyKnockedBack = false;
+	bIsSlowed = false;
+	bIsStun = false;
+	bIsWithered = false;
+	bIsBurned = false;
+
+	// 3) 이전 인스턴스의 잔여 타이머 정리 (무적/넉백/틱데미지 등).
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	// 4) Movement 정리. Velocity 잔존 방지. Walking 모드로 복구 (FlyingEnemy는 자식에서 Flying으로 덮어씀).
+	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		Move->StopMovementImmediately();
+		Move->Velocity = FVector::ZeroVector;
+		Move->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+
+	// 4-1) 콜리전 복구. SetActorEnableCollision은 풀 대기 중 채널 응답을 저장/복원하지만,
+	//      Character의 Capsule/Mesh에서 Projectile Overlap이 재사용 시 감지되지 않는 이슈가 있어
+	//      Enabled 상태만 명시적으로 재적용. 채널 응답은 BP의 CDO 값이 유지되도록 건드리지 않는다.
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	if (USkeletalMeshComponent* SkelMesh = GetMesh())
+	{
+		SkelMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+
+	// 5) AI 재바인딩. 풀에서 꺼낸 경우 Controller가 남아있을 수 있으므로 다시 Possess.
+	//    Boss처럼 AutoPossessAI=PlacedInWorldOrSpawned 설정이어도 재사용 경로에서는 자동 Possess가 타지 않는다.
+	if (AController* ExistingController = GetController())
+	{
+		ExistingController->UnPossess();
+	}
+	SpawnDefaultController();
+
+	// 6) 스폰 무적 재가동.
+	bIsImmune = true;
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			SpawnImmunityTimerHandle,
+			this,
+			&APeCoEnemyCharacter::RemoveSpawnImmunity,
+			SpawnImmunityTime,
+			false);
+	}
+
+	UE_LOG(LogTemp, Verbose, TEXT("[Pool] Enemy OnAcquired: %s at %s"), *GetName(), *SpawnTransform.GetLocation().ToString());
+}
+
+void APeCoEnemyCharacter::OnReleased_Implementation()
+{
+	// 1) 모든 타이머 정리. (틱 데미지 람다 포함)
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	// 2) 이동 중단. ParkingLocation(Z=-100000)에서 중력/비행 업데이트가 돌지 않도록 MovementMode=None.
+	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		Move->StopMovementImmediately();
+		Move->Velocity = FVector::ZeroVector;
+		Move->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	// 3) AIController UnPossess — 풀 대기 중 BT/Blackboard가 계속 도는 것을 방지.
+	if (AController* Ctrl = GetController())
+	{
+		Ctrl->UnPossess();
+	}
+
+	UE_LOG(LogTemp, Verbose, TEXT("[Pool] Enemy OnReleased: %s"), *GetName());
+}
+
+void APeCoEnemyCharacter::ReleaseSelfToPool()
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (UPeCoPoolSubsystem* Pool = World->GetSubsystem<UPeCoPoolSubsystem>())
+		{
+			Pool->ReleaseActor(this);
+			return;
+		}
+	}
+	// 폴백: 풀 서브시스템이 없으면 기존 동작 유지.
+	Destroy();
 }
