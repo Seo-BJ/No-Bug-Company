@@ -16,6 +16,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "HAL/PlatformTime.h"
+#include "20_System/PeCoBenchmarkSubsystem.h"
 
 
 // Sets default values
@@ -154,14 +156,31 @@ void APeCoEnemySpawner::SpawnEnemies()
             FVector Offset = FVector(FMath::RandRange(-100, 100), FMath::RandRange(-100, 100), 0);
             FVector FinalSpawnLocation = SpawnLocation + Offset;
 
-            // 적 생성
-            APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation);
+            // Deferred 스폰으로 BeginPlay 전에 AutoKillLifetime을 주입할 수 있게 한다.
+            const double SpawnStartSeconds = FPlatformTime::Seconds();
+            const FTransform SpawnTransform(SpawnRotation, FinalSpawnLocation);
+            APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActorDeferred<APeCoEnemyCharacter>(
+                EnemyClass,
+                SpawnTransform,
+                nullptr,
+                nullptr,
+                ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
             if (SpawnedEnemy)
             {
+                if (SpawnedAutoKillLifetime > 0.f)
+                {
+                    SpawnedEnemy->AutoKillLifetime = SpawnedAutoKillLifetime;
+                }
+                SpawnedEnemy->FinishSpawning(SpawnTransform);
                 SpawnedEnemy->ApplyStatsFromData(Stats);
                 UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with health %.2f"), *SpawnedEnemy->GetName(), Stats.Health);
-                //UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s"), *SpawnedEnemy->GetName());
+            }
+
+            const double SpawnElapsedUs = (FPlatformTime::Seconds() - SpawnStartSeconds) * 1'000'000.0;
+            if (UPeCoBenchmarkSubsystem* Bench = UPeCoBenchmarkSubsystem::Get(this))
+            {
+                Bench->RecordEnemySpawn(SpawnElapsedUs);
             }
             else
             {

@@ -85,7 +85,7 @@ public:
 	FPeCoStatData SkillCoolTime;
 
 	float DamageMultiplier = 1;
-	float BaseDamage = 100;
+	float BaseDamage = 0;
 	float CooldownMultiplier = 1;
 	float CriticalChance = 1;
 	float CriticalDamageMultiplier = 1;

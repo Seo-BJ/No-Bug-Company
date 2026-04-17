@@ -84,7 +84,19 @@ public:
 	// 무적 상태 해제 함수
 	void RemoveSpawnImmunity();
 
-	
+	// 벤치마크용 자동 사망 수명 (초). 0 이하이면 비활성.
+	// Spawner 또는 CVar(pe.EnemyAutoKillLifetime)에서 주입 가능.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Benchmark")
+	float AutoKillLifetime = 0.f;
+
+	// AutoKillLifetime 초 후 자기 자신에게 치명 데미지를 가해 기존 사망 경로를 태움.
+	void ScheduleAutoKill(float Lifetime);
+
+private:
+	FTimerHandle AutoKillTimerHandle;
+	void HandleAutoKill();
+
+public:
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
 
 private:

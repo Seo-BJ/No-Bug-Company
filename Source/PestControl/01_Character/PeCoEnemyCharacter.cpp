@@ -16,6 +16,14 @@
 
 #include "Engine/StreamableManager.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/DamageType.h"
+#include "HAL/IConsoleManager.h"
+
+static TAutoConsoleVariable<float> CVarEnemyAutoKillLifetime(
+	TEXT("pe.EnemyAutoKillLifetime"),
+	0.0f,
+	TEXT("If > 0, every spawned enemy auto-kills itself after this many seconds. Benchmark only."),
+	ECVF_Cheat);
 
 APeCoEnemyCharacter::APeCoEnemyCharacter()
 {
@@ -57,8 +65,47 @@ void APeCoEnemyCharacter::BeginPlay()
 		false
 	);
 
+	// 자동 사망: Spawner가 주입한 값이 있으면 그걸 우선, 아니면 전역 CVar 값 사용.
+	const float CVarLifetime = CVarEnemyAutoKillLifetime.GetValueOnGameThread();
+	const float EffectiveLifetime = AutoKillLifetime > 0.f ? AutoKillLifetime : CVarLifetime;
+	if (EffectiveLifetime > 0.f)
+	{
+		ScheduleAutoKill(EffectiveLifetime);
+	}
+}
 
-	
+void APeCoEnemyCharacter::ScheduleAutoKill(float Lifetime)
+{
+	if (Lifetime <= 0.f || !GetWorld())
+	{
+		return;
+	}
+	AutoKillLifetime = Lifetime;
+	GetWorld()->GetTimerManager().SetTimer(
+		AutoKillTimerHandle,
+		this,
+		&APeCoEnemyCharacter::HandleAutoKill,
+		Lifetime,
+		false
+	);
+}
+
+void APeCoEnemyCharacter::HandleAutoKill()
+{
+	if (!IsValid(this) || Health <= 0.f)
+	{
+		return;
+	}
+	// 무적이면 해제하고 진행 (벤치 시나리오에서 수명을 정확히 맞추기 위함)
+	bIsImmune = false;
+
+	UGameplayStatics::ApplyDamage(
+		this,
+		MaxHealth + 1.f,
+		nullptr,
+		this,
+		UDamageType::StaticClass()
+	);
 }
 
 

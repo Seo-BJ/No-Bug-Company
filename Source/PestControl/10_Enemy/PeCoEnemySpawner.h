@@ -20,29 +20,33 @@ public:
     /*// Called every frame
     virtual void Tick(float DeltaTime) override;*/
 
-    // ¶ó¿îµå ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     void SetRound();
 
-    /*// ½ºÆùÇÒ ÀûÀÇ Å¬·¡½º (BP·Î ¼³Á¤ °¡´É)
+    /*// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ (BPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(EditAnywhere, Category = "Spawning")
     TSubclassOf<APeCoEnemyCharacter> EnemyClass;
 
-    // ½ºÆù °£°İ (ÃÊ ´ÜÀ§)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 10.0f;
 
-    // ÇÑ ¹ø¿¡ ½ºÆùÇÒ ÀûÀÇ ¼ö
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 3;*/
-    // ½ºÆù °£°İ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 2.0f;
 
-    // ÇÑ ¹ø¿¡ ½ºÆùÇÒ ÀûÀÇ ¼ö
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 1;
 
-    
+    // ë²¤ì¹˜ë§ˆí¬: ìŠ¤í°ëœ ì ì—ê²Œ ìë™ ì‚¬ë§ ìˆ˜ëª…ì„ ì£¼ì…. 0ì´ë©´ ë¯¸ì£¼ì…(=CVar ê°’ ì‚¬ìš©).
+    UPROPERTY(EditAnywhere, Category = "Benchmark")
+    float SpawnedAutoKillLifetime = 0.f;
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -56,18 +60,18 @@ private:
     void UpdateEnemyPool();
     TSubclassOf<class APeCoEnemyCharacter> GetEnemyClassFromID(const FName& EnemyID);
 
-    // µ¥ÀÌÅÍ Å×ÀÌºí º¯¼ö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Data")
     UDataTable* EnemyStatsTable;
 
-    // EnemyID¿Í Å¬·¡½º ¸ÅÇÎ
+    // EnemyIDï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, Category = "Data")
     TMap<FName, TSubclassOf<class APeCoEnemyCharacter>> EnemyIDToClassMap;
 
-    // ÇöÀç ¶ó¿îµå µ¥ÀÌÅÍ
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     TArray<FEnemyStats> CurrentRoundStats;
 
-    // ÇöÀç ¶ó¿îµå
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     int32 CurrentRound;
 
