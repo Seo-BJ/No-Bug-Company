@@ -397,29 +397,32 @@ void APeCoPlayerState::HandleLevelUp(int32 NewLevel)
           }
 
           int32 ItemAmount = 0; // 최종적으로 지급될 아이템 수량
-          int32 TotalProbability = 0; // 모든 확률의 합
+          int32 TotalProbability = 0; // 모든 가중치의 합
 
-          // 데이터에 정의된 모든 확률 값을 더하여 총 확률을 계산
+          // 데이터에 정의된 모든 가중치 값을 더하여 총합을 계산
           for (auto Probability : SupplyProbability.Probabilities)
           {
              TotalProbability += Probability;
           }
-          // 확률에 따라 지급할 아이템 수량을 결정
-          int32 RandomInt = FMath::RandRange(1, 100);
-          int32 ProbabilitySum = 0;
-          if (RandomInt <= TotalProbability)
+
+          if (TotalProbability <= 0)
           {
-              for (int32 i = 0; i < SupplyProbability.Probabilities.Num(); i++)
-              {
-                 // 현재 누적 확률에 현재 인덱스의 확률을 더함
-                 ProbabilitySum += SupplyProbability.Probabilities[i];
-                 // 랜덤 값이 누적 확률보다 작거나 같으면 해당 아이템 수량을 선택하고 반복을 종료
-                 if (RandomInt <= ProbabilitySum)
-                 {
-                    ItemAmount = SupplyProbability.Amounts[i];
-                    break;
-                 }
-              }
+             continue; // 가중치가 없으면 이 엔트리 스킵
+          }
+
+          // 가중치 총합 범위에서 랜덤 값을 뽑고, 누적 가중치 구간에 매핑 (Weighted Random Selection)
+          int32 RandomInt = FMath::RandRange(1, TotalProbability);
+          int32 ProbabilitySum = 0;
+          for (int32 i = 0; i < SupplyProbability.Probabilities.Num(); i++)
+          {
+             // 현재 누적 가중치에 현재 인덱스의 가중치를 더함
+             ProbabilitySum += SupplyProbability.Probabilities[i];
+             // 랜덤 값이 누적 가중치보다 작거나 같으면 해당 아이템 수량을 선택하고 반복을 종료
+             if (RandomInt <= ProbabilitySum)
+             {
+                ItemAmount = SupplyProbability.Amounts[i];
+                break;
+             }
           }
           
           // 결정된 아이템을 인벤토리에 추가합니다.
