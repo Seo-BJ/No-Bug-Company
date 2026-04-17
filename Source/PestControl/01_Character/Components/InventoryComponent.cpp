@@ -418,7 +418,7 @@ bool UInventoryComponent::HasEnoughMaterials(TMap<FGameplayTag, int32> MaterialM
  void UInventoryComponent::AddPlayerMoney(const int32 Amount, FText& OutNote)
  {
 	 int32 OldMoney = PlayerMoney;
-	 PlayerMoney += Amount;
+	 PlayerMoney = FMath::Max(0, PlayerMoney + Amount);
 	 OnPlayerMoneyChanged.Broadcast(OldMoney, PlayerMoney);
  }
  bool UInventoryComponent::HasEnoughMoney(const int32 Quantity, FText& OutNote)

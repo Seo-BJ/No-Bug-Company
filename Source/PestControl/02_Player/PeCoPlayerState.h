@@ -54,6 +54,9 @@ public:
 	void UpgradeStat(FGameplayTag StatTag);
 
 	void AddHealth(float Amount, AController* InstigatorController, AActor* DamageCauser);
+
+	void BuffMoveSpeed(float Percent, float BuffTime);
+	void ResetMoveSpeedBuff();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CharacterStats")
 	TArray<FPeCoStatData> CharacterStats;
@@ -122,6 +125,9 @@ private:
 
 	int Level = 1;
 	int32 KillCount = 0;
+
+	FTimerHandle MoveSpeedBuffTimer;
+	float ActiveMoveSpeedBuffMultiplier = 0.f;
 
 public:
 

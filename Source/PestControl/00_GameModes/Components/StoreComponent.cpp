@@ -43,26 +43,6 @@ void UStoreComponent::BeginPlay()
 
 FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count, APlayerController* PlayerController)
 {
-	if (!IsValid(PlayerController))
-	{
-		return FGameplayTagContainer();
-	}
-	APeCoPlayerState* PlayerState = PlayerController->GetPlayerState<APeCoPlayerState>();
-	if (!IsValid(PlayerState))
-	{
-		return FGameplayTagContainer();
-	}
-	APeCoPlayerCharacter* PlayerCharacter = PlayerState->GetPawn<APeCoPlayerCharacter>();
-	if (!IsValid(PlayerCharacter))
-	{
-		return FGameplayTagContainer();
-	}
-	AWeapon* Weapon = PlayerCharacter->PlayerWeapon;
-	if (!IsValid(Weapon))
-	{
-		return FGameplayTagContainer();
-	}
-
 	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Combat));
 	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::Item_Consumption));
@@ -70,32 +50,20 @@ FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count, APlayerC
 	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
 	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
 
-	FGameplayTagContainer RemoveContainer = FGameplayTagContainer();
-	for (const FGameplayTag& Tag : TagContainer)
-	{
-		if (Tag.MatchesTag(PeCoGameplayTags::PlayerStat))
-		{
-			if ((PlayerState->GetStatByTag(Tag)).GetStatLevel() >= 5)
-			{
-				RemoveContainer.AddTag(Tag);
-			}
-		}
-		else if (Tag.MatchesTag(PeCoGameplayTags::WeaponStat))
-		{
-			int32* StatLevel = Weapon->WeaponStatLevelMap.Find(Tag);
-			if (*StatLevel >= 5)
-			{
-				RemoveContainer.AddTag(Tag);
-			}
-		}
-	}
-	TagContainer.RemoveTags(RemoveContainer);
-
-	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
-	return RandomTags;
+	return PickRandomUpgradableTags(TagContainer, Count, PlayerController);
 }
 
 FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerController* PlayerController)
+{
+	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
+	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
+	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
+	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
+
+	return PickRandomUpgradableTags(TagContainer, Count, PlayerController);
+}
+
+FGameplayTagContainer UStoreComponent::PickRandomUpgradableTags(FGameplayTagContainer TagContainer, int32 Count, APlayerController* PlayerController)
 {
 	if (!IsValid(PlayerController))
 	{
@@ -117,12 +85,6 @@ FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerCon
 		return FGameplayTagContainer();
 	}
 
-	FGameplayTagContainer TagContainer = PeCoGameplayTags::GetChildTags(PeCoGameplayTags::PlayerStat);
-	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
-	TagContainer.AppendTags(PeCoGameplayTags::GetChildTags(PeCoGameplayTags::WeaponStat));
-	TagContainer.RemoveTag(PeCoGameplayTags::PlayerStat_Health);
-	TagContainer.RemoveTag(PeCoGameplayTags::WeaponStat_MaxAmmo);
-
 	FGameplayTagContainer RemoveContainer = FGameplayTagContainer();
 	for (const FGameplayTag& Tag : TagContainer)
 	{
@@ -135,8 +97,8 @@ FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerCon
 		}
 		else if (Tag.MatchesTag(PeCoGameplayTags::WeaponStat))
 		{
-			int32* StatLevel = Weapon->WeaponStatLevelMap.Find(Tag);
-			if (*StatLevel >= 5)
+			const int32* StatLevel = Weapon->WeaponStatLevelMap.Find(Tag);
+			if (StatLevel && *StatLevel >= 5)
 			{
 				RemoveContainer.AddTag(Tag);
 			}
@@ -144,8 +106,7 @@ FGameplayTagContainer UStoreComponent::GetRandomStatTags(int32 Count, APlayerCon
 	}
 	TagContainer.RemoveTags(RemoveContainer);
 
-	FGameplayTagContainer RandomTags = PeCoGameplayTags::GetRandomTags(TagContainer, Count);
-	return RandomTags;
+	return PeCoGameplayTags::GetRandomTags(TagContainer, Count);
 }
 
 int32 UStoreComponent::GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERewardRarity Rarity)
@@ -159,6 +120,11 @@ int32 UStoreComponent::GetPriceByRewardTagAndRarity(FGameplayTag RewardTag, ERew
 		return -1;
 	}
 	FStoreRewardPriceData* Row = StoreDataTable->FindRow<FStoreRewardPriceData>(RewardTag.GetTagName(), TEXT("Read Reward Price"), false);
+	if (!Row)
+	{
+		UE_LOG(LogTemp, Error, TEXT("StoreDataTable에서 %s에 해당하는 Row를 찾지 못함."), *RewardTag.ToString());
+		return -1;
+	}
 	switch (Rarity)
 	{
 	case ERewardRarity::Common:
@@ -222,10 +188,16 @@ float UStoreComponent::GetStatUpgradeData(FGameplayTag StatTag, APlayerControlle
 			UE_LOG(LogTemp, Error, TEXT("커브 테이블에서 해당 Stat Curve를 찾지 못함!"));
 			return -1;
 		}
-		OriginStatLevel = *PlayerCharacter->PlayerWeapon->WeaponStatLevelMap.Find(StatTag);
+		const int32* StatLevelPtr = PlayerCharacter->PlayerWeapon->WeaponStatLevelMap.Find(StatTag);
+		if (!StatLevelPtr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("WeaponStatLevelMap에서 %s를 찾지 못함."), *StatTag.ToString());
+			return -1;
+		}
+		OriginStatLevel = *StatLevelPtr;
 		int32 TargetStatLevel = OriginStatLevel + 1;
 		return StatCurve->Eval(TargetStatLevel);
-		 
+
 	}
 	return -1;
 }
@@ -247,62 +219,85 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 	{
 		return false;
 	}
-	bool bCanBuyItem = false;
-	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	const int32 Price = GetPurchasePriceForItem(ItemTag);
+	if (Price < 0)
 	{
-		bCanBuyItem = InventoryComponent->HasEnoughMoney(MaterialPurchasePrice, OutNote);
+		return false;
 	}
-	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat)||ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
-	{
-		bCanBuyItem = InventoryComponent->HasEnoughMoney(ItemPurchasePrice, OutNote);
-	}
-	
-	if (!bCanBuyItem)
+	if (!InventoryComponent->HasEnoughMoney(Price, OutNote))
 	{
 		return false;
 	}
 	// 비동기 로드 요청
-	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
+	TSoftClassPtr<AActor>& SoftItemClass = ItemClassMap[ItemTag];
+	TWeakObjectPtr<AController> WeakUser = User;
 	if (IsValid(SoftItemClass.Get()))
 	{
-		OnItemClassLoaded(ItemTag, User);
+		OnItemClassLoaded(ItemTag, WeakUser);
 		return true;
 	}
 	else
 	{
+		// 같은 아이템에 대한 이전 요청이 남아있다면 취소 후 재요청
+		if (TSharedPtr<FStreamableHandle>* ExistingHandle = PendingBuyHandles.Find(ItemTag))
+		{
+			if (ExistingHandle->IsValid())
+			{
+				(*ExistingHandle)->CancelHandle();
+			}
+			PendingBuyHandles.Remove(ItemTag);
+		}
+
 		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		Streamable.RequestAsyncLoad(
+		TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(
 			SoftItemClass.ToSoftObjectPath(),
-			FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, User));
+			FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, WeakUser));
+		if (Handle.IsValid())
+		{
+			PendingBuyHandles.Add(ItemTag, Handle);
+		}
 		return true;
 	}
 }
 
-void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, AController* User)
+void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, TWeakObjectPtr<AController> User)
 {
+	// 완료된 핸들 정리
+	PendingBuyHandles.Remove(ItemTag);
+
 	if (!ItemClassMap.Contains(ItemTag)) return;
 	TSoftClassPtr<AActor> SoftItemClass = ItemClassMap[ItemTag];
 
 	if (!IsValid(SoftItemClass.Get())) return;
-	
-	APawn* Pawn = Cast<APeCoPlayerController>(User)->GetPawn();
+
+	APeCoPlayerController* PlayerController = Cast<APeCoPlayerController>(User.Get());
+	if (!IsValid(PlayerController)) return;
+
+	APawn* Pawn = PlayerController->GetPawn();
 	if (!IsValid(Pawn)) return;
 
 	UInventoryComponent* InventoryComponent = UPeCoFunctionLibrary::GetInventoryComponent(Pawn);
 	if (!IsValid(InventoryComponent)) return;
 
-	FText OutNote;
-	bool bCanBuyItem = false;
-	int32 Price = 0;
-	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	const int32 Price = GetPurchasePriceForItem(ItemTag);
+	if (Price < 0)
 	{
-		Price = MaterialPurchasePrice;
-	}
-	else if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat) || ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
-	{
-		Price = ItemPurchasePrice;
+		return;
 	}
 	InventoryComponent->BuyItemInternal(SoftItemClass.Get(), Price);
+}
+
+int32 UStoreComponent::GetPurchasePriceForItem(FGameplayTag ItemTag) const
+{
+	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Material))
+	{
+		return MaterialPurchasePrice;
+	}
+	if (ItemTag.MatchesTag(PeCoGameplayTags::Item_Combat) || ItemTag.MatchesTag(PeCoGameplayTags::Item_Consumption))
+	{
+		return ItemPurchasePrice;
+	}
+	return -1;
 }
 
 bool UStoreComponent::SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User)

@@ -103,15 +103,7 @@ void UPlayerStatPresenterComponent::BuffSpeed(float Percent, float BuffTime)
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
 	if (PeCoPlayerState)
 	{
-		if (APeCoPlayerCharacter* PlayerCharcater = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
-		{
-			PlayerCharcater->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UPlayerStatPresenterComponent::ResetSpeeds, BuffTime);
-			if (PlayerCharcater->GetCharacterMovement())
-			{
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = (1 + (Percent/100))* PeCoPlayerState->GetMoveSpeed();
-				PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = (1 + (Percent / 100)) * PeCoPlayerState->GetMoveSpeed();
-			}
-		}
+		PeCoPlayerState->BuffMoveSpeed(Percent, BuffTime);
 	}
 }
 void UPlayerStatPresenterComponent::ResetSpeeds()
@@ -119,19 +111,14 @@ void UPlayerStatPresenterComponent::ResetSpeeds()
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
 	if (PeCoPlayerState)
 	{
-		if (APeCoPlayerCharacter* PlayerCharcater = Cast<APeCoPlayerCharacter>(PeCoPlayerState->GetPawn()))
-		{
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeed = PeCoPlayerState->GetMoveSpeed();
-			PlayerCharcater->GetCharacterMovement()->MaxWalkSpeedCrouched = PeCoPlayerState->GetMoveSpeed();
-		}
+		PeCoPlayerState->ResetMoveSpeedBuff();
 	}
 }
 #pragma endregion
 
 void UPlayerStatPresenterComponent::UpgradeStat(FGameplayTag StatTag)
 {
-	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner());
-	if (PeCoPlayerState)
+	if (APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetOwner()); IsValid(PeCoPlayerState))
 	{
 		PeCoPlayerState->UpgradeStat(StatTag);
 	}

@@ -75,6 +75,42 @@ void APeCoPlayerState::AddHealth(float Amount, AController* InstigatorController
 	Health.OnStatChanged.Broadcast(OldHealth, NewHealth);
 }
 
+void APeCoPlayerState::BuffMoveSpeed(float Percent, float BuffTime)
+{
+	APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter)) return;
+
+	if (ActiveMoveSpeedBuffMultiplier != 0.f)
+	{
+		GetWorldTimerManager().ClearTimer(MoveSpeedBuffTimer);
+		MoveSpeed.AddMultiplierBonus(-ActiveMoveSpeedBuffMultiplier);
+		ActiveMoveSpeedBuffMultiplier = 0.f;
+	}
+
+	const float Multiplier = Percent / 100.f;
+	MoveSpeed.AddMultiplierBonus(Multiplier);
+	ActiveMoveSpeedBuffMultiplier = Multiplier;
+
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetMoveSpeed();
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = GetMoveSpeed();
+
+	GetWorldTimerManager().SetTimer(MoveSpeedBuffTimer, this, &APeCoPlayerState::ResetMoveSpeedBuff, BuffTime, false);
+}
+
+void APeCoPlayerState::ResetMoveSpeedBuff()
+{
+	if (ActiveMoveSpeedBuffMultiplier == 0.f) return;
+
+	MoveSpeed.AddMultiplierBonus(-ActiveMoveSpeedBuffMultiplier);
+	ActiveMoveSpeedBuffMultiplier = 0.f;
+
+	APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();
+	if (!IsValid(PlayerCharacter)) return;
+
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = GetMoveSpeed();
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = GetMoveSpeed();
+}
+
 void APeCoPlayerState::HandleHealthChagne(float Damage, AController* InstigatorController, AActor* DamageCauser)
 {
 	APeCoPlayerCharacter* PlayerCharacter = GetPawn<APeCoPlayerCharacter>();

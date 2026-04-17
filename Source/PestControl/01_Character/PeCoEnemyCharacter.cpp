@@ -220,7 +220,7 @@ void APeCoEnemyCharacter::DropItem(bool bDropFlameSample)
 	}
 }
 
-void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
+void APeCoEnemyCharacter::AsyncLoadDropItem(const FEnemyDropData* Row)
 {
 	if (FMath::RandRange(1, 100) <= Row->DropRate)
 	{
@@ -240,7 +240,7 @@ void APeCoEnemyCharacter::AsyncLoadDropItem(FEnemyDropData* Row)
 	}
 }
 
-void APeCoEnemyCharacter::SpawnItem(UClass* ItemCalss)
+void APeCoEnemyCharacter::SpawnItem(UClass* ItemClass)
 {
 	if (!GetWorld()) return;
 
@@ -249,10 +249,10 @@ void APeCoEnemyCharacter::SpawnItem(UClass* ItemCalss)
 	SpawnParams.Owner = nullptr;
 	SpawnParams.Instigator = nullptr;
 
-	const AActor* ItemCDO = Cast<AActor>(ItemCalss->StaticClass()->GetDefaultObject());
+	const AActor* ItemCDO = Cast<AActor>(ItemClass->StaticClass()->GetDefaultObject());
 	FTransform NewTransform = GetActorTransform();
 	NewTransform.SetScale3D(IsValid(ItemCDO) ? ItemCDO->GetActorScale() : FVector::OneVector);
-	AActor* NewItemActor = GetWorld()->SpawnActor(ItemCalss, &NewTransform, SpawnParams);
+	AActor* NewItemActor = GetWorld()->SpawnActor(ItemClass, &NewTransform, SpawnParams);
 
 	Destroy();
 }

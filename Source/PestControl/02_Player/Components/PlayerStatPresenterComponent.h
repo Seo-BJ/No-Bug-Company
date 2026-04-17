@@ -50,11 +50,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BuffSystem|WeaponStat")
 	void ResetWeaponStat(FGameplayTag StatTag);
 
-	FTimerHandle SpeedBuffTimer;
-
-	float InitialBaseSpeed = 0.f;
-	float InitialCrouchSpeed = 0.f;
-
 	TMap<FGameplayTag, float> PreviousWeaponStats;
 
 	UPROPERTY(BlueprintAssignable, Category = "Player|Stat|Event")

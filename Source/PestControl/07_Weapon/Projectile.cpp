@@ -54,6 +54,7 @@ void AProjectile::BeginPlay()
     }
 
     RootCollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+    RootCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnBeginOverlap);
     
     if (NiagaraTraceEffect)
     {
@@ -99,6 +100,38 @@ UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() cons
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+    // Pawn(Player/Enemy/동료)은 Overlap으로 처리되므로 여기 도달하지 않음.
+    // WorldStatic/WorldDynamic(벽, 환경) 충돌 처리.
+
+    if (OtherActor == this || OtherActor == GetOwner())
+    {
+        return;
+    }
+
+    RootCollisionComponent->SetVisibility(false);
+    RootCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    if (NiagaraImpactEffect)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            NiagaraImpactEffect,
+            GetActorLocation(),
+            GetActorRotation(),
+            ImpactEffectScale
+        );
+    }
+
+    if (ActiveTraceEffect)
+    {
+        ActiveTraceEffect->DestroyComponent();
+    }
+
+    Destroy();
+}
+
+void AProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
     AActor* MyOwner = GetOwner();
     if (MyOwner == nullptr)
     {
@@ -106,65 +139,70 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
         return;
     }
 
-    AController* MyOwnerInstigator = nullptr;
+    if (!OtherActor || OtherActor == this || OtherActor == MyOwner)
+    {
+        return;
+    }
+
     APawn* WeaponOwnerPawn = Cast<APawn>(MyOwner->GetOwner());
-    if (WeaponOwnerPawn)
+    if (OtherActor == WeaponOwnerPawn)
     {
-        MyOwnerInstigator = WeaponOwnerPawn->GetController();
+        return;
     }
 
-    if (OtherActor && OtherActor != this && OtherActor != MyOwner)
+    APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
+
+    // Enemy가 아닌 Pawn(Player/동료 등)은 관통
+    if (!HitEnemy)
     {
-        APeCoEnemyCharacter* HitEnemy = Cast<APeCoEnemyCharacter>(OtherActor);
-        if (HitEnemy)
-        {
-
-            UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
-
-            ALarvaLauncher* LarvaLauncherWeapon = Cast<ALarvaLauncher>(MyOwner);
-            if (LarvaLauncherWeapon)
-            {
-                LarvaLauncherWeapon->ApplyWitherEffect(HitEnemy);
-            }
-
-            AAirGun* AirGunWeapon = Cast<AAirGun>(MyOwner);
-            if (AirGunWeapon)
-            {
-                AirGunWeapon->ApplyStunEffect(HitEnemy); 
-            }
-
-            AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);
-            if (WebRevolverWeapon)
-            {
-                WebRevolverWeapon->ApplySlowEffect(HitEnemy, WebRevolverWeapon->SlowMultiplier);
-
-                if(WebRevolverWeapon->HasWeaponEvolved())
-                { 
-                    WebRevolverWeapon->SpawnFragmentProjectiles(GetActorLocation(), GetActorRotation());
-                }
-            }
-        }
-        RootCollisionComponent->SetVisibility(false);
-        RootCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
- 
-        if (NiagaraImpactEffect)
-        {
-            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-                GetWorld(),
-                NiagaraImpactEffect,
-                GetActorLocation(),
-                GetActorRotation(),
-                ImpactEffectScale
-            );
-        }
-
-        //SetLifeSpan(0.2f); 
-
-        if (ActiveTraceEffect)
-        {
-            ActiveTraceEffect->DestroyComponent();
-        }
-
-        Destroy();
+        return;
     }
+
+    AController* MyOwnerInstigator = WeaponOwnerPawn ? WeaponOwnerPawn->GetController() : nullptr;
+
+    UGameplayStatics::ApplyDamage(HitEnemy, Damage, MyOwnerInstigator, this, UDamageType::StaticClass());
+
+    ALarvaLauncher* LarvaLauncherWeapon = Cast<ALarvaLauncher>(MyOwner);
+    if (LarvaLauncherWeapon)
+    {
+        LarvaLauncherWeapon->ApplyWitherEffect(HitEnemy);
+    }
+
+    AAirGun* AirGunWeapon = Cast<AAirGun>(MyOwner);
+    if (AirGunWeapon)
+    {
+        AirGunWeapon->ApplyStunEffect(HitEnemy);
+    }
+
+    AWebRevolver* WebRevolverWeapon = Cast<AWebRevolver>(MyOwner);
+    if (WebRevolverWeapon)
+    {
+        WebRevolverWeapon->ApplySlowEffect(HitEnemy, WebRevolverWeapon->SlowMultiplier);
+
+        if (WebRevolverWeapon->HasWeaponEvolved())
+        {
+            WebRevolverWeapon->SpawnFragmentProjectiles(GetActorLocation(), GetActorRotation());
+        }
+    }
+
+    RootCollisionComponent->SetVisibility(false);
+    RootCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    if (NiagaraImpactEffect)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            NiagaraImpactEffect,
+            GetActorLocation(),
+            GetActorRotation(),
+            ImpactEffectScale
+        );
+    }
+
+    if (ActiveTraceEffect)
+    {
+        ActiveTraceEffect->DestroyComponent();
+    }
+
+    Destroy();
 }

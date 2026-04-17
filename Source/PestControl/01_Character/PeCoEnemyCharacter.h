@@ -92,8 +92,8 @@ private:
 	AActor* VarDamageCauser;
 
 	void DropItem(bool bDropFlameSample);
-	void AsyncLoadDropItem(FEnemyDropData* Row);
-	void SpawnItem(UClass* ItemCalss);
+	void AsyncLoadDropItem(const FEnemyDropData* Row);
+	void SpawnItem(UClass* ItemClass);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")

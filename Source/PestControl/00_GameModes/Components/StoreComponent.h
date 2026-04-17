@@ -4,24 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/StreamableManager.h"
 #include "PeCoGameplayTags.h"
 #include "21_Data/PeCoDataTypes.h"
 
 #include "StoreComponent.generated.h"
 
-USTRUCT(BlueprintType)
-struct FItemData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FGameplayTag ItemTag;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-    TSoftClassPtr<AActor> ItemClass;
-};
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
 class PESTCONTROL_API UStoreComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -32,6 +21,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	TMap<FGameplayTag, TSoftClassPtr<AActor>> ItemClassMap;
+
 
 protected:
 
@@ -70,5 +60,11 @@ public:
 
 private:
 
-	void OnItemClassLoaded(FGameplayTag ItemTag, AController* User);
+	void OnItemClassLoaded(FGameplayTag ItemTag, TWeakObjectPtr<AController> User);
+
+	FGameplayTagContainer PickRandomUpgradableTags(FGameplayTagContainer TagContainer, int32 Count, APlayerController* PlayerController);
+
+	int32 GetPurchasePriceForItem(FGameplayTag ItemTag) const;
+
+	TMap<FGameplayTag, TSharedPtr<FStreamableHandle>> PendingBuyHandles;
 };

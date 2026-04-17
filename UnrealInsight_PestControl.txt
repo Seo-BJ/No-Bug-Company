@@ -1,0 +1,107 @@
+@echo off
+setlocal EnableExtensions EnableDelayedExpansion
+
+:: ============================================================
+:: [경로 설정]
+set UE_EDITOR="C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor.exe"
+set UE_INSIGHTS="C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64"
+set UPROJECT="C:\Users\binij\Documents\UnrealProjects\Project\PestControl\PestControl.uproject"
+:: ============================================================
+
+:: ============================================================
+:: [공통 옵션]
+:: -game : Standalone
+:: -statnamedevents : CPU 타이머가 좀 더 유의미하게 찍힘(무거울 수 있음)
+set COMMON=-game -log
+:: ============================================================
+
+echo.
+echo ============================================================
+echo   [PestControl Project] Unreal Insights 프로파일링 모드 선택
+echo ============================================================
+echo.
+echo   1. 로딩 병목 (LoadTime + File I/O)
+echo      - 패키지/에셋 로드 시간 + 파일 I/O 이벤트
+echo.
+echo   2. 메모리 (Memory Insights, 자세히)
+echo      - memory(=memalloc+callstack+memtag) + metadata/assetmetadata
+echo.
+echo   3. CPU/프레임 (GameThread/RenderThread/TaskGraph)
+echo      - cpu+frame+task+counters+bookmarks (+statnamedevents)
+echo.
+echo   4. GPU 병목 (GPU + Render/RHI Command)
+echo      - gpu+frame + rendercommands+rhicommands
+echo.
+echo   5. 전체(무거움) - 면접용 "근거 수집" 풀패키지
+echo      - cpu+frame+gpu+memory+file+loadtime + render/rhi/task/counters/bookmarks
+echo.
+echo ============================================================
+set /p mode="실행할 모드 번호를 입력하세요 (1-6): "
+
+:: Insights Viewer 먼저 실행(켜져있어도 무관)
+start "" %UE_INSIGHTS%
+
+:: 모드별 트레이스 구성
+set TRACE=
+set EXTRA=
+
+if "%mode%"=="1" goto LOADTIME
+if "%mode%"=="2" goto MEMORY
+if "%mode%"=="3" goto CPU
+if "%mode%"=="4" goto GPU
+if "%mode%"=="5" goto ALL
+if "%mode%"=="6" goto NET
+goto END
+
+:LOADTIME
+echo [로딩 병목] LoadTime + File I/O 트레이스를 시작합니다...
+:: LoadTime 채널은 cpu 채널이 필요함(문서 명시).[web:38]
+set TRACE=-trace=cpu,frame,bookmarks,loadtime,file
+set EXTRA=-statnamedevents
+goto RUN
+
+:MEMORY
+echo [메모리] Memory Insights 트레이스를 시작합니다...
+:: Memory는 memalloc,callstack,memtag 프리셋과 동일.[web:31]
+:: assetmetadata는 "할당을 에셋 이름/클래스 메타데이터로 연결"할 때 유용(메타데이터 필요).[web:31]
+set TRACE=-trace=memory,metadata,assetmetadata,bookmarks,frame,cpu
+goto RUN
+
+:CPU
+echo [CPU/프레임] CPU + TaskGraph 트레이스를 시작합니다...
+set TRACE=-trace=cpu,frame,task,counters,bookmarks,log
+set EXTRA=-statnamedevents
+goto RUN
+
+:GPU
+echo [GPU] GPU + Render/RHI Command 트레이스를 시작합니다...
+set TRACE=-trace=gpu,frame,cpu,rendercommands,rhicommands,bookmarks
+goto RUN
+
+:ALL
+echo [전체] 풀 트레이스를 시작합니다 (데이터가 매우 커질 수 있음)...
+set TRACE=-trace=cpu,frame,gpu,rendercommands,rhicommands,task,counters,bookmarks,file,loadtime,memory,metadata,assetmetadata,log
+set EXTRA=-statnamedevents
+goto RUN
+
+:NET
+echo [네트워크] Net 트레이스를 시작합니다...
+:: Net 채널은 -NetTrace=1이 필요하다고 문서에 명시됨.[web:34]
+set TRACE=-trace=cpu,frame,bookmarks,net
+set EXTRA=-NetTrace=1
+goto RUN
+
+:RUN
+echo.
+echo UE_EDITOR  = %UE_EDITOR%
+echo UPROJECT   = %UPROJECT%
+echo TRACE OPTS = %TRACE% %EXTRA%
+echo.
+
+start "" %UE_EDITOR% %UPROJECT% %COMMON% %TRACE% %EXTRA%
+exit /b 0
+
+:END
+echo 잘못된 번호입니다.
+pause
+exit /b 1
