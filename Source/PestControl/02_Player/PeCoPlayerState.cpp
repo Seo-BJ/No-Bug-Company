@@ -35,8 +35,8 @@ APeCoPlayerState::APeCoPlayerState()
 
 	PlayerStatPresenterComponent = CreateDefaultSubobject<UPlayerStatPresenterComponent>(TEXT("StatPresenter"));
 	CharacterStats.Add(Health);
-	CharacterStats.Add( MaxHealth);
-	CharacterStats.Add( MoveSpeed);
+	CharacterStats.Add(MaxHealth);
+	CharacterStats.Add(MoveSpeed);
 	CharacterStats.Add(DamageResistance);
 	CharacterStats.Add(SkillCoolTime);
 

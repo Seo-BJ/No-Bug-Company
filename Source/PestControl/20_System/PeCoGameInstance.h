@@ -16,10 +16,10 @@ struct FItemSaveData
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite)
-	TSubclassOf<AActor> ItemClass; // ¾ÆÀÌÅÛ Å¬·¡½º
+	TSubclassOf<AActor> ItemClass; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 Quantity; // ¾ÆÀÌÅÛ ¼ö·®
+	int32 Quantity = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 };
 /**
  * 
@@ -33,8 +33,9 @@ public:
 
 	UPeCoGameInstance();
 
+	// ì‹œì‘ ë¬´ê¸°. ë¯¸ì„ íƒì‹œ Roach Shooterë¡œ ìŠ¤í° (ex: ì „íˆ¬ ë ˆë²¨ì—ì„œ PIEë¡œ í”Œë ˆì´ ì‹œ)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Table", meta = (AllowPrivateAccess = "true"))
-	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Conical_Pesticide;
+	FGameplayTag SelectedWeaponTag = PeCoGameplayTags::Weapon_Projectile_RoachShooter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Table|UI", meta = (AllowPrivateAccess = "true"))
 	TMap<FGameplayTag, TObjectPtr<UDataTable>> WidgetDataTableMap;
@@ -77,17 +78,16 @@ public:
 
 	TMap<FGameplayTag, int32> PlayerStatMap;
 	TMap<FGameplayTag, int32> WeaponStatMap;
-
-
+	
 	FPeCoStatData MaxHealth;
 	FPeCoStatData MoveSpeed;
 	FPeCoStatData DamageResistance;
 	FPeCoStatData SkillCoolTime;
 
-	float DamageMultiplier;
-	float BaseDamage;
-	float CooldownMultiplier;
-	float CriticalChance;
-	float CriticalDamageMultiplier;
-	float Range;
+	float DamageMultiplier = 1;
+	float BaseDamage = 100;
+	float CooldownMultiplier = 1;
+	float CriticalChance = 1;
+	float CriticalDamageMultiplier = 1;
+	float Range = 2000;
 };

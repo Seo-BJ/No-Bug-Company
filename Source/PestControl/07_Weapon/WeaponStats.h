@@ -14,38 +14,38 @@ struct FWeaponStats : public FTableRowBase
     FGameplayTag WeaponTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float BaseDamage;
+    float BaseDamage = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float DamageMultiplier;
+    float DamageMultiplier = 1.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float CriticalChance;
+    float CriticalChance = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float CriticalDamageMultiplier;
+    float CriticalDamageMultiplier = 1.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float Cooldown;
+    float Cooldown = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float Delay;
+    float Delay = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    int32 NumberOfProjectiles;
+    int32 NumberOfProjectiles = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float FireAngle;
+    float FireAngle = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float RangeRadius;
+    float RangeRadius = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float Range;
+    float Range = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    int32 Ammo;
+    int32 Ammo = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
-    float ReloadCoolDown;
+    float ReloadCoolDown = 0.f;
 };

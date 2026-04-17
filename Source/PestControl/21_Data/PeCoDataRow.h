@@ -18,10 +18,10 @@ struct FLevelUpData : public FTableRowBase
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 Level;
+    int32 Level = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 RequiredKillCount;
+    int32 RequiredKillCount = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -32,16 +32,16 @@ struct FPlayerStatData : public FTableRowBase
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MaxHealth;
+	int32 MaxHealth = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MoveSpeed;
+	int32 MoveSpeed = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 DamageResistance;
+	int32 DamageResistance = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 SkillCoolTime;
+	int32 SkillCoolTime = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -71,16 +71,16 @@ struct FStoreRewardPriceData : public FTableRowBase
 	FGameplayTag GameplayTag;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 CommonPrice;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 RarePrice;
+	int32 CommonPrice = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 EpicPrice;
+	int32 RarePrice = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 LegendaryPrice;
+	int32 EpicPrice = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 LegendaryPrice = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -114,8 +114,8 @@ struct FSupplyData : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)	
-	int32 LastLevel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 LastLevel = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSupplyProbablity> SupplyMap;
@@ -133,5 +133,5 @@ struct FEnemyDropData : public FTableRowBase
 	TSoftClassPtr<AActor> Item;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DropRate; 
+	float DropRate = 0.f;
 };

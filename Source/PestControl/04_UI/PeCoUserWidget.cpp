@@ -7,7 +7,6 @@
 #include "01_Character/Components/EquipmentComponent.h"
 #include "01_Character/Components/InventoryComponent.h"
 #include "02_Player/PeCoPlayerState.h"
-#include "02_Player/Components/PlayerLevelPresenterComponent.h"
 #include "02_Player/Components/PlayerStatPresenterComponent.h"
 #include "20_System/PeCoFunctionLibrary.h"
 

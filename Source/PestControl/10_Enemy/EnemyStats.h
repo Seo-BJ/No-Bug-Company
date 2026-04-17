@@ -7,39 +7,39 @@
 #include "EnemyStats.generated.h"
 
 /**
- * EnemyStats ±¸Á¶Ã¼: °¢ ¸ó½ºÅÍÀÇ ¼Ó¼ºÀ» Á¤ÀÇ
+ * EnemyStats ï¿½ï¿½ï¿½ï¿½Ã¼: ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ó¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
  */
 USTRUCT(BlueprintType)
 struct FEnemyStats : public FTableRowBase
 {
     GENERATED_BODY()
 
-    // ¶ó¿îµå ¹øÈ£
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    int32 Round;
+    int32 Round = 0;
 
-    // Àû °íÀ¯ ID
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ID
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
     FName EnemyID;
 
-    // Ã¼·Â
+    // Ã¼ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    float Health;
+    float Health = 0.f;
 
-    // µ¥¹ÌÁö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    float Damage;
+    float Damage = 0.f;
 
-    // GroundEnemy ÀÌµ¿ ¼Óµµ
+    // GroundEnemy ï¿½Ìµï¿½ ï¿½Óµï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    float WalkSpeed;
+    float WalkSpeed = 0.f;
 
-    // FlyingEnemy ÀÌµ¿ ¼Óµµ
+    // FlyingEnemy ï¿½Ìµï¿½ ï¿½Óµï¿½
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    float FlySpeed;
-    
-    // º¸½º ¿©ºÎ (Ãß°¡)
+    float FlySpeed = 0.f;
+
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ß°ï¿½)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy Stats")
-    bool bIsBoss;
+    bool bIsBoss = false;
 
 };
