@@ -30,10 +30,17 @@ protected:
 
     void DestroyProjectile();
 
+public:
+    // 풀링 재사용 시 타이머 재등록 및 상태 초기화.
+    virtual void OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator) override;
+
 private:
     FTimerHandle FlightTimerHandle;
     FTimerHandle DestructionTimerHandle;
 
-    bool bHasStopped; 
-    float WebDuration = 2.0f; 
+    bool bHasStopped;
+    float WebDuration = 2.0f;
+
+    /** Overlap 델리게이트 1회성 바인딩 가드 (부모의 Hit/Overlap 바인딩과 별개). */
+    bool bFragmentOverlapBound = false;
 };

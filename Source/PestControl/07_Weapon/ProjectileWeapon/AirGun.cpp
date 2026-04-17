@@ -6,6 +6,8 @@
 
 #include "01_Character/PeCoEnemyCharacter.h"
 
+#include "20_System/Pool/PeCoPoolSubsystem.h"
+
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
@@ -80,14 +82,23 @@ void AAirGun::SpawnProjectile()
         return;
     }
 
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.Owner = this;
-    SpawnParams.Instigator = Cast<APawn>(GetOwner());
-
     FVector Location = BulletSpawnPoint->GetComponentLocation();
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
+    APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
-    AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation, SpawnParams);
+    AProjectile* Projectile = nullptr;
+    if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
+    {
+        Projectile = Pool->Acquire<AProjectile>(ProjectileClass, FTransform(Rotation, Location), this, InstigatorPawn);
+    }
+    else
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = InstigatorPawn;
+        Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, Location, Rotation, SpawnParams);
+    }
+
     if (Projectile)
     {
         float ActualDamage = 0.f;

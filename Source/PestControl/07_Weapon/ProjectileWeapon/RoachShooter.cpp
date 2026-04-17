@@ -6,6 +6,8 @@
 
 #include "01_Character/PeCoPlayerCharacter.h"
 
+#include "20_System/Pool/PeCoPoolSubsystem.h"
+
 ARoachShooter::ARoachShooter()
 {
     WeaponTag = PeCoGameplayTags::Weapon_Projectile_RoachShooter;
@@ -27,21 +29,31 @@ void ARoachShooter::SpawnProjectile()
 
     if (HasWeaponEvolved() && EVBulletSpawnPoint && BulletClass)
     {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = Cast<APawn>(GetOwner());
-
         FVector EVLocation = EVBulletSpawnPoint->GetComponentLocation();
         FRotator EVRotation = EVBulletSpawnPoint->GetComponentRotation();
+        APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
-        AProjectile* EVProjectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, EVLocation, EVRotation, SpawnParams);
+        AProjectile* EVProjectile = nullptr;
+        if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
+        {
+            EVProjectile = Pool->Acquire<AProjectile>(BulletClass, FTransform(EVRotation, EVLocation), this, InstigatorPawn);
+        }
+        else
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.Instigator = InstigatorPawn;
+            EVProjectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, EVLocation, EVRotation, SpawnParams);
+        }
 
-        float ActualDamage = 0.f;
-        GetCriticalDamage(ActualDamage);
+        if (EVProjectile)
+        {
+            float ActualDamage = 0.f;
+            GetCriticalDamage(ActualDamage);
 
-        EVProjectile->SetDamage(ActualDamage);
-        EVProjectile->SetOwner(this);
-
+            EVProjectile->SetDamage(ActualDamage);
+            EVProjectile->SetOwner(this);
+        }
     }
 }
 

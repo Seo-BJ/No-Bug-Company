@@ -4,6 +4,8 @@
 #include "07_Weapon/ProjectileWeapon/LarvaLauncher.h"
 #include "07_Weapon/Projectile.h"
 
+#include "20_System/Pool/PeCoPoolSubsystem.h"
+
 #include "Kismet/GameplayStatics.h"
 
 ALarvaLauncher::ALarvaLauncher()
@@ -47,20 +49,31 @@ void ALarvaLauncher::SpawnProjectile()
 
     if (bIsFirstEvolved && EVBulletSpawnPoint && BulletClass)
     {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = this;
-        SpawnParams.Instigator = Cast<APawn>(GetOwner());
-
         FVector EVLocation = EVBulletSpawnPoint->GetComponentLocation();
         FRotator EVRotation = EVBulletSpawnPoint->GetComponentRotation();
+        APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
-        AProjectile* EVProjectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, EVLocation, EVRotation, SpawnParams);
-       
-        float ActualDamage = 0.f;
-        GetCriticalDamage(ActualDamage);
+        AProjectile* EVProjectile = nullptr;
+        if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
+        {
+            EVProjectile = Pool->Acquire<AProjectile>(BulletClass, FTransform(EVRotation, EVLocation), this, InstigatorPawn);
+        }
+        else
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.Instigator = InstigatorPawn;
+            EVProjectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, EVLocation, EVRotation, SpawnParams);
+        }
 
-        EVProjectile->SetDamage(ActualDamage);
-        EVProjectile->SetOwner(this);
+        if (EVProjectile)
+        {
+            float ActualDamage = 0.f;
+            GetCriticalDamage(ActualDamage);
+
+            EVProjectile->SetDamage(ActualDamage);
+            EVProjectile->SetOwner(this);
+        }
     }
 }
 

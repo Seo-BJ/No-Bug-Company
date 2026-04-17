@@ -49,5 +49,18 @@ void APeCoFlyingEnemyCharacter::Tick(float DeltaTime)
     }
 }
 
+void APeCoFlyingEnemyCharacter::OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator)
+{
+    // 부모 구현으로 HP/AI/타이머/무적 등 공통 초기화.
+    Super::OnAcquired_Implementation(SpawnTransform, NewOwner, NewInstigator);
+
+    // 풀 대기 중 Movement가 Walking으로 돌아갈 수 있으므로 Flying 강제 복구.
+    if (UCharacterMovementComponent* Move = GetCharacterMovement())
+    {
+        Move->SetMovementMode(EMovementMode::MOVE_Flying);
+        Move->MaxFlySpeed = FlyingSpeed;
+    }
+}
+
 
 

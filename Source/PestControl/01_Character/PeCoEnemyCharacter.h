@@ -8,15 +8,16 @@
 #include "01_Character/CombatInterface.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "10_Enemy/EnemyStats.h"
+#include "20_System/Pool/PoolableInterface.h"
 #include "PeCoGameplayTags.h"
 #include "PeCoEnemyCharacter.generated.h"
 
 struct FEnemyDropData;
 /**
- * 
+ *
  */
 UCLASS()
-class PESTCONTROL_API APeCoEnemyCharacter : public APeCoCharacter, public ICombatInterface
+class PESTCONTROL_API APeCoEnemyCharacter : public APeCoCharacter, public ICombatInterface, public IPoolable
 {
 	GENERATED_BODY()
 
@@ -128,6 +129,17 @@ public:
 	float GetMaxHealth();
 
 public:
-	float DefaultFlySpeed = 400.0f; 
+	float DefaultFlySpeed = 400.0f;
 	float DefaultWalkSpeed = 300.0f;
+
+	// ~ IPoolable
+	// 풀에서 꺼내질 때: HP/타이머/이동/AI/충돌 등 런타임 상태를 초기 상태로 복구.
+	virtual void OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator) override;
+	// 풀로 반환되기 직전: 이동 정지, AI UnPossess, 타이머 정리.
+	virtual void OnReleased_Implementation() override;
+	// ~
+
+protected:
+	// Pool로 자기 자신 반환. 풀이 없으면 Destroy() 폴백.
+	void ReleaseSelfToPool();
 };

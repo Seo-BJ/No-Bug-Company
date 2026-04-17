@@ -10,10 +10,11 @@
 #include "04_UI/PeCoHUD.h"
 
 #include "07_Weapon/Projectile.h"
-#include "07_Weapon/ConicalWeapon/Flamethrower.h" 
+#include "07_Weapon/ConicalWeapon/Flamethrower.h"
 
 #include "20_System/PeCoGameInstance.h"
 #include "20_System/PeCoFunctionLibrary.h"
+#include "20_System/Pool/PeCoPoolSubsystem.h"
 
 #include "21_Data/PeCoDataRow.h"
 
@@ -45,18 +46,6 @@ AWeapon::AWeapon()
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalChance, 0);
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_CriticalDamage, 0);
     WeaponStatLevelMap.Add(PeCoGameplayTags::WeaponStat_Range, 0);
-
-    static ConstructorHelpers::FObjectFinder<USoundCue> FireSoundCueAsset(TEXT("/Game/Sounds/FireSoundCue"));
-    if (FireSoundCueAsset.Succeeded())
-    {
-        FireSoundCue = FireSoundCueAsset.Object;
-    }
-
-    static ConstructorHelpers::FObjectFinder<USoundCue> ReloadSoundCueAsset(TEXT("/Game/Sounds/ReloadSoundCue"));
-    if (ReloadSoundCueAsset.Succeeded())
-    {
-        ReloadSoundCue = ReloadSoundCueAsset.Object;
-    }
 }
 
 void AWeapon::BeginPlay()
@@ -204,17 +193,26 @@ void AWeapon::SpawnProjectile()
         return;
     }
 
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.Owner = this;
-    SpawnParams.Instigator = Cast<APawn>(GetOwner());
-
     FVector Location = BulletSpawnPoint->GetComponentLocation();
     FRotator Rotation = BulletSpawnPoint->GetComponentRotation();
 
-    AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
-   
+    APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+    AProjectile* Projectile = nullptr;
+
+    if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
+    {
+        Projectile = Pool->Acquire<AProjectile>(BulletClass, FTransform(Rotation, Location), this, InstigatorPawn);
+    }
+    else
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = InstigatorPawn;
+        Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, Location, Rotation, SpawnParams);
+    }
+
     if(Projectile)
-    { 
+    {
         float ActualDamage = 0.f;
         GetCriticalDamage(ActualDamage);
 
@@ -248,15 +246,28 @@ void AWeapon::ShotgunFire()
 
     float StartYaw = BaseRotation.Yaw - (FireAngle / 2.0f);
 
+    APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+    UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>();
+
     for (int32 i = 0; i < NumberOfProjectiles; i++)
     {
         FRotator NewRotation = BaseRotation;
         NewRotation.Yaw = StartYaw + i * AngleIncrement;
 
-        AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, SpawnLocation, NewRotation);
+        AProjectile* Projectile = nullptr;
+        if (Pool)
+        {
+            Projectile = Pool->Acquire<AProjectile>(BulletClass, FTransform(NewRotation, SpawnLocation), this, InstigatorPawn);
+        }
+        else
+        {
+            Projectile = GetWorld()->SpawnActor<AProjectile>(BulletClass, SpawnLocation, NewRotation);
+        }
 
         if (Projectile)
         {
+            // OnAcquired에서 이미 Velocity 재주입을 수행하지만, 샷건의 부채꼴 방향으로
+            // 확실히 맞추기 위해 명시적으로 덮어쓴다.
             UProjectileMovementComponent* MovementComponent = Projectile->GetProjectileMovementComponent();
 
             if (MovementComponent)

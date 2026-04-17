@@ -13,11 +13,11 @@
 #include "10_Enemy/PeCoMosquitoCharacter.h"
 #include "10_Enemy/BossEnemy.h"
 
+#include "20_System/Pool/PeCoPoolSubsystem.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "HAL/PlatformTime.h"
-#include "20_System/PeCoBenchmarkSubsystem.h"
 
 
 // Sets default values
@@ -83,6 +83,53 @@ void APeCoEnemySpawner::UpdateEnemyPool()
     }
 
     UE_LOG(LogTemp, Log, TEXT("Loaded %d enemy stats for round %d"), CurrentRoundStats.Num(), CurrentRound);
+
+    // ---------------- 풀 PreWarm ----------------
+    // 이번 라운드에 등장하는 Enemy 클래스들을 미리 생성해 비활성 풀에 넣어둔다.
+    // 첫 웨이브에서 실제 SpawnActor로 인한 프레임 스파이크를 완화하는 것이 목적.
+    if (UWorld* World = GetWorld())
+    {
+        if (UPeCoPoolSubsystem* Pool = World->GetSubsystem<UPeCoPoolSubsystem>())
+        {
+            TSet<UClass*> UniqueClasses;
+            for (const FEnemyStats& Stats : CurrentRoundStats)
+            {
+                TSubclassOf<APeCoEnemyCharacter> EnemyClass = GetEnemyClassFromID(Stats.EnemyID);
+                if (!EnemyClass || !IsPoolableEnemyClass(EnemyClass))
+                {
+                    continue;
+                }
+                UniqueClasses.Add(*EnemyClass);
+            }
+
+            for (UClass* Cls : UniqueClasses)
+            {
+                if (PoolMaxSizePerClass > 0)
+                {
+                    Pool->SetMaxSize(Cls, PoolMaxSizePerClass);
+                }
+                if (PreWarmCountPerClass > 0)
+                {
+                    Pool->PreWarm(Cls, PreWarmCountPerClass);
+                    UE_LOG(LogTemp, Log, TEXT("[Pool] PreWarm %s x %d"), *Cls->GetName(), PreWarmCountPerClass);
+                }
+            }
+        }
+    }
+}
+
+bool APeCoEnemySpawner::IsPoolableEnemyClass(TSubclassOf<APeCoEnemyCharacter> Class)
+{
+    if (!Class)
+    {
+        return false;
+    }
+    // 보스는 고유 상태가 많고 재사용 이득이 적어 풀링 제외.
+    if (Class->IsChildOf(ABossEnemy::StaticClass()))
+    {
+        return false;
+    }
+    return true;
 }
 
 TSubclassOf<APeCoEnemyCharacter> APeCoEnemySpawner::GetEnemyClassFromID(const FName& EnemyID)
@@ -156,31 +203,28 @@ void APeCoEnemySpawner::SpawnEnemies()
             FVector Offset = FVector(FMath::RandRange(-100, 100), FMath::RandRange(-100, 100), 0);
             FVector FinalSpawnLocation = SpawnLocation + Offset;
 
-            // Deferred 스폰으로 BeginPlay 전에 AutoKillLifetime을 주입할 수 있게 한다.
-            const double SpawnStartSeconds = FPlatformTime::Seconds();
-            const FTransform SpawnTransform(SpawnRotation, FinalSpawnLocation);
-            APeCoEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActorDeferred<APeCoEnemyCharacter>(
-                EnemyClass,
-                SpawnTransform,
-                nullptr,
-                nullptr,
-                ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+            // 적 생성: 풀링 대상이면 PoolSubsystem->Acquire, 아니면 기존 SpawnActor.
+            APeCoEnemyCharacter* SpawnedEnemy = nullptr;
+            const FTransform SpawnT(SpawnRotation, FinalSpawnLocation);
+
+            if (IsPoolableEnemyClass(EnemyClass))
+            {
+                if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
+                {
+                    SpawnedEnemy = Pool->Acquire<APeCoEnemyCharacter>(EnemyClass, SpawnT, this, nullptr);
+                }
+            }
+
+            if (!SpawnedEnemy)
+            {
+                // 폴백 또는 비 풀링 대상(보스 등).
+                SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation);
+            }
 
             if (SpawnedEnemy)
             {
-                if (SpawnedAutoKillLifetime > 0.f)
-                {
-                    SpawnedEnemy->AutoKillLifetime = SpawnedAutoKillLifetime;
-                }
-                SpawnedEnemy->FinishSpawning(SpawnTransform);
                 SpawnedEnemy->ApplyStatsFromData(Stats);
                 UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with health %.2f"), *SpawnedEnemy->GetName(), Stats.Health);
-            }
-
-            const double SpawnElapsedUs = (FPlatformTime::Seconds() - SpawnStartSeconds) * 1'000'000.0;
-            if (UPeCoBenchmarkSubsystem* Bench = UPeCoBenchmarkSubsystem::Get(this))
-            {
-                Bench->RecordEnemySpawn(SpawnElapsedUs);
             }
             else
             {
