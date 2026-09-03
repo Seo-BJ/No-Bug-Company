@@ -15,12 +15,17 @@ AFragmentProjectile::AFragmentProjectile()
     CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
     CollisionComponent->InitSphereRadius(55.0f);
     CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    CollisionComponent->SetCollisionObjectType(ECC_GameTraceChannel1);
+    CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
     CollisionComponent->SetupAttachment(ProjectileMesh);
 }
 
 void AFragmentProjectile::BeginPlay()
 {
     Super::BeginPlay();
+
+    CollisionComponent->SetCollisionObjectType(ECC_GameTraceChannel1);
+    CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 
     // Overlap 델리게이트는 인스턴스당 1회만 바인딩.
     if (!bFragmentOverlapBound && CollisionComponent)
@@ -37,6 +42,9 @@ void AFragmentProjectile::BeginPlay()
 void AFragmentProjectile::OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator)
 {
     Super::OnAcquired_Implementation(SpawnTransform, NewOwner, NewInstigator);
+
+    CollisionComponent->SetCollisionObjectType(ECC_GameTraceChannel1);
+    CollisionComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 
     // 풀에서 재사용될 때도 1회성 바인딩 보장.
     if (!bFragmentOverlapBound && CollisionComponent)

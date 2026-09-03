@@ -21,11 +21,19 @@ APeCoFlyingEnemyCharacter::APeCoFlyingEnemyCharacter()
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     // Set flying mode
-    GetCharacterMovement()->MaxFlySpeed = FlyingSpeed; 
-    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying); 
+    UCharacterMovementComponent* Movement = GetCharacterMovement();
+    if (!ensureMsgf(Movement, TEXT("%s requires a CharacterMovement component"), *GetName()))
+    {
+        return;
+    }
+    Movement->MaxFlySpeed = FlyingSpeed;
+    // DefaultLandMovementMode를 CDO에 직접 지정해둬야 풀 Acquire 시 CDO 기본값 복원 경로가
+    // Flying으로 올바르게 돌아온다. (SetMovementMode는 런타임 호출이라 CDO 필드엔 반영되지 않음)
+    Movement->DefaultLandMovementMode = EMovementMode::MOVE_Flying;
+    Movement->SetMovementMode(EMovementMode::MOVE_Flying);
 
     // Remove Z-axis constraint
-    GetCharacterMovement()->bConstrainToPlane = false;  
+    Movement->bConstrainToPlane = false;
 }
 
 void APeCoFlyingEnemyCharacter::BeginPlay()
@@ -33,7 +41,12 @@ void APeCoFlyingEnemyCharacter::BeginPlay()
     Super::BeginPlay();   
           
     // Force enable flying mode in BeginPlay
-    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+    UCharacterMovementComponent* Movement = GetCharacterMovement();
+    if (!ensureMsgf(Movement, TEXT("%s could not start: CharacterMovement is missing"), *GetName()))
+    {
+        return;
+    }
+    Movement->SetMovementMode(EMovementMode::MOVE_Flying);
 
     DefaultFlySpeed = FlyingSpeed;
                 
@@ -42,25 +55,5 @@ void APeCoFlyingEnemyCharacter::BeginPlay()
 void APeCoFlyingEnemyCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    // If flying mode is not active, force re-enable flying mode
-    if (GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Flying)
-    {
-        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-    }
 }
-
-void APeCoFlyingEnemyCharacter::OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator)
-{
-    // 부모 구현으로 HP/AI/타이머/무적 등 공통 초기화.
-    Super::OnAcquired_Implementation(SpawnTransform, NewOwner, NewInstigator);
-
-    // 풀 대기 중 Movement가 Walking으로 돌아갈 수 있으므로 Flying 강제 복구.
-    if (UCharacterMovementComponent* Move = GetCharacterMovement())
-    {
-        Move->SetMovementMode(EMovementMode::MOVE_Flying);
-        Move->MaxFlySpeed = FlyingSpeed;
-    }
-}
-
-
 

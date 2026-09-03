@@ -33,6 +33,8 @@ AProjectile::AProjectile()
 
     RootCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Root Collision Component"));
     RootCollisionComponent->InitCapsuleSize(20.0f, 40.0f);
+    RootCollisionComponent->SetCollisionProfileName(TEXT("Projectile"));
+    RootCollisionComponent->SetGenerateOverlapEvents(true);
     SetRootComponent(RootCollisionComponent);
 
     //RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
@@ -97,7 +99,9 @@ void AProjectile::OnAcquired_Implementation(const FTransform& SpawnTransform, AA
     if (RootCollisionComponent)
     {
         RootCollisionComponent->SetVisibility(true);
-        RootCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        // Blueprint에 저장된 기존 Custom 응답과 관계없이 전용 Profile을 복원한다.
+        RootCollisionComponent->SetCollisionProfileName(TEXT("Projectile"));
+        RootCollisionComponent->SetGenerateOverlapEvents(true);
     }
 
     if (ProjectileMesh)
@@ -190,14 +194,12 @@ UProjectileMovementComponent* AProjectile::GetProjectileMovementComponent() cons
 	return ProjectileMovementComponent;
 }
 
-
-
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
     // Pawn(Player/Enemy/동료)은 Overlap으로 처리되므로 여기 도달하지 않음.
     // WorldStatic/WorldDynamic(벽, 환경) 충돌 처리.
 
-    if (OtherActor == this || OtherActor == GetOwner())
+    if (OtherActor == this || OtherActor == GetOwner() || OtherActor == GetInstigator())
     {
         return;
     }

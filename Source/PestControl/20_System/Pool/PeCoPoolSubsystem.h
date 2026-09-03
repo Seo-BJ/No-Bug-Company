@@ -8,18 +8,6 @@
 #include "GameFramework/Actor.h"
 #include "PeCoPoolSubsystem.generated.h"
 
-// 디버그 HUD 출력 활성화 조건.
-// - Shipping / Test 빌드에서는 비활성화 (출시/측정 빌드 성능 보호).
-// - 그 외 Debug / DebugGame / Development(+Editor)에서는 활성화.
-// 포트폴리오 FPS 측정은 Shipping으로 돌려야 HUD가 간섭하지 않음.
-#ifndef PECO_POOL_DEBUG_HUD
-    #if UE_BUILD_SHIPPING || UE_BUILD_TEST
-        #define PECO_POOL_DEBUG_HUD 0
-    #else
-        #define PECO_POOL_DEBUG_HUD 1
-    #endif
-#endif
-
 /**
  * 클래스별 풀 데이터. TArray 기반의 간단한 스택.
  */
@@ -67,7 +55,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	// FTickableGameObject - 디버그 HUD 출력 전용. 빌드 구성에 따라 NoOp.
+	// FTickableGameObject - 디버그 HUD 출력 전용. 개인 에디터 설정에서 비활성화하면 NoOp.
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool IsTickable() const override;
@@ -95,7 +83,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void ReleaseActor(AActor* Actor);
 
-	/** 워밍업. 한 프레임에 Count 만큼 미리 생성하여 비활성 상태로 풀에 넣어둔다. */
+	/**
+	 * 워밍업. Count는 "이 풀의 Inactive 개수가 최소 이 값이 되도록 보장하라"는 목표치.
+	 * - 현재 Inactive >= Count 이면 No-op.
+	 * - 부족하면 부족한 만큼만 SpawnActor하여 비활성 상태로 풀에 넣는다.
+	 * 여러 호출자(예: Spawner가 N개)가 같은 Count로 호출해도 풀은 한 번만 Count로 채워진다.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void PreWarm(TSubclassOf<AActor> Class, int32 Count);
 
@@ -127,6 +120,9 @@ private:
 
 	/** 실제 SpawnActor 호출. */
 	AActor* InternalSpawnNew(UClass* Class, const FTransform& SpawnT, AActor* NewOwner, APawn* NewInstigator);
+
+	/** 개인 에디터 설정에서 해당 Actor 계열의 풀링 활성 여부를 조회. */
+	bool IsPoolingEnabledForClass(const UClass* Class) const;
 
 	/** 비활성화: Hidden / NoCollision / TickDisable / 위치 숨김. */
 	void DeactivateActor(AActor* Actor);

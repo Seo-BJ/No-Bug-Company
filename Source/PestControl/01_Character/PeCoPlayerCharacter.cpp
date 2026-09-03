@@ -32,6 +32,7 @@
 
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -54,6 +55,8 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -104,6 +107,10 @@ APeCoPlayerCharacter::APeCoPlayerCharacter()
 void APeCoPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Blueprint의 기존 Custom 설정보다 Player → Projectile 무시 규칙을 우선한다.
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 
 	APeCoPlayerState* PeCoPlayerState = Cast<APeCoPlayerState>(GetPlayerState());
 	OnTakeAnyDamage.AddDynamic(PeCoPlayerState, &APeCoPlayerState::ReceiveDamage);

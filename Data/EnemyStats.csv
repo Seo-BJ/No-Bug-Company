@@ -1,8 +1,0 @@
----,Round,EnemyID,Health,Damage,WalkSpeed,FlySpeed,bIsBoss
-Round1_Mosquito,"1","Mosquito","30.000000","8.000000","0.000000","370.000000","False"
-Round1_Spider,"1","Spider","40.000000","10.000000","330.000000","0.000000","False"
-Round2_Mosquito,"2","Mosquito","60.000000","8.000000","0.000000","400.000000","False"
-Round2_Spider,"2","Spider","80.000000","10.000000","350.000000","0.000000","False"
-Round3_Mosquito,"3","Mosquito","90.000000","10.000000","0.000000","400.000000","False"
-Round3_Spider,"3","Spider","120.000000","10.000000","380.000000","0.000000","False"
-Round3_Boss,"3","Boss","10000.000000","70.000000","0.000000","0.000000","True"

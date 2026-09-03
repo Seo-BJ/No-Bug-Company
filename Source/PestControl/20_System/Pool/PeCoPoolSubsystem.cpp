@@ -2,6 +2,11 @@
 
 #include "20_System/Pool/PeCoPoolSubsystem.h"
 #include "20_System/Pool/PoolableInterface.h"
+#include "20_System/Pool/PeCoPoolDeveloperSettings.h"
+#include "PestControl.h"
+
+#include "01_Character/PeCoEnemyCharacter.h"
+#include "07_Weapon/Projectile.h"
 
 #include "Engine/World.h"
 #include "Engine/Engine.h"
@@ -15,17 +20,19 @@ void UPeCoPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 }
 
 // ---------- FTickableGameObject ----------
-// Debug 빌드에서만 실제 작업(화면 디버그 출력). 다른 구성에서는 IsTickable가 false를 반환해 Tick이 호출되지 않는다.
+// 개인 에디터 설정에서 HUD를 켠 경우에만 실제 작업(화면 디버그 출력).
 
 bool UPeCoPoolSubsystem::IsTickable() const
 {
-#if PECO_POOL_DEBUG_HUD
+	const UPeCoPoolDeveloperSettings* Settings = GetDefault<UPeCoPoolDeveloperSettings>();
+	if (!Settings || !Settings->bEnableDebugHUD)
+	{
+		return false;
+	}
+
 	// PIE/게임 월드에서만 유효.
 	const UWorld* World = GetWorld();
 	return World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE);
-#else
-	return false;
-#endif
 }
 
 TStatId UPeCoPoolSubsystem::GetStatId() const
@@ -35,18 +42,27 @@ TStatId UPeCoPoolSubsystem::GetStatId() const
 
 void UPeCoPoolSubsystem::Tick(float DeltaTime)
 {
-#if PECO_POOL_DEBUG_HUD
 	if (!GEngine)
 	{
 		return;
 	}
 
-	// 상단 헤더.
+	const UPeCoPoolDeveloperSettings* Settings = GetDefault<UPeCoPoolDeveloperSettings>();
+	if (!Settings || !Settings->bEnableDebugHUD)
+	{
+		return;
+	}
+
+	// 상단 헤더에 현재 풀링 설정도 함께 표시.
+	const FString Header = FString::Printf(
+		TEXT("=== PeCo Object Pool | Enemy:%s Projectile:%s ==="),
+		Settings->bEnableEnemyPooling ? TEXT("ON") : TEXT("OFF"),
+		Settings->bEnableProjectilePooling ? TEXT("ON") : TEXT("OFF"));
 	GEngine->AddOnScreenDebugMessage(
 		/*Key*/ 0xEC00,
 		/*TimeToDisplay*/ 0.f,
 		FColor::Cyan,
-		TEXT("=== PeCo Object Pool ==="));
+		Header);
 
 	// 고정 Key 범위(0xEC01 ~ 0xECFF)로 클래스별 1줄씩 갱신. Key 고정 덕에 프레임마다 덮어쓰기된다.
 	int32 KeyOffset = 1;
@@ -79,7 +95,6 @@ void UPeCoPoolSubsystem::Tick(float DeltaTime)
 		++KeyOffset;
 		if (KeyOffset > 0xFF) break; // Key 충돌 방지.
 	}
-#endif
 }
 
 void UPeCoPoolSubsystem::Deinitialize()
@@ -116,6 +131,12 @@ AActor* UPeCoPoolSubsystem::AcquireActor(TSubclassOf<AActor> Class, const FTrans
 	if (!Class)
 	{
 		return nullptr;
+	}
+
+	// 해당 Actor 계열의 풀링이 꺼져 있으면 기존 SpawnActor 경로로 동작한다.
+	if (!IsPoolingEnabledForClass(*Class))
+	{
+		return InternalSpawnNew(*Class, SpawnT, NewOwner, NewInstigator);
 	}
 
 	UClass* Key = *Class;
@@ -159,11 +180,29 @@ void UPeCoPoolSubsystem::ReleaseActor(AActor* Actor)
 	}
 
 	UClass* Key = Actor->GetClass();
+	if (!IsPoolingEnabledForClass(Key))
+	{
+		// PIE 중 설정을 끄더라도 기존 Active 집합에 대기 포인터가 남지 않게 정리.
+		if (FActorPool* ExistingPool = Pools.Find(Key))
+		{
+			ExistingPool->ActiveActors.Remove(Actor);
+		}
+		Actor->Destroy();
+		return;
+	}
+
 	FActorPool* Pool = Pools.Find(Key);
 	if (!Pool)
 	{
 		// 풀로 관리되지 않는 액터가 실수로 들어온 경우 - 안전하게 Destroy.
 		Actor->Destroy();
+		return;
+	}
+
+	// 멱등성 가드: 동일 액터가 두 번 Release되어 Inactive 리스트에 중복 삽입되면
+	// 다음 Acquire에서 같은 인스턴스가 동시에 두 번 활성화될 수 있다.
+	if (Pool->InactiveActors.Contains(Actor))
+	{
 		return;
 	}
 
@@ -174,7 +213,6 @@ void UPeCoPoolSubsystem::ReleaseActor(AActor* Actor)
 	{
 		IPoolable::Execute_OnReleased(Actor);
 	}
-
 	DeactivateActor(Actor);
 
 	// 풀 상한 체크.
@@ -195,9 +233,25 @@ void UPeCoPoolSubsystem::PreWarm(TSubclassOf<AActor> Class, int32 Count)
 	}
 
 	UClass* Key = *Class;
+	if (!IsPoolingEnabledForClass(Key))
+	{
+		return;
+	}
+
 	FActorPool& Pool = Pools.FindOrAdd(Key);
 
-	for (int32 i = 0; i < Count; ++i)
+	// Count는 "이 풀이 최소한 이 정도의 Inactive를 갖도록 보장하라"는 목표치로 해석한다.
+	// 과거에는 Count만큼 "추가로" 생성하는 의미라 Spawner가 18개 있으면 Spawner마다
+	// PreWarm(10)을 호출할 때 풀에 180체가 쌓이는 버그가 있었다 (동시 Active는 10체 내외).
+	// 이 설계를 "목표 Inactive 수"로 바꾸면 여러 Spawner가 각자 같은 Count로 호출해도
+	// 풀이 한 번만 10체로 채워지고 나머지 호출은 No-op가 된다.
+	const int32 Needed = Count - Pool.InactiveActors.Num();
+	if (Needed <= 0)
+	{
+		return;
+	}
+
+	for (int32 i = 0; i < Needed; ++i)
 	{
 		AActor* NewActor = InternalSpawnNew(Key, FTransform(FRotator::ZeroRotator, ParkingLocation), nullptr, nullptr);
 		if (!NewActor)
@@ -205,6 +259,15 @@ void UPeCoPoolSubsystem::PreWarm(TSubclassOf<AActor> Class, int32 Count)
 			break;
 		}
 		Pool.TotalColdSpawnCount++;
+
+		// 런타임 Release와 동일한 비활성 상태로 맞춘다. IPoolable 구현체가 있으면
+		// OnReleased를 태워 CharMovement/Anim/AI Tick까지 차단. 이게 빠지면
+		// PreWarm된 Actor가 풀 대기 중에도 Component Tick을 계속 돌려
+		// "진짜 비활성"이 되지 않는다.
+		if (NewActor->GetClass()->ImplementsInterface(UPoolable::StaticClass()))
+		{
+			IPoolable::Execute_OnReleased(NewActor);
+		}
 		DeactivateActor(NewActor);
 		Pool.InactiveActors.Add(NewActor);
 	}
@@ -248,6 +311,32 @@ int32 UPeCoPoolSubsystem::GetReuseCount(TSubclassOf<AActor> Class) const
 	return Pool ? Pool->TotalReuseCount : 0;
 }
 
+bool UPeCoPoolSubsystem::IsPoolingEnabledForClass(const UClass* Class) const
+{
+	if (!Class)
+	{
+		return false;
+	}
+
+	const UPeCoPoolDeveloperSettings* Settings = GetDefault<UPeCoPoolDeveloperSettings>();
+	if (!Settings)
+	{
+		return false;
+	}
+
+	if (Class->IsChildOf(AProjectile::StaticClass()))
+	{
+		return Settings->bEnableProjectilePooling;
+	}
+	if (Class->IsChildOf(APeCoEnemyCharacter::StaticClass()))
+	{
+		return Settings->bEnableEnemyPooling;
+	}
+
+	// 설정이 지정하는 두 계열 외의 IPoolable 확장 타입은 기존 풀 동작을 유지한다.
+	return true;
+}
+
 AActor* UPeCoPoolSubsystem::InternalSpawnNew(UClass* Class, const FTransform& SpawnT, AActor* NewOwner, APawn* NewInstigator)
 {
 	UWorld* World = GetWorld();
@@ -269,7 +358,8 @@ AActor* UPeCoPoolSubsystem::InternalSpawnNew(UClass* Class, const FTransform& Sp
 	return World->SpawnActor<AActor>(Class, SpawnLocRot, Params);
 }
 
-void UPeCoPoolSubsystem::ActivateActor(AActor* Actor, const FTransform& SpawnT, AActor* NewOwner, APawn* NewInstigator)
+void UPeCoPoolSubsystem::ActivateActor(
+	AActor* Actor, const FTransform& SpawnT, AActor* NewOwner, APawn* NewInstigator)
 {
 	if (!IsValid(Actor))
 	{
@@ -285,12 +375,12 @@ void UPeCoPoolSubsystem::ActivateActor(AActor* Actor, const FTransform& SpawnT, 
 	Actor->SetActorEnableCollision(true);
 	Actor->SetActorTickEnabled(true);
 
-	// 3) 위치/회전 배치.
-	//    먼저 루트 컴포넌트에 직접 WorldLocation/Rotation을 강제로 지정해
-	//    ParkingLocation 잔존 물리 상태를 확실히 밀어낸다. (SetActorTransform 단독으로는
-	//    일부 설정의 ProjectileMovement/Physics에서 위치가 무시되는 사례가 있음)
-	// 스케일은 의도적으로 건드리지 않는다 — 호출자가 기본 FTransform(Rot, Loc)를 넘기면
-	// Scale=(1,1,1)로 덮어써져서 CDO에 설정된 스케일(예: Flying Enemy의 Capsule 스케일)이 사라진다.
+	// 3) 위치/회전 배치. 루트 컴포넌트에 TeleportPhysics로 한 번만 지정한다.
+	//    (과거에는 Actor 레벨 SetActorLocationAndRotation도 같이 태웠지만,
+	//     Character/Projectile 모두 루트에 TeleportPhysics가 가면 위치·물리가 일관되게
+	//     반영되며, 물리 씬 갱신을 중복으로 유발하지 않아 Acquire 비용이 낮아진다.)
+	// 스케일은 건드리지 않는다 — 호출자가 기본 FTransform(Rot, Loc)를 넘기면 Scale=(1,1,1)로
+	// 덮어써져 CDO 설정 스케일(예: Flying Enemy Capsule)이 사라진다.
 	if (USceneComponent* Root = Actor->GetRootComponent())
 	{
 		Root->SetWorldLocationAndRotation(
@@ -300,13 +390,6 @@ void UPeCoPoolSubsystem::ActivateActor(AActor* Actor, const FTransform& SpawnT, 
 			/*OutHit*/ nullptr,
 			ETeleportType::TeleportPhysics);
 	}
-	Actor->SetActorLocationAndRotation(
-		SpawnT.GetLocation(),
-		SpawnT.GetRotation(),
-		/*bSweep*/ false,
-		/*OutHit*/ nullptr,
-		ETeleportType::TeleportPhysics);
-
 	// 4) IPoolable::OnAcquired 호출 - 구현체에서 ProjectileMovement 재시동 등 수행.
 	if (Actor->GetClass()->ImplementsInterface(UPoolable::StaticClass()))
 	{

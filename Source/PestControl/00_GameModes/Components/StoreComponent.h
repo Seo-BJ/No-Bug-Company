@@ -16,21 +16,18 @@ class PESTCONTROL_API UStoreComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-
 	UStoreComponent();
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	TMap<FGameplayTag, TSoftClassPtr<AActor>> ItemClassMap;
 
-
 protected:
-
 	virtual void BeginPlay() override;
 
 public:	
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaterialPurchasePrice = 40;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaterialSellingPrice = 20;
 
@@ -59,7 +56,6 @@ public:
 	bool SellItemByTag(FGameplayTag ItemTag, FText& OutNote, AController* User);
 
 private:
-
 	void OnItemClassLoaded(FGameplayTag ItemTag, TWeakObjectPtr<AController> User);
 
 	FGameplayTagContainer PickRandomUpgradableTags(FGameplayTagContainer TagContainer, int32 Count, APlayerController* PlayerController);

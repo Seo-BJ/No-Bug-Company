@@ -13,6 +13,9 @@ AAirGunEvolvedBullet::AAirGunEvolvedBullet()
 {
     OverlapCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Overlap Capsule"));
     OverlapCapsule->InitCapsuleSize(50.f, 100.f); 
+    OverlapCapsule->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    OverlapCapsule->SetCollisionObjectType(ECC_GameTraceChannel1);
+    OverlapCapsule->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
     OverlapCapsule->SetupAttachment(RootComponent);
 
     OverlapCapsule->OnComponentBeginOverlap.AddDynamic(this, &AAirGunEvolvedBullet::OnOverlap);
@@ -23,6 +26,9 @@ AAirGunEvolvedBullet::AAirGunEvolvedBullet()
 void AAirGunEvolvedBullet::BeginPlay()
 {
     Super::BeginPlay();
+
+    OverlapCapsule->SetCollisionObjectType(ECC_GameTraceChannel1);
+    OverlapCapsule->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 }
 
 void AAirGunEvolvedBullet::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

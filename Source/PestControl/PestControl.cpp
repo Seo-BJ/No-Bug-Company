@@ -6,4 +6,5 @@
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, PestControl, "PestControl" );
 
 DEFINE_LOG_CATEGORY(LogPestControl)
+DEFINE_LOG_CATEGORY(LogPeCoPool)
  

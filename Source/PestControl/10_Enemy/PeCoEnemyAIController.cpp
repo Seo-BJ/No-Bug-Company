@@ -6,57 +6,127 @@
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BrainComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
-
+APeCoEnemyAIController::APeCoEnemyAIController()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	// í’€ë§ ì‚¬ìš©/ë¯¸ì‚¬ìš© ëª¨ë‘ ì—”ì§„ ê¸°ë³¸ TickGroup(TG_PrePhysics)ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©.
+}
 
 void APeCoEnemyAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// AIBehavior¿Í BlackboardComponent°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö È®ÀÎ
+	// AIBehaviorï¿½ï¿½ BlackboardComponentï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	if (!AIBehavior || !UseBlackboard(AIBehavior->BlackboardAsset, BlackboardComponent))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to initialize AI in %s"), *GetName());
 		return;
 	}
 
-	// Behavior Tree ½ÇÇà
+	// Behavior Tree ï¿½ï¿½ï¿½ï¿½
 	if (!RunBehaviorTree(AIBehavior))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to run Behavior Tree for %s"), *GetName());
 		return;
 	}
 
-	// PawnÀÌ ¿Ã¹Ù¸£°Ô ¼³Á¤µÇ¾ú´ÂÁö È®ÀÎ ÈÄ ½ÃÀÛ À§Ä¡¸¦ ¼³Á¤
-	APawn* ControlledPawn = GetPawn();
-	if (ControlledPawn && BlackboardComponent)
-	{
-		FVector StartLocation = ControlledPawn->GetActorLocation();
-		BlackboardComponent->SetValueAsVector(TEXT("StartLocation"), StartLocation);
-	}
-			
+	ResetBlackboardForCurrentPawn();
+
 }
 
-void APeCoEnemyAIController::Tick(float DeltaSeconds) 
+void APeCoEnemyAIController::SuspendForPooling()
+{
+	if (bSuspendedForPooling)
+	{
+		return;
+	}
+	bSuspendedForPooling = true;
+
+	StopMovement();
+	ClearFocus(EAIFocusPriority::Gameplay);
+
+	if (UBrainComponent* Brain = GetBrainComponent())
+	{
+		// StopLogic()ì€ Behavior Treeë¥¼ Safe ëª¨ë“œë¡œ ì¢…ë£Œí•˜ë¯€ë¡œ latent abortê°€ ë‚¨ì•„
+		// í’€ ë°˜í™˜ ë’¤ Tickì„ ë‹¤ì‹œ ì˜ˆì•½í•  ìˆ˜ ìˆë‹¤. í’€ ëŒ€ê¸°ëŠ” ì¦‰ì‹œ ì™„ì „íˆ ë©ˆì¶°ì•¼ í•œë‹¤.
+		if (UBehaviorTreeComponent* BehaviorTree = Cast<UBehaviorTreeComponent>(Brain))
+		{
+			BehaviorTree->StopTree(EBTStopMode::Forced);
+		}
+		else
+		{
+			Brain->StopLogic(TEXT("Enemy returned to pool"));
+		}
+		Brain->SetComponentTickEnabled(false);
+	}
+	if (UPathFollowingComponent* PathFollowing = GetPathFollowingComponent())
+	{
+		PathFollowing->SetComponentTickEnabled(false);
+	}
+
+	SetActorTickEnabled(false);
+}
+
+void APeCoEnemyAIController::ResumeFromPooling()
+{
+	ResetBlackboardForCurrentPawn();
+
+	if (!bSuspendedForPooling)
+	{
+		return;
+	}
+
+	SetActorTickEnabled(true);
+
+	if (UPathFollowingComponent* PathFollowing = GetPathFollowingComponent())
+	{
+		PathFollowing->SetComponentTickEnabled(true);
+	}
+	if (UBrainComponent* Brain = GetBrainComponent())
+	{
+		Brain->SetComponentTickEnabled(true);
+		Brain->RestartLogic();
+	}
+
+	bSuspendedForPooling = false;
+}
+
+void APeCoEnemyAIController::ResetBlackboardForCurrentPawn()
+{
+	UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
+	const APawn* ControlledPawn = GetPawn();
+	if (!BlackboardComp || !ControlledPawn)
+	{
+		return;
+	}
+
+	// ìƒˆë¡œ ìƒì„±ëœ Controllerê°€ ë°›ë˜ ì´ˆê¸° ìƒíƒœì™€ í’€ ì¬ì‚¬ìš© ìƒíƒœë¥¼ ë§ì¶˜ë‹¤.
+	BlackboardComp->ClearValue(TEXT("PlayerLocation"));
+	BlackboardComp->ClearValue(TEXT("LastKnownPlayerLocation"));
+	BlackboardComp->SetValueAsVector(TEXT("StartLocation"), ControlledPawn->GetActorLocation());
+}
+
+void APeCoEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (!PlayerPawn || !GetBlackboardComponent())
+	if (PlayerPawn && GetBlackboardComponent())
 	{
-		return;
-	}
-	
-
-	if (LineOfSightTo(PlayerPawn))
-	{
-		GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
-		GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), PlayerPawn->GetActorLocation());
-	}
-	else 
-	{
-		GetBlackboardComponent()-> ClearValue(TEXT("PlayerLocation"));
+		if (LineOfSightTo(PlayerPawn))
+		{
+			GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
+			GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), PlayerPawn->GetActorLocation());
+		}
+		else
+		{
+			GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
+		}
 	}
 
 }

@@ -8,6 +8,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BossEnemyAIController.generated.h"
 
+
 /**
  * 
  */
@@ -44,5 +45,4 @@ protected:
 
     // 초기 블랙보드 값 설정
     virtual void InitializeBlackboardValues();
-
 };

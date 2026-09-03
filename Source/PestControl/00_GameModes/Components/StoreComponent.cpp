@@ -36,10 +36,7 @@ UStoreComponent::UStoreComponent()
 void UStoreComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
-
 
 FGameplayTagContainer UStoreComponent::GetRandomRewardTags(int32 Count, APlayerController* PlayerController)
 {
@@ -236,28 +233,27 @@ bool UStoreComponent::BuyItemByTag(FGameplayTag ItemTag, FText& OutNote, AContro
 		OnItemClassLoaded(ItemTag, WeakUser);
 		return true;
 	}
-	else
+	
+	// 같은 아이템에 대한 이전 요청이 남아있다면 취소 후 재요청
+	if (TSharedPtr<FStreamableHandle>* ExistingHandle = PendingBuyHandles.Find(ItemTag))
 	{
-		// 같은 아이템에 대한 이전 요청이 남아있다면 취소 후 재요청
-		if (TSharedPtr<FStreamableHandle>* ExistingHandle = PendingBuyHandles.Find(ItemTag))
+		if (ExistingHandle->IsValid())
 		{
-			if (ExistingHandle->IsValid())
-			{
-				(*ExistingHandle)->CancelHandle();
-			}
-			PendingBuyHandles.Remove(ItemTag);
+			(*ExistingHandle)->CancelHandle();
 		}
-
-		FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-		TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(
-			SoftItemClass.ToSoftObjectPath(),
-			FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, WeakUser));
-		if (Handle.IsValid())
-		{
-			PendingBuyHandles.Add(ItemTag, Handle);
-		}
-		return true;
+		PendingBuyHandles.Remove(ItemTag);
 	}
+
+	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+	TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(
+		SoftItemClass.ToSoftObjectPath(),
+		FStreamableDelegate::CreateUObject(this, &UStoreComponent::OnItemClassLoaded, ItemTag, WeakUser));
+	if (Handle.IsValid())
+	{
+		PendingBuyHandles.Add(ItemTag, Handle);
+	}
+	return true;
+	
 }
 
 void UStoreComponent::OnItemClassLoaded(FGameplayTag ItemTag, TWeakObjectPtr<AController> User)

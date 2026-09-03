@@ -50,7 +50,7 @@ AWeapon::AWeapon()
 
 void AWeapon::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
     InitWeaponData();
     GetWorld()->GetTimerManager().SetTimer(CooldownHandle, this, &AWeapon::FireWeapon, GetActualCoolDown(), true);
 }
@@ -222,14 +222,16 @@ void AWeapon::SpawnProjectile()
 }
 void AWeapon::ProjectileFire()
 {
-    for (int32 i = 1; i <= NumberOfProjectiles; i++)
+    const int32 ProjectileCount = FMath::Max(1, NumberOfProjectiles);
+    const float ProjectileDelay = Delay;
+
+    for (int32 i = 1; i <= ProjectileCount; i++)
     {
         FTimerHandle TempHandle;
-        float DelayTime = FMath::Max(i * Delay, Delay);
+        const float DelayTime = FMath::Max(i * ProjectileDelay, ProjectileDelay);
 
         GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AWeapon::SpawnProjectile, DelayTime, false);
     }
-    float TotalFireTime = FMath::Max(NumberOfProjectiles * Delay, Delay);
 }
 
 void AWeapon::ShotgunFire()
@@ -242,14 +244,14 @@ void AWeapon::ShotgunFire()
     FVector SpawnLocation = BulletSpawnPoint->GetComponentLocation();
     FRotator BaseRotation = BulletSpawnPoint->GetComponentRotation();
 
-    float AngleIncrement = FireAngle / (NumberOfProjectiles - 1);
-
-    float StartYaw = BaseRotation.Yaw - (FireAngle / 2.0f);
+    const int32 ProjectileCount = FMath::Max(1, NumberOfProjectiles);
+    const float AngleIncrement = ProjectileCount > 1 ? FireAngle / (ProjectileCount - 1) : 0.0f;
+    const float StartYaw = ProjectileCount > 1 ? BaseRotation.Yaw - (FireAngle / 2.0f) : BaseRotation.Yaw;
 
     APawn* InstigatorPawn = Cast<APawn>(GetOwner());
     UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>();
 
-    for (int32 i = 0; i < NumberOfProjectiles; i++)
+    for (int32 i = 0; i < ProjectileCount; i++)
     {
         FRotator NewRotation = BaseRotation;
         NewRotation.Yaw = StartYaw + i * AngleIncrement;

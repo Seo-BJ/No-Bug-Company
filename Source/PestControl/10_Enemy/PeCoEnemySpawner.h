@@ -42,12 +42,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 1;
 
-    // 벤치마크: 스폰된 적에게 자동 사망 수명을 주입. 0이면 미주입(=CVar 값 사용).
-    UPROPERTY(EditAnywhere, Category = "Benchmark")
-    float SpawnedAutoKillLifetime = 0.f;
-
-
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

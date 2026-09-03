@@ -4,6 +4,7 @@
 
 #include "10_Enemy/PeCoEnemySpawner.h"
 
+#include "PestControl.h"
 #include "00_GameModes/PeCoGameMode.h"
 
 #include "10_Enemy/PeCoGroundEnemyCharacter.h"
@@ -41,9 +42,9 @@ void APeCoEnemySpawner::BeginPlay()
     // 초기 라운드를 설정
     SetRound(); // 기본 라운드를 1로 설정
 
-	// Set a timer to spawn enemies at regular intervals
-	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APeCoEnemySpawner::SpawnEnemies, SpawnInterval, true);
-	
+    // 고정 주기 루프 타이머.
+    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APeCoEnemySpawner::SpawnEnemies, SpawnInterval, true);
+
 }
 
 /*// Called every frame
@@ -207,6 +208,11 @@ void APeCoEnemySpawner::SpawnEnemies()
             APeCoEnemyCharacter* SpawnedEnemy = nullptr;
             const FTransform SpawnT(SpawnRotation, FinalSpawnLocation);
 
+            // 개인 에디터 설정에서 Enemy Pooling을 끄면 Pool->Acquire 내부가
+            // SpawnActor로 폴백하므로 호출자 분기는 둘 필요 없다.
+            // 풀링 대상은 반드시 Pool 경로로만 생성해 Cold/Reuse 통계를 정확히 유지한다.
+            // (외부 SpawnActor 폴백은 ReleaseSelfToPool 경유 시 풀에 '바깥에서 만든' 인스턴스가
+            //  섞여 통계가 어긋나므로 사용하지 않는다.)
             if (IsPoolableEnemyClass(EnemyClass))
             {
                 if (UPeCoPoolSubsystem* Pool = GetWorld()->GetSubsystem<UPeCoPoolSubsystem>())
@@ -214,21 +220,15 @@ void APeCoEnemySpawner::SpawnEnemies()
                     SpawnedEnemy = Pool->Acquire<APeCoEnemyCharacter>(EnemyClass, SpawnT, this, nullptr);
                 }
             }
-
-            if (!SpawnedEnemy)
+            else
             {
-                // 폴백 또는 비 풀링 대상(보스 등).
+                // 비 풀링 대상(보스 등)은 기존 SpawnActor 경로 사용.
                 SpawnedEnemy = GetWorld()->SpawnActor<APeCoEnemyCharacter>(EnemyClass, FinalSpawnLocation, SpawnRotation);
             }
 
             if (SpawnedEnemy)
             {
                 SpawnedEnemy->ApplyStatsFromData(Stats);
-                UE_LOG(LogTemp, Log, TEXT("Spawned enemy: %s with health %.2f"), *SpawnedEnemy->GetName(), Stats.Health);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("Failed to spawn enemy at location %s"), *FinalSpawnLocation.ToString());
             }
         }
     }

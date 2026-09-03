@@ -13,17 +13,15 @@ class PESTCONTROL_API APeCoCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-
-	APeCoCharacter();
-
+	APeCoCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	
+	virtual ETeam GetTeam();
+	
+protected:
 	//~ AActor Interface
-
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-
-	
-
 	//~End of AActor Interface
 
-	virtual ETeam GetTeam();
+
 };

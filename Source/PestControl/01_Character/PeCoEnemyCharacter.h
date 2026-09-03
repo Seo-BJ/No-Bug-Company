@@ -23,7 +23,7 @@ class PESTCONTROL_API APeCoEnemyCharacter : public APeCoCharacter, public IComba
 
 public: 
 
-	APeCoEnemyCharacter();
+	APeCoEnemyCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -41,18 +41,15 @@ public:
 	// Timer handle to reset the flag after a certain time has passed
 	FTimerHandle KnockbackTimerHandle;
 	
-	
 	UPROPERTY(EditAnywhere, Category = "Knockback")
 	float KnockbackForce;
-
-
+	
 	//~ICombatInterface
 	virtual void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 		AController* InstigatorController, AActor* DamageCauser) override;
 
 	virtual void GameOver() override;
-
-
+	
 	//~End of ICombatInterface
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
@@ -85,17 +82,14 @@ public:
 	// 무적 상태 해제 함수
 	void RemoveSpawnImmunity();
 
-	// 벤치마크용 자동 사망 수명 (초). 0 이하이면 비활성.
-	// Spawner 또는 CVar(pe.EnemyAutoKillLifetime)에서 주입 가능.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Benchmark")
-	float AutoKillLifetime = 0.f;
-
-	// AutoKillLifetime 초 후 자기 자신에게 치명 데미지를 가해 기존 사망 경로를 태움.
-	void ScheduleAutoKill(float Lifetime);
-
 private:
-	FTimerHandle AutoKillTimerHandle;
-	void HandleAutoKill();
+	void CaptureInitialPoolComponentState();
+	bool bInitialActorTickEnabled = false;
+	bool bInitialPoolComponentStateCaptured = false;
+	ECollisionEnabled::Type InitialCapsuleCollisionEnabled = ECollisionEnabled::NoCollision;
+	ECollisionEnabled::Type InitialMeshCollisionEnabled = ECollisionEnabled::NoCollision;
+	bool bInitialCapsuleGenerateOverlapEvents = false;
+	bool bInitialMeshGenerateOverlapEvents = false;
 
 public:
 	virtual void ApplyStatsFromData(const FEnemyStats& Stats);
@@ -135,7 +129,7 @@ public:
 	// ~ IPoolable
 	// 풀에서 꺼내질 때: HP/타이머/이동/AI/충돌 등 런타임 상태를 초기 상태로 복구.
 	virtual void OnAcquired_Implementation(const FTransform& SpawnTransform, AActor* NewOwner, APawn* NewInstigator) override;
-	// 풀로 반환되기 직전: 이동 정지, AI UnPossess, 타이머 정리.
+	// 풀로 반환되기 직전: 이동/AI 정지, 타이머 정리. Controller Possess 관계는 재사용을 위해 유지.
 	virtual void OnReleased_Implementation() override;
 	// ~
 
