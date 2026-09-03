@@ -13,6 +13,7 @@
  */
 class APeCoEnemySpawner;
 class UStoreComponent;
+class UPeCoPoolProfile;
 DECLARE_MULTICAST_DELEGATE_OneParam(FStageTimeEnd, int32);
 
 UCLASS()
@@ -52,6 +53,12 @@ public:
 	// 600.f = 10 min
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float StageTimeLimit = 600.f;
+
+	/** 이 GameMode를 사용하는 레벨에서 로드하고 PreWarm할 풀 대상. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Object Pool")
+	TObjectPtr<UPeCoPoolProfile> LevelPoolProfile;
+
+	UPeCoPoolProfile* GetLevelPoolProfile() const { return LevelPoolProfile; }
 
 	//~End of Stage Setting
 

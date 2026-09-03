@@ -6,6 +6,7 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/PORTFOLIO.md
 
 # Minimum files needed to identify and configure the Unreal project
 !/PestControl.uproject
@@ -13,3 +14,7 @@
 
 # C++ source (including *.Build.cs and target files)
 !/Source/
+Source/PestControl/20_System/Pool/PeCoPoolSubsystem.cpp
+Source/PestControl/20_System/Pool/PeCoPoolSubsystem.h
+Source/PestControl/20_System/Pool/PeCoPoolProfile.cpp
+Source/PestControl/20_System/Pool/PeCoPoolProfile.h

@@ -116,7 +116,18 @@ void APeCoEnemyCharacter::BeginPlay()
 	// Blueprint의 기존 Custom 설정보다 Enemy → Projectile Overlap 규칙을 우선한다.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
-	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+	if (USkeletalMeshComponent* SkelMesh = GetMesh())
+	{
+		SkelMesh->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+	}
+	else
+	{
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("%s cannot initialize enemy collision because its CharacterMesh0 component is missing."),
+			*GetPathName());
+	}
 
 	bInitialActorTickEnabled = IsActorTickEnabled();
 	CaptureInitialPoolComponentState();
@@ -269,14 +280,20 @@ void APeCoEnemyCharacter::ApplyStatsFromData(const FEnemyStats& Stats)
 	Health = Stats.Health;
 	MaxHealth = Stats.Health;
 	Damage = Stats.Damage; 
-	
-	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Flying)
+
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	if (!ensureMsgf(Movement, TEXT("%s cannot apply enemy stats: CharacterMovement is missing"), *GetPathName()))
 	{
-		GetCharacterMovement()->MaxFlySpeed = Stats.FlySpeed;
+		return;
+	}
+
+	if (Movement->MovementMode == EMovementMode::MOVE_Flying)
+	{
+		Movement->MaxFlySpeed = Stats.FlySpeed;
 	}
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = Stats.WalkSpeed;
+		Movement->MaxWalkSpeed = Stats.WalkSpeed;
 	}
 }
 

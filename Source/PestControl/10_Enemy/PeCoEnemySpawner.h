@@ -14,31 +14,14 @@ class PESTCONTROL_API APeCoEnemySpawner : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	APeCoEnemySpawner();
-
-    /*// Called every frame
-    virtual void Tick(float DeltaTime) override;*/
-
-    // ���� ����
+	
     void SetRound();
-
-    /*// ������ ���� Ŭ���� (BP�� ���� ����)
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    TSubclassOf<APeCoEnemyCharacter> EnemyClass;
-
-    // ���� ���� (�� ����)
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    float SpawnInterval = 10.0f;
-
-    // �� ���� ������ ���� ��
-    UPROPERTY(EditAnywhere, Category = "Spawning")
-    int32 SpawnCount = 3;*/
-    // ���� ����
+	
     UPROPERTY(EditAnywhere, Category = "Spawning")
     float SpawnInterval = 2.0f;
-
-    // �� ���� ������ ���� ��
+	
     UPROPERTY(EditAnywhere, Category = "Spawning")
     int32 SpawnCount = 1;
 
@@ -68,15 +51,6 @@ private:
     // ���� ����
 
     int32 CurrentRound;
-
-    // 라운드 시작 시 Enemy 클래스별로 미리 생성해둘 개수.
-    // 0이면 PreWarm을 건너뛴다. 첫 웨이브의 SpawnActor 스파이크를 줄이는 용도.
-    UPROPERTY(EditAnywhere, Category = "Spawning|Pool")
-    int32 PreWarmCountPerClass = 10;
-
-    // 클래스별 풀 보관 상한. 0 = 무제한.
-    UPROPERTY(EditAnywhere, Category = "Spawning|Pool")
-    int32 PoolMaxSizePerClass = 0;
 
     // 보스는 풀링 대상에서 제외 (인스턴스당 상태가 크고 재사용 이득이 적음).
     static bool IsPoolableEnemyClass(TSubclassOf<class APeCoEnemyCharacter> Class);

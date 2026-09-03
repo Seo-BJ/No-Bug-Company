@@ -3,8 +3,10 @@
 #include "20_System/Pool/PeCoPoolSubsystem.h"
 #include "20_System/Pool/PoolableInterface.h"
 #include "20_System/Pool/PeCoPoolDeveloperSettings.h"
+#include "20_System/Pool/PeCoPoolProfile.h"
 #include "PestControl.h"
 
+#include "00_GameModes/PeCoGameMode.h"
 #include "01_Character/PeCoEnemyCharacter.h"
 #include "07_Weapon/Projectile.h"
 
@@ -17,6 +19,33 @@ const FVector UPeCoPoolSubsystem::ParkingLocation = FVector(0.f, 0.f, -100000.f)
 void UPeCoPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+}
+
+void UPeCoPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	const APeCoGameMode* GameMode = InWorld.GetAuthGameMode<APeCoGameMode>();
+	ActiveProfile = GameMode ? GameMode->GetLevelPoolProfile() : nullptr;
+	if (!ActiveProfile)
+	{
+		UE_LOG(LogPeCoPool, Verbose, TEXT("No level pool profile: %s"), *InWorld.GetName());
+		return;
+	}
+
+	// GameMode의 하드 참조 덕분에 클래스는 레벨 로딩 단계에서 이미 메모리에 올라온다.
+	for (const TPair<TSubclassOf<AActor>, FPeCoPoolClassProfile>& Pair : ActiveProfile->ClassProfiles)
+	{
+		UClass* Class = Pair.Key.Get();
+		if (!Class || !IsPoolingEnabledForClass(Class))
+		{
+			continue;
+		}
+
+		FActorPool& Pool = Pools.FindOrAdd(Class);
+		ApplyClassProfile(Class, Pool);
+		PreWarm(Class, Pair.Value.PreWarmCount);
+	}
 }
 
 // ---------- FTickableGameObject ----------
@@ -79,12 +108,13 @@ void UPeCoPoolSubsystem::Tick(float DeltaTime)
 		const int32 Inactive = Pool.InactiveActors.Num();
 		const int32 Cold = Pool.TotalColdSpawnCount;
 		const int32 Reuse = Pool.TotalReuseCount;
+		const int32 Denied = Pool.TotalAcquireDeniedCount;
 		const int32 Total = Cold + Reuse;
 		const float ReusePct = (Total > 0) ? (100.f * static_cast<float>(Reuse) / static_cast<float>(Total)) : 0.f;
 
 		const FString Line = FString::Printf(
-			TEXT("%-36s | Active:%3d  Inactive:%3d  Cold:%4d  Reuse:%5d  (%.1f%%)"),
-			*Cls->GetName(), Active, Inactive, Cold, Reuse, ReusePct);
+			TEXT("%-36s | Active:%3d  Inactive:%3d  Cold:%4d  Reuse:%5d  Denied:%4d  (%.1f%%)"),
+			*Cls->GetName(), Active, Inactive, Cold, Reuse, Denied, ReusePct);
 
 		GEngine->AddOnScreenDebugMessage(
 			/*Key*/ 0xEC00 + KeyOffset,
@@ -122,6 +152,7 @@ void UPeCoPoolSubsystem::Deinitialize()
 		Pool.ActiveActors.Reset();
 	}
 	Pools.Reset();
+	ActiveProfile = nullptr;
 
 	Super::Deinitialize();
 }
@@ -141,6 +172,7 @@ AActor* UPeCoPoolSubsystem::AcquireActor(TSubclassOf<AActor> Class, const FTrans
 
 	UClass* Key = *Class;
 	FActorPool& Pool = Pools.FindOrAdd(Key);
+	ApplyClassProfile(Key, Pool);
 
 	AActor* Actor = nullptr;
 
@@ -159,6 +191,14 @@ AActor* UPeCoPoolSubsystem::AcquireActor(TSubclassOf<AActor> Class, const FTrans
 	// 풀 미스: 새로 스폰.
 	if (!Actor)
 	{
+		// 고정 풀은 런타임 Spawn 없이 실패를 호출자에게 전달한다.
+		if (!Pool.bCanExpand)
+		{
+			Pool.TotalAcquireDeniedCount++;
+			UE_LOG(LogPeCoPool, Verbose, TEXT("Pool exhausted; expansion denied: %s"), *Key->GetName());
+			return nullptr;
+		}
+
 		Actor = InternalSpawnNew(Key, SpawnT, NewOwner, NewInstigator);
 		if (!Actor)
 		{
@@ -198,6 +238,7 @@ void UPeCoPoolSubsystem::ReleaseActor(AActor* Actor)
 		Actor->Destroy();
 		return;
 	}
+	ApplyClassProfile(Key, *Pool);
 
 	// 멱등성 가드: 동일 액터가 두 번 Release되어 Inactive 리스트에 중복 삽입되면
 	// 다음 Acquire에서 같은 인스턴스가 동시에 두 번 활성화될 수 있다.
@@ -216,7 +257,7 @@ void UPeCoPoolSubsystem::ReleaseActor(AActor* Actor)
 	DeactivateActor(Actor);
 
 	// 풀 상한 체크.
-	if (Pool->MaxSize > 0 && Pool->InactiveActors.Num() >= Pool->MaxSize)
+	if (Pool->MaxInactiveRetained > 0 && Pool->InactiveActors.Num() >= Pool->MaxInactiveRetained)
 	{
 		Actor->Destroy();
 		return;
@@ -239,6 +280,20 @@ void UPeCoPoolSubsystem::PreWarm(TSubclassOf<AActor> Class, int32 Count)
 	}
 
 	FActorPool& Pool = Pools.FindOrAdd(Key);
+	ApplyClassProfile(Key, Pool);
+
+	// PreWarm은 보관 상한을 넘지 않는다. 충돌 설정은 상한을 우선한다.
+	if (Pool.MaxInactiveRetained > 0 && Count > Pool.MaxInactiveRetained)
+	{
+		UE_LOG(
+			LogPeCoPool,
+			Warning,
+			TEXT("PreWarmCount(%d) exceeds MaxInactiveRetained(%d) for %s; clamped."),
+			Count,
+			Pool.MaxInactiveRetained,
+			*Key->GetName());
+		Count = Pool.MaxInactiveRetained;
+	}
 
 	// Count는 "이 풀이 최소한 이 정도의 Inactive를 갖도록 보장하라"는 목표치로 해석한다.
 	// 과거에는 Count만큼 "추가로" 생성하는 의미라 Spawner가 18개 있으면 Spawner마다
@@ -273,14 +328,26 @@ void UPeCoPoolSubsystem::PreWarm(TSubclassOf<AActor> Class, int32 Count)
 	}
 }
 
-void UPeCoPoolSubsystem::SetMaxSize(TSubclassOf<AActor> Class, int32 InMaxSize)
+void UPeCoPoolSubsystem::SetMaxInactiveRetained(TSubclassOf<AActor> Class, int32 InMaxInactiveRetained)
 {
 	if (!Class)
 	{
 		return;
 	}
 	FActorPool& Pool = Pools.FindOrAdd(*Class);
-	Pool.MaxSize = FMath::Max(0, InMaxSize);
+	Pool.MaxInactiveRetained = FMath::Max(0, InMaxInactiveRetained);
+	Pool.bProfileApplied = true;
+}
+
+void UPeCoPoolSubsystem::SetCanExpand(TSubclassOf<AActor> Class, bool bInCanExpand)
+{
+	if (!Class)
+	{
+		return;
+	}
+	FActorPool& Pool = Pools.FindOrAdd(*Class);
+	Pool.bCanExpand = bInCanExpand;
+	Pool.bProfileApplied = true;
 }
 
 int32 UPeCoPoolSubsystem::GetActiveCount(TSubclassOf<AActor> Class) const
@@ -311,6 +378,13 @@ int32 UPeCoPoolSubsystem::GetReuseCount(TSubclassOf<AActor> Class) const
 	return Pool ? Pool->TotalReuseCount : 0;
 }
 
+int32 UPeCoPoolSubsystem::GetAcquireDeniedCount(TSubclassOf<AActor> Class) const
+{
+	if (!Class) return 0;
+	const FActorPool* Pool = Pools.Find(*Class);
+	return Pool ? Pool->TotalAcquireDeniedCount : 0;
+}
+
 bool UPeCoPoolSubsystem::IsPoolingEnabledForClass(const UClass* Class) const
 {
 	if (!Class)
@@ -335,6 +409,31 @@ bool UPeCoPoolSubsystem::IsPoolingEnabledForClass(const UClass* Class) const
 
 	// 설정이 지정하는 두 계열 외의 IPoolable 확장 타입은 기존 풀 동작을 유지한다.
 	return true;
+}
+
+void UPeCoPoolSubsystem::ApplyClassProfile(UClass* Class, FActorPool& Pool) const
+{
+	if (!Class || Pool.bProfileApplied)
+	{
+		return;
+	}
+	Pool.bProfileApplied = true;
+
+	if (!ActiveProfile)
+	{
+		return;
+	}
+
+	for (const TPair<TSubclassOf<AActor>, FPeCoPoolClassProfile>& Pair : ActiveProfile->ClassProfiles)
+	{
+		// 정확한 클래스만 일치시킨다. 부모 프로필의 암묵적 상속은 하지 않는다.
+		if (Pair.Key.Get() == Class)
+		{
+			Pool.bCanExpand = Pair.Value.bCanExpand;
+			Pool.MaxInactiveRetained = FMath::Max(0, Pair.Value.MaxInactiveRetained);
+			return;
+		}
+	}
 }
 
 AActor* UPeCoPoolSubsystem::InternalSpawnNew(UClass* Class, const FTransform& SpawnT, AActor* NewOwner, APawn* NewInstigator)

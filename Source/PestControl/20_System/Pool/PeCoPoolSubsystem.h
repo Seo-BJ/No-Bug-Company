@@ -8,6 +8,8 @@
 #include "GameFramework/Actor.h"
 #include "PeCoPoolSubsystem.generated.h"
 
+class UPeCoPoolProfile;
+
 /**
  * 클래스별 풀 데이터. TArray 기반의 간단한 스택.
  */
@@ -24,14 +26,23 @@ struct FActorPool
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> ActiveActors;
 
-	/** 풀 최대 보관 수. 초과 시 Release에서 실제 Destroy로 보냄. 0 = 무제한 */
-	int32 MaxSize = 0;
+	/** 풀이 고갈됐을 때 새 액터 생성을 허용한다. */
+	bool bCanExpand = true;
+
+	/** 반환 후 보관할 비활성 액터 상한. 0 = 무제한 */
+	int32 MaxInactiveRetained = 0;
 
 	/** 누적 Cold Spawn(풀 미스로 SpawnActor 실제 호출한 수) - 포트폴리오 측정용 */
 	int32 TotalColdSpawnCount = 0;
 
 	/** 누적 Reuse(풀 히트로 재사용한 수) - 포트폴리오 측정용 */
 	int32 TotalReuseCount = 0;
+
+	/** 고정 풀 고갈로 Acquire가 거부된 누적 횟수. */
+	int32 TotalAcquireDeniedCount = 0;
+
+	/** 레벨 프로필 조회를 풀 생성 후 한 번만 수행하기 위한 캐시 플래그. */
+	bool bProfileApplied = false;
 };
 
 /**
@@ -53,6 +64,7 @@ class PESTCONTROL_API UPeCoPoolSubsystem : public UWorldSubsystem, public FTicka
 public:
 	// USubsystem
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Deinitialize() override;
 
 	// FTickableGameObject - 디버그 HUD 출력 전용. 개인 에디터 설정에서 비활성화하면 NoOp.
@@ -92,9 +104,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void PreWarm(TSubclassOf<AActor> Class, int32 Count);
 
-	/** 풀 상한을 설정. 0 = 무제한. */
+	/** 반환 후 보관할 비활성 액터 상한을 설정. 0 = 무제한. */
 	UFUNCTION(BlueprintCallable, Category = "Pool")
-	void SetMaxSize(TSubclassOf<AActor> Class, int32 InMaxSize);
+	void SetMaxInactiveRetained(TSubclassOf<AActor> Class, int32 InMaxInactiveRetained);
+
+	/** 풀 고갈 시 자동 확장 여부를 설정. */
+	UFUNCTION(BlueprintCallable, Category = "Pool")
+	void SetCanExpand(TSubclassOf<AActor> Class, bool bInCanExpand);
 
 	// ------------------ 디버그 / 측정용 ------------------
 
@@ -110,7 +126,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pool|Debug")
 	int32 GetReuseCount(TSubclassOf<AActor> Class) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Pool|Debug")
+	int32 GetAcquireDeniedCount(TSubclassOf<AActor> Class) const;
+
 private:
+	/** 현재 레벨 GameMode가 소유한 풀 프로필. */
+	UPROPERTY()
+	TObjectPtr<UPeCoPoolProfile> ActiveProfile;
+
 	/** 클래스별 풀 테이블. 키는 UClass*. */
 	UPROPERTY()
 	TMap<TObjectPtr<UClass>, FActorPool> Pools;
@@ -123,6 +146,9 @@ private:
 
 	/** 개인 에디터 설정에서 해당 Actor 계열의 풀링 활성 여부를 조회. */
 	bool IsPoolingEnabledForClass(const UClass* Class) const;
+
+	/** 현재 레벨 프로필을 해당 클래스 풀에 반영. */
+	void ApplyClassProfile(UClass* Class, FActorPool& Pool) const;
 
 	/** 비활성화: Hidden / NoCollision / TickDisable / 위치 숨김. */
 	void DeactivateActor(AActor* Actor);
